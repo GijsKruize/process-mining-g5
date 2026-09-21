@@ -1,0 +1,15 @@
+# Default configuration for the event log preprocessing step (preprocess.py).
+# Every value here can be overridden with the matching command line flag,
+# e.g. `python preprocess.py --output-dir results`.
+
+# Path to an .xes file, or a directory containing exactly one .xes file.
+input_path: data
+
+# Directory the relabelled XES log and CSV are written to.
+output_dir: output
+
+# Number of example values shown per attribute in the column overview.
+n_examples: 3
+
+# Number of most frequent new labels printed after relabelling.
+top_n_labels: 10

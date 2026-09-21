@@ -1,0 +1,35 @@
+# Configuration for the instance graph generation step (instance_graphs.py).
+# Every value here can be overridden with the matching command line flag.
+
+# Relabelled event log produced by step 1 (preprocess.py).
+log_path: output/relabeled_log.xes
+
+# Directory the discovery log, Petri net, BIG's raw .g output, and the
+# parsed graphs are written to.
+output_dir: output
+
+# Event attribute used as the activity for Inductive Miner discovery and
+# for the log handed to BIG. 'original_activity' is the plain, un-fused
+# activity that step 1 preserves alongside its resource-fused
+# 'concept:name'. Using the resource-fused label instead is possible but
+# not recommended: with thousands of distinct <activity>_<resource>
+# combinations, Inductive Miner becomes impractically slow, and BIG's
+# alignment needs the log's activity values to match the Petri net's
+# transition labels. This also matches how the example BPI2017Denied.g was
+# built ("only event activities are used as labels").
+activity_key: original_activity
+
+# File names within output_dir.
+discovery_log_filename: discovery_log.xes
+petri_net_filename: petri_net.pnml
+graphs_filename: instance_graphs.g
+parsed_graphs_filename: instance_graphs.pkl
+
+# Command used to invoke the external BIG tool (provided by the course, not
+# bundled with this project). Must contain the {log}, {petri_net}, and
+# {output} placeholders. Example, once you have the BIG jar:
+#   big_command: "java -jar tools/BIG.jar {log} {petri_net} {output}"
+# Leave unset (null) until BIG is available; use --parse-only to exercise
+# the .g parser on a pre-generated file (e.g. the provided BPI2017Denied.g)
+# in the meantime.
+big_command: null

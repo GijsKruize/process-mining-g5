@@ -1,0 +1,5 @@
+# Additional dependencies needed only for testing and style checking,
+# not for running preprocess.py itself.
+-r requirements.txt
+pytest==8.3.4
+flake8==7.3.0

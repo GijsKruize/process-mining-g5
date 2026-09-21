@@ -1,0 +1,11 @@
+.venv/
+.venv_readme_check/
+__pycache__/
+*.pyc
+output/*
+!output/.gitkeep
+tests/data/*.xes
+.pytest_cache/
+.flake8_cache/
+.idea/
+.vscode/
