@@ -1,6 +1,6 @@
-# Organizational Process Mining — JM0211 (Steps 1-2/4)
+# Organizational Process Mining — JM0211 (Steps 1-3/4)
 
-Steps 1 and 2 of the JM0211 "Mining Organizational Patterns" pipeline,
+Steps 1-3 of the JM0211 "Mining Organizational Patterns" pipeline,
 built with [pm4py](https://pm4py.fit.fraunhofer.de/) and
 [networkx](https://networkx.org/):
 
@@ -8,10 +8,16 @@ built with [pm4py](https://pm4py.fit.fraunhofer.de/) and
    fuse an attribute (e.g. resource) into the activity label for
    resource-task assignment, and exports a relabelled log.
 2. **`instance_graphs.py`** — discovers a Petri net from that log with the
-   Inductive Miner, feeds it (with the log) to the external BIG library to
-   build one instance graph per trace, and converts BIG's textual output
-   into a list of `networkx.DiGraph` objects for the later SUBDUE
+   Inductive Miner, then builds one instance graph per trace using BIG's own
+   algorithm (see [Step 2](#step-2-instance-graph-generation) below for why
+   it runs natively rather than via the external tool), and converts the
+   result into a list of `networkx.DiGraph` objects for the later SUBDUE
    subgraph-mining step.
+3. **`pattern_mining.py`** — merges those instance graphs and mines
+   recurring behavioral patterns from them with SUBDUE (vendored under
+   `subdue/`; see [Step 3](#step-3-pattern-mining) below), reporting each
+   pattern's support, a trace-pattern occurrence matrix, and a rendered
+   visualization of a representative instance.
 
 ## Project structure
 
@@ -19,12 +25,17 @@ built with [pm4py](https://pm4py.fit.fraunhofer.de/) and
 .
 ├── preprocess.py                # Step 1 script (entry point: main())
 ├── instance_graphs.py           # Step 2 script (entry point: main())
+├── big_engine.py                # Step 2's native BIG algorithm (see "About BIG")
+├── pattern_mining.py             # Step 3 script (entry point: main())
+├── g_to_networkx.py             # Standalone .g -> networkx converter (any .g file, no pipeline needed)
+├── subdue/                      # Vendored SUBDUE (MIT licensed), see "Step 3"
 ├── config.yaml                  # Step 1 parameters
 ├── config_instance_graphs.yaml  # Step 2 parameters
+├── config_pattern_mining.yaml   # Step 3 parameters
 ├── requirements.txt             # Runtime dependencies (pinned)
 ├── requirements-dev.txt         # + pytest/flake8, for testing and linting
 ├── data/                        # Put your input .xes file here (step 1 default input)
-├── output/                      # Both scripts write their results here
+├── output/                      # All three scripts write their results here
 ├── datasets_group5_mining_organizational_patterns/
 │   ├── BPI2017Denied(3).xes     # BPI Challenge 2017 log used for evaluation
 │   └── BPI2017Denied.g          # Example BIG output, used as a parser fixture
@@ -166,11 +177,27 @@ with a single responsibility:
 
 ### About BIG
 
-BIG is a tool **provided by the course**, not bundled with this project —
-it is not available at the time of writing, so `instance_graphs.py` calls
-it as a **configurable external command** rather than a hard-coded
-integration. Once you have it (typically a `.jar`), point `big_command` in
-`config_instance_graphs.yaml` at it:
+No BIG jar/binary was distributed for this course run. BIG is open source,
+though: its GUI wrapper (Docker + Spark + Tkinter) and the algorithm behind
+it are published by the same research group that set this assignment
+(Diamantini, Genga, Mircoli, Potena) at
+[a-mircoli/big-gui](https://github.com/a-mircoli/big-gui)
+(`app/BIG2/BigSpark/newbig2.py`). That algorithm — align each trace against
+the Petri net, derive the net's causal relation, build a provisional
+instance graph, then repair it around the alignment's skip/insert steps —
+does not actually need Spark; Spark there only fans per-trace work across a
+cluster for very large logs.
+
+`big_engine.py` ports that algorithm's core functions directly (same logic,
+same `.g` output format), with the Spark driver, the Tkinter GUI, the
+IPython/graphviz live preview, and BIG's hard-coded project paths removed —
+none of that is needed to call the graph-construction algorithm itself as a
+plain library function. `instance_graphs.py` uses it automatically as long
+as `big_command` is unset in the config (the default). See `big_engine.py`'s
+module docstring for the full provenance.
+
+If you do have a real BIG deployment (e.g. the Docker/Spark GUI above) and
+want to shell out to it instead, set `big_command`:
 
 ```yaml
 big_command: "java -jar tools/BIG.jar {log} {petri_net} {output}"
@@ -178,9 +205,11 @@ big_command: "java -jar tools/BIG.jar {log} {petri_net} {output}"
 
 `{log}`, `{petri_net}`, and `{output}` are substituted with the discovery
 log, the discovered Petri net (PNML), and the path BIG should write its
-`.g` file to. Until then, the `.g` → `networkx` parser can be exercised
-directly on any pre-generated `.g` file — e.g. the example
-`BPI2017Denied.g` shipped with the assignment — via `--parse-only`:
+`.g` file to; when set, this takes priority over the native engine.
+
+Either way, the `.g` → `networkx` parser can also be exercised directly on
+any pre-generated `.g` file — e.g. the example `BPI2017Denied.g` shipped
+with the assignment — via `--parse-only`:
 
 ```bash
 python instance_graphs.py --parse-only "datasets_group5_mining_organizational_patterns/BPI2017Denied.g"
@@ -225,17 +254,18 @@ python instance_graphs.py [--config FILE] [--log-path FILE] [--output-dir DIR] \
                            [--force] [--parse-only G_FILE]
 ```
 
-Full pipeline (requires `big_command` to be configured):
+Full pipeline (works out of the box, no extra setup needed):
 
 ```bash
 python instance_graphs.py
 ```
 
 This discovers a Petri net from `output/relabeled_log.xes`, exports it,
-runs BIG, and parses its `.g` output into instance graphs — unless
-`output/instance_graphs.g` already exists, in which case it's reused
-(pass `--force` to regenerate). Parse an existing `.g` file directly,
-skipping discovery and BIG entirely:
+runs BIG (the native engine by default, or the external tool if
+`big_command` is configured), and parses the resulting `.g` output into
+instance graphs — unless `output/instance_graphs.g` already exists, in
+which case it's reused (pass `--force` to regenerate). Parse an existing
+`.g` file directly, skipping discovery and BIG entirely:
 
 ```bash
 python instance_graphs.py --parse-only path/to/file.g
@@ -259,11 +289,132 @@ python instance_graphs.py --parse-only path/to/file.g
   `config_instance_graphs.yaml`.
 - `PetriNetDiscoverer` — runs the Inductive Miner and exports the result
   to PNML.
-- `BigRunner` — invokes the configured BIG command as a subprocess.
+- `NativeBigEngine` — runs BIG's own algorithm (via `big_engine.py`)
+  trace-by-trace and writes the same textual `.g` format BIG produces; used
+  by default (see [About BIG](#about-big)).
+- `BigRunner` — invokes an external BIG command as a subprocess; only used
+  when `big_command` is explicitly configured.
 - `InstanceGraphParser` — parses `.g` text into `networkx.DiGraph`
   objects, assigning globally unique node ids; also summarizes,
   pickles, and reloads results.
 - `InstanceGraphPipeline` — orchestrates the above; its `run()` method is
+  the full pipeline.
+
+## Step 3: pattern mining
+
+### About SUBDUE
+
+The assignment specifies leveraging the
+[SUBDUE](https://github.com/holderlb/Subdue) subgraph-mining algorithm.
+Unlike BIG, SUBDUE's own repository is a complete, MIT-licensed, pure-Python
+implementation with a `nx_subdue()` entry point built specifically to run
+directly on a `networkx` graph — no external process, jar, or Docker
+container needed. It's vendored under `subdue/` (`subdue/LICENSE` is its
+original MIT license).
+
+Two real bugs and one performance issue in the upstream code were found and
+fixed while wiring it up (see the comments at each fix in `subdue/Graph.py`
+and `subdue/Subdue.py` for details):
+
+- `Graph.load_from_networkx` read `networkx_graph.is_directed` without
+  calling it, so every edge from *any* networkx graph was silently treated
+  as undirected — significant here, since edge direction encodes causal
+  order in our instance graphs. Fixed, and verified with a test that
+  forward- and reverse-direction edges are no longer merged into one
+  pattern.
+- The same function passed non-string node ids straight through, but the
+  rest of the codebase assumes string ids (crashes in `print_vertex`).
+  Fixed by stringifying on the way in; `pattern_mining.py` casts pattern
+  results back to `int` to match our own node ids.
+- `Subdue.GetInitialPatterns` compares every pair of single-edge graphs
+  with `GraphMatch`, which is O(E²) — fine for one small graph, but
+  prohibitive once many instance graphs are merged into one union graph
+  (E in the hundreds of thousands for the full BPI2017Denied log). Since a
+  length-1, non-temporal pattern's match is fully determined by its
+  (source, edge, target) attributes, edges are now grouped into buckets by
+  that signature first, turning the all-pairs comparison into a per-bucket
+  one. Verified to produce byte-identical output to the original algorithm
+  on a synthetic test case; only used for the non-temporal case (SUBDUE's
+  `--temporal` option still uses the original algorithm).
+
+### Why instance graphs are merged into one union graph
+
+Step 2 guarantees every instance graph has globally unique node ids across
+the whole collection. That means all instance graphs can be merged into a
+single disjoint-union graph and mined in one SUBDUE pass: since there are no
+edges between different traces, a discovered pattern's instances can never
+span more than one original trace, so this is equivalent to mining each
+trace separately, just faster. `pattern_mining.py`'s `UnionGraphBuilder`
+does this and also returns a node id → trace index map, used to compute
+support and the trace-pattern matrix.
+
+### Configuration
+
+```yaml
+instance_graphs_path: output/instance_graphs.pkl   # step 2's output
+output_dir: output
+node_attributes: [label]   # what SUBDUE matches nodes on
+edge_attributes: [label]   # what SUBDUE matches edges on
+beam_width: 4
+limit: 500        # SUBDUE's own default (0 -> |E|/2) is impractical here
+min_size: 1
+max_size: 8       # ditto (0 -> |E|/2); behavioral patterns are small motifs
+num_best: 6
+overlap: none
+prune: false
+value_based: false
+iterations: 1      # see the comment in the YAML for why iterations > 1
+                   #  needs extra care before this pipeline supports it
+render_patterns: true
+```
+
+`limit` and `max_size` deliberately default away from SUBDUE's own `0` (=
+`|E|/2`) defaults: once many traces are merged into one union graph, `|E|/2`
+is tens of thousands of edges, and we're looking for small recurring
+behavioral motifs (a handful of activities), not whole-trace-sized
+subgraphs. Raise these if you want larger patterns and have the time to
+spare — mining the full BPI2017Denied instance graphs (131,052 edges) with
+the defaults above takes about 7 minutes on a laptop.
+
+### Usage
+
+```bash
+python pattern_mining.py [--config FILE] [--instance-graphs-path FILE] \
+                          [--output-dir DIR] [--num-best N] \
+                          [--min-size N] [--max-size N] [--no-render]
+```
+
+```bash
+python pattern_mining.py
+```
+
+### Output
+
+- `output/patterns.pkl` — the raw discovered patterns: a list of patterns,
+  each a list of instance dicts (`{'nodes': [...], 'edges': [(src, dst), ...]}`
+  with our own global node ids).
+- `output/pattern_stats.csv` — one row per pattern: `num_nodes`, `num_edges`
+  (its size), `num_instances` (raw occurrence count, can exceed the number
+  of traces if a pattern recurs within one trace), `support_count` (number
+  of *distinct* traces containing it), `support_fraction`
+  (`support_count` / total traces).
+- `output/trace_pattern_matrix.csv` — the trace × pattern occurrence
+  matrix the assignment asks for: rows are traces, columns are patterns,
+  each cell is 1 if that pattern occurs at least once in that trace.
+- `output/patterns/pattern_N.png` — a rendered representative instance of
+  each pattern, plus a text summary (size, distinct activities, edges)
+  printed to stdout for every pattern.
+
+### Code structure
+
+- `UnionGraphBuilder` — merges instance graphs into one graph for SUBDUE,
+  tracking which trace each node came from.
+- `PatternMiner` — thin wrapper around `nx_subdue()`; normalizes ids back
+  to `int` afterward.
+- `PatternStatistics` — support counts and the trace-pattern matrix.
+- `PatternVisualizer` — text summaries and PNG rendering (networkx +
+  matplotlib, `Agg` backend, no display needed).
+- `PatternMiningPipeline` — orchestrates the above; its `run()` method is
   the full pipeline.
 
 ## Tests
@@ -283,8 +434,20 @@ parser against BIG's real output format; `BigRunner` is tested against
 trivial stand-in shell commands (e.g. `echo`/`cp`) rather than the real
 BIG tool, and the end-to-end pipeline test stubs BIG the same way.
 
-Style can be checked with:
+Step 3 (`pattern_mining.py`) does not have a pytest suite yet; it's been
+validated ad hoc: against a small synthetic instance-graph set with a known
+injected pattern (correct patterns, support, and matrix all came back
+exactly as expected), against SUBDUE's own upstream example graph (matches
+its documented output), and end-to-end against the full BPI2017Denied
+instance graphs (3,093 traces, 131,052-edge union graph, ~7 minutes,
+6 patterns with 62-70% support each). A proper test suite covering
+`UnionGraphBuilder`, `PatternStatistics`, and the vendored SUBDUE fixes
+would be a good addition.
+
+Style can be checked with (`subdue/` is vendored third-party code and
+deliberately excluded — its style is upstream's to fix, not ours):
 
 ```bash
-python -m flake8 --max-line-length=99 preprocess.py instance_graphs.py tests/*.py
+python -m flake8 --max-line-length=99 preprocess.py instance_graphs.py big_engine.py \
+    pattern_mining.py tests/*.py
 ```

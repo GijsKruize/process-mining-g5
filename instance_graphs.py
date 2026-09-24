@@ -38,6 +38,7 @@ from pm4py.objects.log.obj import EventLog
 from pm4py.objects.petri_net.exporter import exporter as pnml_exporter
 from pm4py.objects.petri_net.obj import Marking, PetriNet
 
+import big_engine
 from preprocess import ACTIVITY_KEY, EventLogRepository
 
 DEFAULT_CONFIG_PATH = Path("config_instance_graphs.yaml")
@@ -160,6 +161,41 @@ class BigRunner:
                 f"BIG failed (exit code {result.returncode}).\n"
                 f"command: {command}\nstdout: {result.stdout}\nstderr: {result.stderr}"
             )
+
+
+class NativeBigEngine:
+    """Runs BIG's own instance-graph algorithm directly, without Spark/Docker/GUI.
+
+    No BIG jar/binary was actually distributed for this course run. BIG is
+    open source, though: its underlying algorithm (not the Spark/Tkinter
+    wrapper around it) is ported in ``big_engine.py`` -- see that module's
+    docstring for provenance. This class runs it trace-by-trace and writes
+    the exact same textual .g format the real BIG tool produces, so the rest
+    of this pipeline (InstanceGraphParser, the .pkl output, tests) is
+    unaffected by which engine built it.
+    """
+
+    @staticmethod
+    def run(
+        discovery_log: EventLog,
+        net: PetriNet,
+        initial_marking: Marking,
+        final_marking: Marking,
+        output_path: Path,
+    ) -> None:
+        causal_relations = big_engine.find_causal_relationships(net)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as g_file:
+            for trace in discovery_log:
+                nodes, edges = big_engine.build_instance_graph(
+                    trace, net, initial_marking, final_marking, causal_relations
+                )
+                g_file.write("XP\n")
+                for node_id, label in nodes:
+                    g_file.write(f"v {node_id} {label}\n")
+                for (src_id, src_label), (dst_id, dst_label) in edges:
+                    g_file.write(f"e {src_id} {dst_id} {src_label}__{dst_label}\n")
+                g_file.write("\n")
 
 
 class InstanceGraphParser:
@@ -299,10 +335,21 @@ class InstanceGraphPipeline:
             self.discoverer.export(net, initial_marking, final_marking, self.config.petri_net_path)
             print(f"Discovered Petri net exported to '{self.config.petri_net_path}'")
 
-            self.big_runner.run(
-                self.config.discovery_log_path, self.config.petri_net_path, self.config.graphs_path
-            )
-            print(f"BIG instance graphs written to '{self.config.graphs_path}'")
+            if self.config.big_command:
+                self.big_runner.run(
+                    self.config.discovery_log_path,
+                    self.config.petri_net_path,
+                    self.config.graphs_path,
+                )
+                print(f"BIG instance graphs written to '{self.config.graphs_path}'")
+            else:
+                NativeBigEngine.run(
+                    discovery_log, net, initial_marking, final_marking, self.config.graphs_path
+                )
+                print(
+                    "BIG instance graphs written to "
+                    f"'{self.config.graphs_path}' (native engine, see big_engine.py)"
+                )
         else:
             print(f"Reusing existing BIG output at '{self.config.graphs_path}'")
 

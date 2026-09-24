@@ -25,11 +25,10 @@ petri_net_filename: petri_net.pnml
 graphs_filename: instance_graphs.g
 parsed_graphs_filename: instance_graphs.pkl
 
-# Command used to invoke the external BIG tool (provided by the course, not
-# bundled with this project). Must contain the {log}, {petri_net}, and
-# {output} placeholders. Example, once you have the BIG jar:
+# Command used to invoke an external BIG tool as a subprocess, instead of
+# the native engine (big_engine.py) this project uses by default -- see
+# README.md's "About BIG" section. Must contain the {log}, {petri_net}, and
+# {output} placeholders, e.g.:
 #   big_command: "java -jar tools/BIG.jar {log} {petri_net} {output}"
-# Leave unset (null) until BIG is available; use --parse-only to exercise
-# the .g parser on a pre-generated file (e.g. the provided BPI2017Denied.g)
-# in the meantime.
+# Leave unset (null, the default) to use the native engine.
 big_command: null

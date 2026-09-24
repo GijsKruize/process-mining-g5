@@ -1,0 +1,65 @@
+# Configuration for the pattern mining step (pattern_mining.py).
+# Every value here can be overridden with the matching command line flag.
+
+# Instance graphs produced by step 2 (instance_graphs.py).
+instance_graphs_path: output/instance_graphs.pkl
+
+# Directory the discovered patterns, statistics, matrix, and pattern
+# visualizations are written to.
+output_dir: output
+
+# Node/edge attributes SUBDUE uses to decide whether two nodes/edges match.
+# 'label' is the activity name (nodes) / '<src>__<dst>' activity pair
+# (edges) that step 2 assigns; keep these unless you added other attributes
+# to the instance graphs you want pattern matching to be sensitive to.
+node_attributes: [label]
+edge_attributes: [label]
+
+# ----- SUBDUE parameters (see subdue/Subdue.py's nx_subdue docstring, or
+# https://github.com/holderlb/Subdue, for the full explanation of each). -----
+
+# Number of patterns to retain after each expansion step, ranked by
+# compression value.
+beam_width: 4
+
+# Number of patterns considered per iteration. SUBDUE's own default (0)
+# means |E|/2 -- fine for a single small graph, but astronomically large
+# once many instance graphs are merged into one union graph (e.g. |E|/2 is
+# in the tens of thousands for the full BPI2017Denied log). We're mining
+# small recurring behavioral motifs (a few activities), not whole traces,
+# so a modest fixed cap keeps discovery tractable without changing what
+# kind of patterns we actually care about.
+limit: 500
+
+# Minimum / maximum size (#edges) of a discovered pattern. Same reasoning
+# as `limit` above: SUBDUE's own default (0) for max_size means |E|/2,
+# which is impractical here. Behavioral patterns worth reporting are
+# small; raise this if you deliberately want larger motifs.
+min_size: 1
+max_size: 8
+
+# Number of best (highest-compression) patterns to report.
+num_best: 6
+
+# How instances of a pattern may overlap: none, vertex, or edge.
+overlap: none
+
+# Remove any pattern whose value is worse than its parent's.
+prune: false
+
+# Retain all patterns with the top beam_width values, not just beam_width
+# patterns.
+value_based: false
+
+# Number of discovery iterations. Left at 1 deliberately: with more than 1,
+# SUBDUE compresses the graph with its best pattern and reruns, which
+# replaces real trace nodes with synthetic 'PATTERN-i-j' nodes in later
+# iterations -- support counts and the trace-pattern matrix (which assume
+# every pattern instance's nodes trace back to a real event) would need
+# extra bookkeeping to stay meaningful across that. Only the first
+# iteration's patterns are used for those regardless of this setting.
+iterations: 1
+
+# Whether to render one representative instance of each pattern as a PNG
+# under <output_dir>/patterns/.
+render_patterns: true
