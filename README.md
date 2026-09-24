@@ -28,6 +28,7 @@ built with [pm4py](https://pm4py.fit.fraunhofer.de/) and
 ├── big_engine.py                # Step 2's native BIG algorithm (see "About BIG")
 ├── pattern_mining.py             # Step 3 script (entry point: main())
 ├── g_to_networkx.py             # Standalone .g -> networkx converter (any .g file, no pipeline needed)
+├── inspect_graphs.py            # Renders pickled networkx graphs as PNGs for visual inspection
 ├── subdue/                      # Vendored SUBDUE (MIT licensed), see "Step 3"
 ├── config.yaml                  # Step 1 parameters
 ├── config_instance_graphs.yaml  # Step 2 parameters
@@ -416,6 +417,28 @@ python pattern_mining.py
   matplotlib, `Agg` backend, no display needed).
 - `PatternMiningPipeline` — orchestrates the above; its `run()` method is
   the full pipeline.
+
+## Visually inspecting instance graphs
+
+`inspect_graphs.py` renders any pickle of `List[networkx.DiGraph]` (step 2's
+`output/instance_graphs.pkl`, or anything `g_to_networkx.py` produced) as
+PNGs, laid out left-to-right by causal depth (topological generation) rather
+than a generic force-directed layout, since instance graphs are DAGs and this
+reads as "what can happen after what":
+
+```bash
+# List every graph in the file (index, size, first few activities)
+python inspect_graphs.py output/instance_graphs.pkl --list
+
+# Render one graph
+python inspect_graphs.py output/instance_graphs.pkl --index 0
+
+# Render several (capped at --max to avoid generating thousands of PNGs
+# for a large collection by accident)
+python inspect_graphs.py output/instance_graphs.pkl --all --max 10
+```
+
+Output goes to `output/graph_inspection/` by default.
 
 ## Tests
 
