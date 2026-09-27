@@ -1,26 +1,7 @@
-"""Native, dependency-light port of the BIG "instance graph" algorithm.
-
-The JM0211 assignment says to "leverage the provided BIG library" for step 2.
-No jar/binary/source was actually distributed for this course run, but BIG
-itself is open source: its GUI wrapper (Docker + Spark + Tkinter) and its
-underlying algorithm, "newbig2.py", are published by the same research group
-that set this assignment (Diamantini, Genga, Mircoli, Potena) at
-https://github.com/a-mircoli/big-gui — see app/BIG2/BigSpark/newbig2.py there.
-
-That algorithm's core (function ``big_partitioned`` in the original file) does
-not actually depend on Spark: Spark is only used to fan the per-trace work
-out across a cluster for very large logs. It aligns each trace against the
-Petri net (pm4py, alignment-based conformance checking), derives the causal
-relation of the net (which transition can directly enable which), builds a
-provisional instance graph from the aligned trace, and then repairs it to
-remove/relink the alignment's synthetic "skip"/"insert" steps.
-
-The functions below are ported from that algorithm (same logic, same output
-format), with the Spark driver, the Tkinter GUI, the IPython/graphviz live
-preview, and the hard-coded "/home/jovyan/work/..." project paths removed,
-since none of that is needed to run BIG's actual graph-construction algorithm
-as a plain library call against a log this size. Everything here is
-attributable to the original authors; only the plumbing around it is new.
+"""BIG's instance-graph algorithm (Diamantini, Genga, Mircoli, Potena), ported
+from their reference implementation so it can be called as a plain Python
+function per trace instead of through BIG's original Spark/Docker/GUI wrapper.
+Same logic, same .g output format -- only the plumbing around it changed.
 """
 from __future__ import annotations
 
@@ -159,13 +140,15 @@ def isolated(node: int, w_num: List[Tuple[int, int]]) -> bool:
 
 
 def is_path(a: int, b: int, w_num: List[Tuple[int, int]], v: List[Node]) -> bool:
+    # matches the original BIG.py: does not stop at the first match, so the
+    # result is whichever matching node was checked last, not "any match"
     if (a, b) in w_num:
         return True
+    flag = False
     for node in v:
         if (a, node[0]) in w_num:
-            if is_path(node[0], b, w_num, v):
-                return True
-    return False
+            flag = is_path(node[0], b, w_num, v)
+    return flag
 
 
 def del_repair(v: List[Node], w: List[Edge], result_map, deletion):
@@ -196,8 +179,7 @@ def del_repair(v: List[Node], w: List[Edge], result_map, deletion):
 
     for p in pred:
         for s in succ:
-            if (p, s) not in w:
-                w.append((p, s))
+            w.append((p, s))
 
     return v, w
 

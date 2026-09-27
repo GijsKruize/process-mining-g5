@@ -1,10 +1,6 @@
-# Pinned for compatibility with the BIG library (step 3 of the pipeline),
-# which does not work with pm4py releases newer than 2.2.x.
+# The assignment requires pm4py 2.2.16 specifically (needed for BIG).
 # Installed and tested with Python 3.9.25 (see README.md).
 pm4py==2.2.16
-
-# Used to read config.yaml (adjustable pipeline parameters).
-PyYAML==6.0.3
 
 # Exact versions of pm4py's own dependency tree, frozen from a clean
 # `pip install pm4py==2.2.16` on Python 3.9.25, so the environment is

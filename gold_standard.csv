@@ -1,0 +1,9 @@
+# One row = one behavioral pattern you expect SUBDUE to find, as a
+# comma-separated list of activity labels (concept:name values from
+# output/relabeled_log.csv, i.e. already fused with your chosen attribute).
+#
+# These two rows are just placeholders (for the "EventOrigin" attribute) so
+# evaluate.py has something to run against out of the box. Replace them with
+# patterns you actually found by inspecting relabeled_log.csv yourself.
+O-Create-Offer_Offer,O-Created_Offer
+W-Complete-application-start_Workflow,W-Complete-application-complete_Workflow
