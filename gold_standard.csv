@@ -1,9 +1,10 @@
-# One row = one behavioral pattern you expect SUBDUE to find, as a
-# comma-separated list of activity labels (concept:name values from
-# output/relabeled_log.csv, i.e. already fused with your chosen attribute).
+# Synthetic validation gold standard for data/synthetic_validation.xes.
+# Run with: python main.py data/synthetic_validation.xes --attribute org:group --iterations 2
 #
-# These two rows are just placeholders (for the "EventOrigin" attribute) so
-# evaluate.py has something to run against out of the box. Replace them with
-# patterns you actually found by inspecting relabeled_log.csv yourself.
-O-Create-Offer_Offer,O-Created_Offer
-W-Complete-application-start_Workflow,W-Complete-application-complete_Workflow
+# One row = one known behavioral pattern deliberately encoded in the synthetic log.
+# Use edge syntax SourceLabel->TargetLabel. Multiple comma-separated edges define
+# a larger pattern, e.g. a hierarchy-expanded path.
+Register_FrontOffice->Check_BackOffice
+Check_BackOffice->Approve_Management
+Check_BackOffice->Archive_BackOffice
+Register_FrontOffice->Check_BackOffice,Check_BackOffice->Approve_Management

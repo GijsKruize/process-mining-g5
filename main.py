@@ -20,6 +20,7 @@ def main():
                          help="Attribute to fuse into the activity label (skips the interactive prompt)")
     parser.add_argument("--output-dir", default="output")
     parser.add_argument("--gold-standard", default="gold_standard.csv")
+    pattern_mining.add_subdue_arguments(parser)
     args = parser.parse_args()
 
     print("=== Step 1: preprocessing ===")
@@ -30,7 +31,10 @@ def main():
 
     print("\n=== Step 3: pattern mining ===")
     miner = pattern_mining.PatternMiner(args.output_dir)
-    patterns, stats, matrix, union_graph = miner.run(f"{args.output_dir}/instance_graphs.pkl")
+    patterns, stats, matrix, union_graph = miner.run(
+        f"{args.output_dir}/instance_graphs.pkl",
+        **pattern_mining.subdue_kwargs_from_args(args),
+    )
 
     print("\n=== Step 4: evaluation ===")
     gold_standard = evaluate.load_gold_standard(args.gold_standard)

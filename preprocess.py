@@ -8,12 +8,21 @@ import argparse
 import re
 from pathlib import Path
 
+import pandas as pd
 from pm4py.objects.conversion.log import converter as log_converter
 from pm4py.objects.log.exporter.xes import exporter as xes_exporter
 from pm4py.objects.log.importer.xes import importer as xes_importer
 
 ACTIVITY_KEY = "concept:name"
 CASE_KEY = "case:concept:name"
+ATTRIBUTE_EXCLUDE = {
+    ACTIVITY_KEY,
+    CASE_KEY,
+    "time:timestamp",
+    "EventID",
+    "OfferID",
+    "original_activity",
+}
 
 
 class Preprocessor:
@@ -34,6 +43,63 @@ class Preprocessor:
             n_distinct = df[column].nunique(dropna=True)
             examples = df[column].dropna().astype(str).unique()[:3]
             print(f"  {column}  (distinct={n_distinct}, examples: {', '.join(examples)})")
+
+    @staticmethod
+    def recommend_attributes(df, max_distinct=50, min_coverage=0.50):
+        """Suggest attributes worth trying before high-cardinality org:resource."""
+        rows = []
+        priority = {
+            "EventOrigin": "coarse work stream / department-like grouping",
+            "Action": "event action type, useful for work-practice variants",
+            "lifecycle:transition": "schedule/start/complete handoff granularity",
+            "org:group": "organizational group with lower cardinality than resource",
+            "org:role": "role-level organizational attribute",
+        }
+
+        for column in df.columns:
+            if column in ATTRIBUTE_EXCLUDE:
+                continue
+            series = df[column]
+            n_distinct = int(series.nunique(dropna=True))
+            coverage = float(series.notna().mean())
+            if n_distinct < 2:
+                continue
+
+            reason = None
+            if column in priority:
+                reason = priority[column]
+            elif column.startswith("org:") and n_distinct <= max_distinct:
+                reason = "organizational attribute at manageable granularity"
+            elif column.startswith("case:") and n_distinct <= max_distinct:
+                reason = "case-level context for validation slices"
+            elif n_distinct <= max_distinct and coverage >= min_coverage:
+                reason = "low-cardinality event attribute"
+
+            if reason:
+                examples = series.dropna().astype(str).unique()[:5]
+                rows.append({
+                    "attribute": column,
+                    "distinct_values": n_distinct,
+                    "coverage": round(coverage, 3),
+                    "examples": " | ".join(examples),
+                    "reason": reason,
+                })
+
+        rows.sort(key=lambda row: (
+            0 if row["attribute"] in priority else 1,
+            row["distinct_values"],
+            row["attribute"],
+        ))
+        return rows
+
+    @staticmethod
+    def show_recommended_attributes(rows):
+        if not rows:
+            return
+        print("\nRecommended lower-granularity attributes to try before org:resource:")
+        for row in rows[:10]:
+            print(f"  {row['attribute']}  (distinct={row['distinct_values']}, "
+                  f"coverage={row['coverage']:.0%}) - {row['reason']}")
 
     @staticmethod
     def choose_attribute(df, attribute=None):
@@ -61,6 +127,8 @@ class Preprocessor:
     def run(self, attribute=None, output_dir="output"):
         df = self.load_dataframe()
         self.show_attributes(df)
+        recommendations = self.recommend_attributes(df)
+        self.show_recommended_attributes(recommendations)
         attribute = self.choose_attribute(df, attribute)
 
         df = self.relabel(df, attribute)
@@ -69,6 +137,7 @@ class Preprocessor:
 
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(recommendations).to_csv(output_dir / "attribute_recommendations.csv", index=False)
         relabeled_log = log_converter.apply(df, variant=log_converter.Variants.TO_EVENT_LOG)
         xes_path = output_dir / "relabeled_log.xes"
         xes_exporter.apply(relabeled_log, str(xes_path))

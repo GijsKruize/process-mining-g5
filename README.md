@@ -14,7 +14,7 @@ pattern_mining.py      # step 3: SUBDUE pattern mining + stats + visualization
 evaluate.py             # step 4: precision/recall vs. gold_standard.csv
 main.py                 # runs all steps in one go
 subdue/                 # vendored SUBDUE algorithm (MIT licensed)
-gold_standard.csv       # example gold standard, edit for your own analysis
+gold_standard.csv       # synthetic validation gold standard
 data/                   # put your input .xes file here
 output/                 # all generated files land here
 datasets_group5_mining_organizational_patterns/   # course-provided dataset
@@ -42,10 +42,20 @@ Run everything in one go:
 python main.py "data/BPI2017Denied(3).xes"
 ```
 
+Synthetic validation run:
+
+```bash
+python main.py data/synthetic_validation.xes --attribute org:group --iterations 2
+```
+
 This runs preprocessing (step 1, interactive — it will ask which attribute
 to fuse into the activity label), then instance graph generation (step 2),
-pattern mining (step 3), and evaluation (step 4), in order. Each step can
-also be run on its own:
+pattern mining (step 3), and evaluation (step 4), in order. The `main.py`
+entry point uses the same SUBDUE defaults as `pattern_mining.py`
+(`--num-best 6 --min-size 1 --max-size 8 --beam-width 4 --limit 500`), so
+the one-command pipeline reproduces the six-pattern mining configuration.
+Use `--iterations 2` or higher to enable SUBDUE's compression hierarchy.
+Each step can also be run on its own:
 
 ```bash
 python preprocess.py "data/BPI2017Denied(3).xes"
@@ -62,12 +72,15 @@ individual resources, or a coarser attribute like `EventOrigin`). Every
 event's activity becomes `<activity>_<attribute value>`.
 
 Output: `output/relabeled_log.xes`, `output/relabeled_log.csv`.
+It also writes `output/attribute_recommendations.csv`.
 
 Note on granularity: choose a coarser attribute if the log has many
 distinct resource values. `org:resource` alone has 134 distinct values in
 the BPI2017 log, and fusing it into the activity makes Inductive Miner
 (step 2) extremely slow. `EventOrigin` (3 values) is a fast, "department"-
-level example.
+level example. Other useful candidates to investigate before `org:resource`
+are `Action`, `lifecycle:transition`, and case/context attributes such as
+`case:ApplicationType` or `case:LoanGoal` for validation slices.
 
 ## Step 2 — instance graphs
 
@@ -98,17 +111,21 @@ tens of thousands of merged edges.
 Output: `output/patterns.pkl`, `output/pattern_stats.csv` (size, instance
 count, and support per pattern), `output/trace_pattern_matrix.csv` (rows =
 traces, columns = patterns, 1 if the pattern occurs in that trace),
+`output/pattern_hierarchy.pkl`, `output/pattern_hierarchy.csv`, and
 `output/patterns/pattern_N.png` (a rendered example instance per pattern).
+When `--iterations` is greater than 1, SUBDUE may output compressed
+`PATTERN-i-j` nodes. The miner keeps those raw hierarchical records, expands
+them back to original event nodes for stats/evaluation/visualization, and
+marks them as `hierarchical_expanded` in `pattern_stats.csv`.
 
 ## Step 4 — evaluation
 
-`gold_standard.csv` lists behavioral patterns you believe are really there,
-as comma-separated activity labels — one row per pattern. This can't be
-generated automatically; the file here is just a placeholder for the
-`EventOrigin` attribute. Replace it with patterns you find by inspecting
-`output/relabeled_log.csv` yourself, then rerun `python evaluate.py`.
-Precision = fraction of mined patterns that match a gold pattern exactly;
-recall = fraction of gold patterns found among the mined ones.
+`gold_standard.csv` now contains a tiny synthetic validation target for
+`data/synthetic_validation.xes` with `--attribute org:group`. Rows with
+`A->B` are edge-based behavioral patterns; rows without arrows are still
+accepted as the older comma-separated activity-label sets. Precision =
+fraction of mined patterns that match a gold pattern exactly; recall =
+fraction of gold patterns found among the mined ones.
 
 ## References
 
