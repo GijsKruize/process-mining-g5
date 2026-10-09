@@ -6,6 +6,8 @@ Runs preprocessing (step 1, interactive), instance graph generation (step 2),
 pattern mining (step 3), and evaluation against gold_standard.csv (step 4).
 """
 import argparse
+import json
+from pathlib import Path
 
 import evaluate
 import pattern_mining
@@ -20,6 +22,12 @@ def main():
                          help="Attribute to fuse into the activity label (skips the interactive prompt)")
     parser.add_argument("--output-dir", default="output")
     parser.add_argument("--gold-standard", default="gold_standard.csv")
+    parser.add_argument("--variant-coverage", type=float, default=0.80,
+                        help="Keep most frequent trace variants covering this fraction before IM; use 1.0 to disable")
+    parser.add_argument("--variant-attribute", default="original_activity",
+                        help="Event attribute used to define trace variants for filtering")
+    parser.add_argument("--model-activity-attribute", default="original_activity",
+                        help="Event attribute used for Petri net discovery and BIG alignment")
     pattern_mining.add_subdue_arguments(parser)
     args = parser.parse_args()
 
@@ -27,12 +35,18 @@ def main():
     log_path = Preprocessor(args.input_path).run(attribute=args.attribute, output_dir=args.output_dir)
 
     print("\n=== Step 2: instance graphs ===")
-    InstanceGraphBuilder(args.output_dir).run(log_path)
+    InstanceGraphBuilder(args.output_dir).run(
+        log_path,
+        variant_coverage=args.variant_coverage,
+        variant_attribute=args.variant_attribute,
+        model_activity_attribute=args.model_activity_attribute,
+    )
 
     print("\n=== Step 3: pattern mining ===")
     miner = pattern_mining.PatternMiner(args.output_dir)
     patterns, stats, matrix, union_graph = miner.run(
         f"{args.output_dir}/instance_graphs.pkl",
+        exclude_activities=pattern_mining.excluded_activities_from_args(args),
         **pattern_mining.subdue_kwargs_from_args(args),
     )
 
@@ -40,8 +54,28 @@ def main():
     gold_standard = evaluate.load_gold_standard(args.gold_standard)
     mined_signatures = evaluate.mined_pattern_signatures(patterns, union_graph)
     precision, recall = evaluate.evaluate(mined_signatures, gold_standard)
-    print(f"Precision: {precision:.2f}")
-    print(f"Recall:    {recall:.2f}")
+    contains_precision, contains_recall = evaluate.evaluate(
+        mined_signatures,
+        gold_standard,
+        mode="contains",
+    )
+    metrics = {
+        "gold_standard": args.gold_standard,
+        "mined_patterns": len(mined_signatures),
+        "gold_patterns": len(gold_standard),
+        "exact_precision": precision,
+        "exact_recall": recall,
+        "contains_precision": contains_precision,
+        "contains_recall": contains_recall,
+    }
+    metrics_path = Path(args.output_dir) / "evaluation_metrics.json"
+    with open(metrics_path, "w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2)
+    print(f"Exact precision:    {precision:.2f}")
+    print(f"Exact recall:       {recall:.2f}")
+    print(f"Contains precision: {contains_precision:.2f}")
+    print(f"Contains recall:    {contains_recall:.2f}")
+    print(f"Saved evaluation metrics to '{metrics_path}'")
 
 
 if __name__ == "__main__":

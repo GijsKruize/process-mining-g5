@@ -55,11 +55,17 @@ entry point uses the same SUBDUE defaults as `pattern_mining.py`
 (`--num-best 6 --min-size 1 --max-size 8 --beam-width 4 --limit 500`), so
 the one-command pipeline reproduces the six-pattern mining configuration.
 Use `--iterations 2` or higher to enable SUBDUE's compression hierarchy.
+Before Inductive Miner, the pipeline now keeps the most frequent trace
+variants that cover 80% of the cases. Change this with
+`--variant-coverage 0.9`, or disable it with `--variant-coverage 1.0`.
+For `org:resource`, the Petri net and BIG alignments use `original_activity`
+by default, while the exported instance graph nodes keep the
+`activity_resource` labels for SUBDUE.
 Each step can also be run on its own:
 
 ```bash
 python preprocess.py "data/BPI2017Denied(3).xes"
-python instance_graphs.py
+python instance_graphs.py --variant-coverage 0.8
 python pattern_mining.py
 python evaluate.py
 ```
@@ -87,6 +93,16 @@ are `Action`, `lifecycle:transition`, and case/context attributes such as
 Discovers a Petri net with the Inductive Miner, then builds one instance
 graph per trace with BIG (aligns the trace to the net, then repairs the
 graph around the alignment's skip/insert steps — see Definition 18 in [1]).
+By default, trace variants are computed from `original_activity`, and the
+filtered log keeps the most frequent variants covering 80% of the cases.
+The Petri net is also discovered on `original_activity`, and BIG alignments
+use that process-level activity label. The exported instance graphs still
+use the relabelled `<activity>_<attribute>` labels, so SUBDUE mines
+organizational activity-resource patterns without forcing Inductive Miner
+or PM4Py alignments to solve a huge resource-specific Petri net. Use
+`--variant-coverage 1.0` to run without the variant filter, or
+`--model-activity-attribute concept:name` to reproduce the older
+resource-net behavior.
 
 No BIG jar was provided for this course run, so `big_engine.py` is a direct
 port of BIG's own reference algorithm (`newbig2.py` from

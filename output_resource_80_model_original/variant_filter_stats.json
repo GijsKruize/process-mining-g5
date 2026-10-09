@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "coverage": 0.8001939864209505,
+  "requested_coverage": 0.8,
+  "kept_traces": 2475,
+  "total_traces": 3093,
+  "kept_variants": 1420,
+  "total_variants": 2038,
+  "variant_attribute": "original_activity",
+  "model_activity_attribute": "original_activity",
+  "model_label_count": 54,
+  "resource_output_label_count": 3338
+}

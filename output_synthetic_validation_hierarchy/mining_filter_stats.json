@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "excluded_activities": [],
+  "removed_nodes": 0,
+  "removed_edges": 0,
+  "input_graphs": 5,
+  "empty_graphs_after_filter": 0
+}

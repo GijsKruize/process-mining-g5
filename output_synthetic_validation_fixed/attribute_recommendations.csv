@@ -1,0 +1,4 @@
+attribute,distinct_values,coverage,examples,reason
+org:group,3,1.0,FrontOffice | BackOffice | Management,organizational group with lower cardinality than resource
+org:role,3,1.0,Clerk | Analyst | Manager,role-level organizational attribute
+org:resource,6,1.0,User_A | User_B | User_E | User_C | User_D,organizational attribute at manageable granularity

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "excluded_activities": [
+    "start",
+    "end",
+    "A-Create-Application",
+    "A-Submitted"
+  ],
+  "removed_nodes": 5781,
+  "removed_edges": 13597,
+  "input_graphs": 1547,
+  "empty_graphs_after_filter": 0
+}

@@ -1,0 +1,12 @@
+pattern_id,category,iteration,subdue_rank,contains_inner_patterns,num_nodes,num_edges,num_instances,support_count,support_fraction
+0,core,1,0,False,2,1,5,5,1.0
+1,hierarchical_expanded,1,1,True,3,2,3,3,0.6
+2,hierarchical_expanded,1,2,True,3,2,3,3,0.6
+3,hierarchical_expanded,1,3,True,3,2,1,1,0.2
+4,hierarchical_expanded,1,4,True,3,2,1,1,0.2
+5,hierarchical_expanded,1,5,True,4,3,1,1,0.2
+6,hierarchical_expanded,1,6,True,4,3,1,1,0.2
+7,hierarchical_expanded,1,7,True,4,3,1,1,0.2
+8,hierarchical_expanded,2,0,True,3,2,3,3,0.6
+9,hierarchical_expanded,2,1,True,4,3,1,1,0.2
+10,hierarchical_expanded,2,2,True,4,3,1,1,0.2

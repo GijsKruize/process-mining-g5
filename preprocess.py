@@ -25,11 +25,23 @@ ATTRIBUTE_EXCLUDE = {
 }
 
 
+def resolve_input_path(path):
+    """Resolve tiny pointer files that contain the real dataset path."""
+    path = Path(path)
+    if path.is_file() and path.stat().st_size < 512:
+        content = path.read_text(encoding="utf-8").strip()
+        candidate = (path.parent / content).resolve()
+        if candidate.is_file():
+            print(f"Resolved pointer file '{path}' to '{candidate}'")
+            return candidate
+    return path
+
+
 class Preprocessor:
     """Relabels every event as ``<activity>_<selected attribute value>``."""
 
     def __init__(self, log_path):
-        self.log_path = Path(log_path)
+        self.log_path = resolve_input_path(log_path)
 
     def load_dataframe(self):
         log = xes_importer.apply(str(self.log_path))

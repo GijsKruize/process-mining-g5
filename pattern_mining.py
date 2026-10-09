@@ -14,6 +14,7 @@ compresses the best pattern from one iteration into synthetic nodes named
 statistics, evaluation, and visualization.
 """
 import argparse
+import json
 import pickle
 import re
 import sys
@@ -40,6 +41,12 @@ DEFAULT_SUBDUE_KWARGS = {
 }
 
 COMPRESSED_NODE_RE = re.compile(r"^PATTERN-(\d+)-(\d+)$")
+DEFAULT_EXCLUDED_ACTIVITIES = [
+    "start",
+    "end",
+    "A-Create-Application",
+    "A-Submitted",
+]
 
 
 def default_subdue_kwargs(**overrides):
@@ -70,6 +77,8 @@ def add_subdue_arguments(parser):
     parser.add_argument("--value-based", action="store_true",
                         default=DEFAULT_SUBDUE_KWARGS["valueBased"])
     parser.add_argument("--temporal", action="store_true", default=DEFAULT_SUBDUE_KWARGS["temporal"])
+    parser.add_argument("--exclude-activities", default="",
+                        help="Comma-separated activity names to remove before SUBDUE, e.g. start,end,A-Submitted")
 
 
 def subdue_kwargs_from_args(args):
@@ -88,6 +97,14 @@ def subdue_kwargs_from_args(args):
     )
 
 
+def excluded_activities_from_args(args):
+    return [
+        activity.strip()
+        for activity in getattr(args, "exclude_activities", "").split(",")
+        if activity.strip()
+    ]
+
+
 class PatternMiner:
     def __init__(self, output_dir="output"):
         self.output_dir = Path(output_dir)
@@ -104,6 +121,54 @@ class PatternMiner:
             for node in graph.nodes:
                 node_to_trace[node] = trace_id
         return union, node_to_trace
+
+    @staticmethod
+    def label_matches_activity(label, activity):
+        """Match raw activity labels and fused labels like Activity_User_1."""
+        return label == activity or label.startswith(f"{activity}_")
+
+    @classmethod
+    def filter_graphs_by_activity(cls, graphs, excluded_activities):
+        """Remove low-value activity nodes before SUBDUE while preserving trace rows."""
+        if not excluded_activities:
+            return graphs, {
+                "enabled": False,
+                "excluded_activities": [],
+                "removed_nodes": 0,
+                "removed_edges": 0,
+                "input_graphs": len(graphs),
+                "empty_graphs_after_filter": sum(1 for graph in graphs if graph.number_of_nodes() == 0),
+            }
+
+        filtered_graphs = []
+        removed_nodes = 0
+        removed_edges = 0
+        empty_graphs = 0
+
+        for graph in graphs:
+            kept_nodes = [
+                node
+                for node, data in graph.nodes(data=True)
+                if not any(
+                    cls.label_matches_activity(data.get("label", ""), activity)
+                    for activity in excluded_activities
+                )
+            ]
+            filtered = graph.subgraph(kept_nodes).copy()
+            removed_nodes += graph.number_of_nodes() - filtered.number_of_nodes()
+            removed_edges += graph.number_of_edges() - filtered.number_of_edges()
+            if filtered.number_of_nodes() == 0:
+                empty_graphs += 1
+            filtered_graphs.append(filtered)
+
+        return filtered_graphs, {
+            "enabled": True,
+            "excluded_activities": excluded_activities,
+            "removed_nodes": removed_nodes,
+            "removed_edges": removed_edges,
+            "input_graphs": len(graphs),
+            "empty_graphs_after_filter": empty_graphs,
+        }
 
     @staticmethod
     def _coerce_node_id(node_id):
@@ -354,11 +419,23 @@ class PatternMiner:
         plt.savefig(self.output_dir / "patterns" / f"pattern_{pattern_id}.png", bbox_inches="tight")
         plt.close()
 
-    def run(self, graphs_path, **subdue_kwargs):
+    def run(self, graphs_path, exclude_activities=None, **subdue_kwargs):
         kwargs = default_subdue_kwargs(**subdue_kwargs)
         with open(graphs_path, "rb") as f:
             graphs = pickle.load(f)
         print(f"Loaded {len(graphs)} instance graphs from '{graphs_path}'")
+
+        graphs, mining_filter_stats = self.filter_graphs_by_activity(
+            graphs,
+            exclude_activities or [],
+        )
+        if mining_filter_stats["enabled"]:
+            print("Mining activity filter: removed "
+                  f"{mining_filter_stats['removed_nodes']} nodes and "
+                  f"{mining_filter_stats['removed_edges']} edges using "
+                  f"{mining_filter_stats['excluded_activities']}")
+        with open(self.output_dir / "mining_filter_stats.json", "w", encoding="utf-8") as f:
+            json.dump(mining_filter_stats, f, indent=2)
 
         union_graph, node_to_trace = self.build_union_graph(graphs)
         print(f"Union graph: {union_graph.number_of_nodes()} nodes, "
@@ -407,7 +484,11 @@ def main():
     parser.add_argument("--output-dir", default="output")
     add_subdue_arguments(parser)
     args = parser.parse_args()
-    PatternMiner(args.output_dir).run(args.graphs_path, **subdue_kwargs_from_args(args))
+    PatternMiner(args.output_dir).run(
+        args.graphs_path,
+        exclude_activities=excluded_activities_from_args(args),
+        **subdue_kwargs_from_args(args),
+    )
 
 
 if __name__ == "__main__":
