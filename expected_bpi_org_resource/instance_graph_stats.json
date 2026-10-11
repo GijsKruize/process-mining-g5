@@ -1,0 +1,51 @@
+{
+  "model": {
+    "source": "Inductive Miner (IM_CLEAN), noise threshold 0.2",
+    "model_activity_attribute": "concept:name",
+    "noise_threshold": 0.2,
+    "transitions": 353,
+    "labelled_transitions": 219,
+    "places": 167,
+    "causal_relations": 9931,
+    "log_labels": 225,
+    "log_labels_without_transition": 6
+  },
+  "variant_filter": {
+    "enabled": false,
+    "requested_coverage": 1.0,
+    "coverage": 1.0,
+    "kept_traces": 3093,
+    "total_traces": 3093,
+    "kept_variants": 2316,
+    "total_variants": 2316,
+    "single_trace_variants": 2089,
+    "variant_attribute": "concept:name"
+  },
+  "big": {
+    "traces": 3093,
+    "distinct_label_sequences": 2316,
+    "graphs_built": 3093,
+    "traces_fitting_the_model": 1644,
+    "traces_repaired": 1449,
+    "inserted_events_total": 1703,
+    "deleted_events_total": 841,
+    "alignment_timeouts": 0,
+    "repair_errors": 0
+  },
+  "graphs": {
+    "count": 3093,
+    "nodes": 124866,
+    "edges": 121781
+  },
+  "settings": {
+    "workers": 1,
+    "max_align_seconds": null,
+    "strict_path_check": false,
+    "alignment_variant": "dijkstra"
+  },
+  "seconds": {
+    "discovery": 117.9,
+    "big": 199.9,
+    "total": 339.7
+  }
+}

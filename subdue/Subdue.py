@@ -147,10 +147,16 @@ def GetInitialPatterns(parameters, graph):
             pattern = Pattern.Pattern()
             pattern.definition = graph1
             pattern.instances.append(instance1)
+            # OverlapIndex gives the same answer as Pattern.InstancesOverlap against
+            # pattern.instances, without scanning the whole instance list each time
+            # (an edge type that occurs once per trace has thousands of instances).
+            overlapIndex = Pattern.OverlapIndex(parameters.overlap)
+            overlapIndex.add(instance1)
             nonmatching = []
             for graph2, instance2 in remaining:
-                if not Pattern.InstancesOverlap(parameters.overlap, pattern.instances, instance2):
+                if not overlapIndex.overlaps(instance2):
                     pattern.instances.append(instance2)
+                    overlapIndex.add(instance2)
                 else:
                     nonmatching.append((graph2, instance2))
             if len(pattern.instances) > 1:
@@ -159,14 +165,23 @@ def GetInitialPatterns(parameters, graph):
             remaining = nonmatching
     return initialPatternList
 
-def Subdue(parameters, graph):
+def Subdue(parameters, graph, unwrap=False):
     """
     Top-level function for Subdue that discovers best pattern in graph.
     Optionally, Subdue can then compress the graph with the best pattern, and iterate.
 
     :param graph: instance of Subdue.Graph
     :param parameters: instance of Subdue.Parameters
+    :param unwrap: if True, return each iteration's patterns as plain python lists
+        (see unwrap_patterns) captured *before* the graph is compressed.
     :return: patterns for each iteration -- a list of iterations each containing discovered patterns.
+
+    Bug fix (added when vendoring): Graph.Compress() rewires the Edge objects that
+    touch a compressed instance, and those same objects are referenced by the
+    instances of the other patterns found in that iteration. Upstream nx_subdue
+    converted the patterns to node/edge ids only after all iterations, so with
+    iterations > 1 the patterns of earlier iterations came out with PATTERN-i-j
+    end points they never had. Converting right after discovery avoids that.
     """
     startTime = time.time()
     iteration = 1
@@ -182,7 +197,7 @@ def Subdue(parameters, graph):
             done = True
             print("No patterns found.\n")
         else:
-            patterns.append(patternList)
+            patterns.append(unwrap_patterns(patternList) if unwrap else patternList)
             print("\nBest " + str(len(patternList)) + " patterns:\n")
             for pattern in patternList:
                 pattern.print_pattern('  ')
@@ -253,11 +268,10 @@ def nx_subdue(
     subdue_graph.load_from_networkx(graph, node_attributes, edge_attributes)
     parameters.set_defaults_for_graph(subdue_graph)
     if verbose:
-        iterations = Subdue(parameters, subdue_graph)
+        iterations = Subdue(parameters, subdue_graph, unwrap=True)
     else:
         with contextlib.redirect_stdout(None):
-            iterations = Subdue(parameters, subdue_graph)
-    iterations = unwrap_output(iterations)
+            iterations = Subdue(parameters, subdue_graph, unwrap=True)
     if parameters.iterations == 1:
         if len(iterations) == 0:
             return None
@@ -265,23 +279,25 @@ def nx_subdue(
     else:
         return iterations
 
+def unwrap_patterns(patternList):
+    """
+    Subroutine of `nx_Subdue` -- converts one iteration's patterns into pure python objects compatible with networkx.
+    Must be called before Graph.Compress() touches the graph (see Subdue()).
+    """
+    iter_out = list()
+    for pattern in patternList:
+        pattern_out = list()
+        for instance in pattern.instances:
+            pattern_out.append({
+                'nodes': [vertex.id for vertex in instance.vertices],
+                'edges': [(edge.source.id, edge.target.id) for edge in instance.edges]
+            })
+        iter_out.append(pattern_out)
+    return iter_out
+
 def unwrap_output(iterations):
-    """
-    Subroutine of `nx_Subdue` -- unwraps the standard Subdue output into pure python objects compatible with networkx
-    """
-    out = list()
-    for iteration in iterations:
-        iter_out = list()
-        for pattern in iteration:
-            pattern_out = list()
-            for instance in pattern.instances:
-                pattern_out.append({
-                    'nodes': [vertex.id for vertex in instance.vertices],
-                    'edges': [(edge.source.id, edge.target.id) for edge in instance.edges]
-                })
-            iter_out.append(pattern_out)
-        out.append(iter_out)
-    return out
+    """Kept for compatibility: unwraps a list of iterations of Pattern objects."""
+    return [unwrap_patterns(patternList) for patternList in iterations]
 
 def main():
     print("SUBDUE v1.4 (python)\n")

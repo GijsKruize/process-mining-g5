@@ -3,6 +3,13 @@
 # Written by Larry Holder (holder@wsu.edu).
 #
 # Copyright (c) 2017-2021. Washington State University.
+#
+# Vendored for the JM0211 assignment. Two functions were rewritten for speed,
+# with identical results (see the comments at ExtendPattern and
+# InstancesOverlap/OverlapIndex): upstream compares every new instance with
+# every other one, which is quadratic in the number of instances of a pattern.
+# Our union graph has patterns with thousands of instances (one per trace),
+# so the quadratic version dominated the running time of step 3.
 
 from OrderedSet import OrderedSet # specialized Subdue version
 import Graph
@@ -98,33 +105,90 @@ def CreatePatternFromInstances(definition, instances):
 
 # ----- Pattern Extension
 
+def InstanceKey(instance):
+    """Hashable identity of an instance: its vertex objects and its edge objects.
+    Two instances have the same key exactly when InstanceMatch() is True."""
+    return (frozenset(instance.vertices.set_container), frozenset(instance.edges.set_container))
+
+def InstanceSignature(instance):
+    """A cheap invariant of the graph of an instance: the sorted list of
+    (source attributes, edge attributes, target attributes, directed) over its
+    edges, plus the number of vertices. If Graph.GraphMatch() says two instance
+    graphs are isomorphic, their signatures are equal (the matcher maps edges
+    one to one and requires equal edge attributes, direction and end-point
+    attributes). The converse does not hold, so the signature is only used to
+    skip comparisons that cannot succeed, never to accept a match."""
+    edgeKeys = []
+    for edge in instance.edges:
+        sourceKey = tuple(sorted(edge.source.attributes.items()))
+        targetKey = tuple(sorted(edge.target.attributes.items()))
+        if (not edge.directed) and (targetKey < sourceKey):
+            sourceKey, targetKey = targetKey, sourceKey
+        edgeKeys.append((sourceKey, tuple(sorted(edge.attributes.items())), targetKey, edge.directed))
+    edgeKeys.sort()
+    return (len(instance.vertices.list_container), tuple(edgeKeys))
+
 def ExtendPattern (parameters, pattern):
     """Return list of patterns created by extending each instance of the given pattern by one edge in all possible ways,
-       and then collecting matching extended instances together into new patterns."""
+       and then collecting matching extended instances together into new patterns.
+
+       Speed-up with respect to upstream (same output, same order):
+       - duplicate extended instances are detected with a dictionary on InstanceKey
+         instead of comparing with every instance collected so far;
+       - an instance is only compared (GraphMatch) with a seed instance that has the
+         same InstanceSignature, since no other pair can match;
+       - the graph of each instance is built once instead of once per comparison;
+       - overlap with the instances already in a pattern is checked with an
+         OverlapIndex instead of against each of them.
+       Seeds are still taken in the original order and candidates are still scanned
+       in the original order, so the patterns and their instance lists come out
+       exactly as before."""
+    # 1. Extend every instance; drop duplicates, keeping first-seen order.
     extendedInstances = []
+    seenKeys = set()
     for instance in pattern.instances:
-        newInstances = ExtendInstance(instance)
-        for newInstance in newInstances:
-            InsertNewInstance(extendedInstances, newInstance)
-    newPatterns = []
-    while extendedInstances:
-        newInstance = extendedInstances.pop(0)
-        newInstanceGraph = Graph.CreateGraphFromInstance(newInstance)
-        if parameters.temporal:
-            newInstanceGraph.TemporalOrder()
-        matchingInstances = [newInstance]
-        nonmatchingInstances = []
-        for extendedInstance in extendedInstances:
-            extendedInstanceGraph = Graph.CreateGraphFromInstance(extendedInstance)
+        for newInstance in ExtendInstance(instance):
+            key = InstanceKey(newInstance)
+            if key not in seenKeys:
+                seenKeys.add(key)
+                extendedInstances.append(newInstance)
+    # 2. Index the instances by signature (positions stay in list order).
+    positionsBySignature = {}
+    signatures = []
+    for position, instance in enumerate(extendedInstances):
+        signature = InstanceSignature(instance)
+        signatures.append(signature)
+        positionsBySignature.setdefault(signature, []).append(position)
+    graphs = [None] * len(extendedInstances)
+    def graphOf(position):
+        if graphs[position] is None:
+            graph = Graph.CreateGraphFromInstance(extendedInstances[position])
             if parameters.temporal:
-                extendedInstanceGraph.TemporalOrder()
-            if Graph.GraphMatch(newInstanceGraph,extendedInstanceGraph) and (not InstancesOverlap(parameters.overlap, matchingInstances, extendedInstance)):
-                matchingInstances.append(extendedInstance)
-            else:
-                nonmatchingInstances.append(extendedInstance)
-        extendedInstances = nonmatchingInstances
-        newPattern = CreatePatternFromInstances(newInstanceGraph, matchingInstances)
-        newPatterns.append(newPattern)
+                graph.TemporalOrder()
+            graphs[position] = graph
+        return graphs[position]
+    # 3. Group: the earliest unassigned instance seeds a pattern and collects the
+    #    later unassigned instances that match it and do not overlap.
+    assigned = [False] * len(extendedInstances)
+    newPatterns = []
+    for seedPosition, seedInstance in enumerate(extendedInstances):
+        if assigned[seedPosition]:
+            continue
+        assigned[seedPosition] = True
+        seedGraph = graphOf(seedPosition)
+        matchingInstances = [seedInstance]
+        overlapIndex = OverlapIndex(parameters.overlap)
+        overlapIndex.add(seedInstance)
+        for position in positionsBySignature[signatures[seedPosition]]:
+            if position <= seedPosition or assigned[position]:
+                continue
+            candidate = extendedInstances[position]
+            if Graph.GraphMatch(seedGraph, graphOf(position)) and (not overlapIndex.overlaps(candidate)):
+                matchingInstances.append(candidate)
+                overlapIndex.add(candidate)
+                assigned[position] = True
+        graphs[seedPosition] = None # the seed graph now belongs to the pattern
+        newPatterns.append(CreatePatternFromInstances(seedGraph, matchingInstances))
     return newPatterns
 
 def ExtendInstance (instance):
@@ -183,6 +247,35 @@ def InstanceOverlap(overlap, instance1, instance2):
         return instance1.edges.intersect(instance2.edges)
     else: # overlap == "none"
         return instance1.vertices.intersect(instance2.vertices)
+
+
+class OverlapIndex:
+    """Answers "does this instance overlap any instance added so far?" in time
+    proportional to the size of the instance, with the same meaning as
+    InstancesOverlap(overlap, instanceList, instance):
+      overlap == "none"   -> overlap means sharing a vertex
+      overlap == "vertex" -> overlap means sharing an edge
+      overlap == "edge"   -> overlap means being the identical instance"""
+
+    def __init__(self, overlap):
+        self.overlap = overlap
+        self.seen = set()
+
+    def _items(self, instance):
+        if self.overlap == "edge":
+            return [InstanceKey(instance)]
+        if self.overlap == "vertex":
+            return instance.edges.list_container
+        return instance.vertices.list_container # overlap == "none"
+
+    def add(self, instance):
+        self.seen.update(self._items(instance))
+
+    def overlaps(self, instance):
+        for item in self._items(instance):
+            if item in self.seen:
+                return True
+        return False
 
 
 # ----- Pattern List Operations
