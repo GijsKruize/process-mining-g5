@@ -1,9 +1,0 @@
-{
-  "gold_standard": "synthetic_gold_standard.csv",
-  "mined_patterns": 8,
-  "gold_patterns": 4,
-  "exact_precision": 0.375,
-  "exact_recall": 0.75,
-  "contains_precision": 1.0,
-  "contains_recall": 1.0
-}
