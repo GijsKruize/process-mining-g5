@@ -14,6 +14,7 @@ DATASET_DIR = PROJECT_ROOT / "datasets_group5_mining_organizational_patterns"
 DEFAULT_LOG_PATH = DATASET_DIR / "BPI2017Denied(3).xes"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 STEP1_OUTPUT_DIR = OUTPUT_DIR / "step1_preprocessing"
+STEP2_OUTPUT_DIR = OUTPUT_DIR / "step2_instance_graphs"
 
 
 def display_path(path):
@@ -39,7 +40,8 @@ TRACE_ATTRIBUTE_PREFIX = "case:"     # pm4py prefixes trace-level attributes wit
 # attribute values may contain "_" themselves (e.g. "User_1"). So both parts
 # are also kept as separate columns for the later steps and the evaluation.
 ORIGINAL_ACTIVITY_KEY = "original_activity"
-ATTRIBUTE_VALUE_KEY = "selected_attribute_value"
+ATTRIBUTE_VALUE_KEY = "selected_attribute_value"   # value used in the label (e.g. the role)
+ORIGINAL_VALUE_KEY = "original_attribute_value"    # value in the log (e.g. the user)
 
 # Attributes that are listed to the user but cannot be selected: fusing the
 # activity with itself, the case id or a timestamp gives no resource-task view.

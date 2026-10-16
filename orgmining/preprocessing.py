@@ -12,6 +12,7 @@ tested on their own:
     describe_attributes()   what is in the log?        -> overview table
     print_attribute_table() show that table in the terminal
     ask_for_attribute()     let the user pick one       -> attribute name
+    ask_for_grouping()      use the values as they are, or group them into roles?
     relabel_events()        build activity_value labels -> new DataFrame
     summarise_labels()      how many labels did we get? -> table
     run()                   all of the above + save outputs
@@ -27,17 +28,24 @@ import pm4py
 
 from . import config
 from .log_io import read_xes_as_dataframe, write_dataframe_as_xes
+from .roles import DEFAULT_ROLES_THRESHOLD, ResourceRoleGrouper
 
 # Above this many distinct labels the Petri net and BIG in step 2 become slow;
 # we only warn, the user stays free to choose.
 MANY_LABELS_WARNING = 500
 N_EXAMPLE_VALUES = 3
 
+# How the values of the selected attribute are used in the label.
+GROUPING_NONE = "none"    # the value itself, e.g. A-Submitted_User_1
+GROUPING_ROLES = "roles"  # the discovered role of the value, e.g. A-Submitted_Role_2
+GROUPING_CHOICES = (GROUPING_NONE, GROUPING_ROLES)
+
 
 @dataclass
 class PreprocessingResult:
     """What step 1 hands over to step 2."""
     attribute: str
+    grouping: str
     output_dir: Path
     relabeled_log_path: Path
     n_labels: int
@@ -152,6 +160,18 @@ class EventLogPreprocessor:
             except ValueError as error:
                 print(f"  {error} Please try again.")
 
+    @staticmethod
+    def ask_for_grouping(attribute, input_fn=input):
+        """Ask whether the values of ``attribute`` should be grouped into roles."""
+        while True:
+            answer = input_fn(f"Group the values of '{attribute}' into discovered roles? [y/n]: ")
+            answer = answer.strip().lower()
+            if answer in ("y", "yes"):
+                return GROUPING_ROLES
+            if answer in ("n", "no"):
+                return GROUPING_NONE
+            print("  Please answer y or n.")
+
     # -- 3. Build the new labels --------------------------------------------
 
     @staticmethod
@@ -164,20 +184,25 @@ class EventLogPreprocessor:
         """
         return re.sub(r"\s+", "-", str(value).strip())
 
-    def relabel_events(self, attribute):
+    def relabel_events(self, attribute, value_mapping=None):
         """Return a copy of the log in which every activity is ``<activity>_<value>``.
 
         Events without a value for ``attribute`` get ``UNKNOWN`` as value, so no
-        event is dropped. The original activity and the value are kept in their
-        own columns (see config.py for why). The log itself is not modified.
+        event is dropped. With ``value_mapping`` (e.g. user -> role) the mapped
+        value is used in the label. The original activity, the original value
+        and the value used in the label are kept in their own columns (see
+        config.py for why). The log itself is not modified.
         """
         relabeled = self.event_log.copy()
+        original_value = relabeled[attribute].fillna(config.MISSING_VALUE).astype(str)
+        label_value = original_value.map(value_mapping) if value_mapping else original_value
+        label_value = label_value.map(self.clean_label_part)
         activity = relabeled[config.ACTIVITY_KEY].map(self.clean_label_part)
-        value = relabeled[attribute].fillna(config.MISSING_VALUE).map(self.clean_label_part)
 
         relabeled[config.ORIGINAL_ACTIVITY_KEY] = relabeled[config.ACTIVITY_KEY]
-        relabeled[config.ATTRIBUTE_VALUE_KEY] = value
-        relabeled[config.ACTIVITY_KEY] = activity + config.LABEL_SEPARATOR + value
+        relabeled[config.ORIGINAL_VALUE_KEY] = original_value
+        relabeled[config.ATTRIBUTE_VALUE_KEY] = label_value
+        relabeled[config.ACTIVITY_KEY] = activity + config.LABEL_SEPARATOR + label_value
         return relabeled
 
     @staticmethod
@@ -195,20 +220,22 @@ class EventLogPreprocessor:
     # -- 4. Put it together -------------------------------------------------
 
     @staticmethod
-    def output_folder_name(attribute):
-        """Folder-safe version of an attribute name, e.g. 'org:resource' -> 'org_resource'."""
-        return re.sub(r"[^A-Za-z0-9]+", "_", attribute).strip("_")
+    def output_folder_name(attribute, grouping=GROUPING_NONE):
+        """Folder-safe name, e.g. ('org:resource', 'roles') -> 'org_resource_roles'."""
+        name = re.sub(r"[^A-Za-z0-9]+", "_", attribute).strip("_")
+        return name if grouping == GROUPING_NONE else f"{name}_{grouping}"
 
-    def run(self, attribute=None):
+    def run(self, attribute=None, grouping=None, roles_threshold=DEFAULT_ROLES_THRESHOLD):
         """Run step 1 end to end and write its outputs.
 
-        If ``attribute`` is None the user is asked interactively; passing it (for
-        example via ``--attribute`` on the command line) skips the question,
-        which is handy for repeated runs.
+        ``attribute`` and ``grouping`` are asked interactively when they are
+        None; passing them (via ``--attribute`` and ``--grouping`` on the
+        command line) skips the questions, which is handy for repeated runs.
 
-        Outputs in ``<output_root>/<attribute>/``:
+        Outputs in ``<output_root>/<attribute>[_roles]/``:
             attributes_overview.csv   the table shown to the user
             label_counts.csv          every new label with its frequency
+            roles.csv, resource_roles.csv   only with grouping 'roles'
             relabeled_log.xes         the relabelled log, input for step 2
             summary.json              settings and headline numbers of this run
         """
@@ -218,8 +245,24 @@ class EventLogPreprocessor:
         else:
             attribute = self.validate_attribute(attribute)
         print(f"\nSelected attribute: {attribute}")
+        if grouping is None:
+            grouping = self.ask_for_grouping(attribute)
+        if grouping not in GROUPING_CHOICES:
+            raise ValueError(f"Unknown grouping '{grouping}', choose from {GROUPING_CHOICES}.")
 
-        relabeled = self.relabel_events(attribute)
+        output_dir = self.output_root / self.output_folder_name(attribute, grouping)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        value_mapping = None
+        if grouping == GROUPING_ROLES:
+            grouper = ResourceRoleGrouper(roles_threshold).fit(self.event_log, attribute)
+            value_mapping = grouper.mapping
+            grouper.roles_table().to_csv(output_dir / "roles.csv", index=False)
+            grouper.resources_table().to_csv(output_dir / "resource_roles.csv", index=False)
+            print(f"  Role discovery (threshold {roles_threshold}): "
+                  f"{len(value_mapping)} values of '{attribute}' -> {grouper.n_roles} roles")
+
+        relabeled = self.relabel_events(attribute, value_mapping)
         label_counts = self.summarise_labels(relabeled)
         n_activities = int(self.event_log[config.ACTIVITY_KEY].nunique())
         n_values = int(relabeled[config.ATTRIBUTE_VALUE_KEY].nunique())
@@ -227,8 +270,6 @@ class EventLogPreprocessor:
         n_missing = int(self.event_log[attribute].isna().sum())
         self._report(attribute, label_counts, n_activities, n_values, n_missing)
 
-        output_dir = self.output_root / self.output_folder_name(attribute)
-        output_dir.mkdir(parents=True, exist_ok=True)
         self.overview.to_csv(output_dir / "attributes_overview.csv", index=False)
         label_counts.to_csv(output_dir / "label_counts.csv", index=False)
         print("\nWriting relabelled log (this takes a moment for large logs) ...")
@@ -240,7 +281,11 @@ class EventLogPreprocessor:
             "pm4py_version": pm4py.__version__,
             "input_log": self.source_name,
             "selected_attribute": attribute,
-            "label_format": f"<activity>{config.LABEL_SEPARATOR}<{attribute}>",
+            "grouping": grouping,
+            "roles_threshold": roles_threshold if grouping == GROUPING_ROLES else None,
+            "label_format": (f"<activity>{config.LABEL_SEPARATOR}<role of {attribute}>"
+                             if grouping == GROUPING_ROLES
+                             else f"<activity>{config.LABEL_SEPARATOR}<{attribute}>"),
             "traces": self.n_traces,
             "events": len(self.event_log),
             "distinct_activities": n_activities,
@@ -251,13 +296,13 @@ class EventLogPreprocessor:
         (output_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
         print(f"Step 1 outputs written to: {config.display_path(output_dir)}")
-        return PreprocessingResult(attribute, output_dir, xes_path, n_labels)
+        return PreprocessingResult(attribute, grouping, output_dir, xes_path, n_labels)
 
     @staticmethod
     def _report(attribute, label_counts, n_activities, n_values, n_missing):
         """Print the headline numbers of the relabelling."""
         n_labels = len(label_counts)
-        print(f"  {n_activities} activities x {n_values} values of '{attribute}' "
+        print(f"  {n_activities} activities x {n_values} label values of '{attribute}' "
               f"-> {n_labels} distinct labels actually occurring")
         if n_missing:
             print(f"  {n_missing:,} events had no value and were labelled "

@@ -11,6 +11,7 @@ import pandas as pd
 from orgmining import config
 from orgmining.log_io import read_xes_as_dataframe, write_dataframe_as_xes
 from orgmining.preprocessing import EventLogPreprocessor
+from orgmining.roles import ResourceRoleGrouper
 
 
 def tiny_log():
@@ -90,13 +91,48 @@ class RelabelEventsTest(unittest.TestCase):
         self.assertEqual(counts.iloc[0]["events"], 2)
 
 
+class RoleGroupingTest(unittest.TestCase):
+    def roles_log(self):
+        """Clerks only register and check, managers only approve: two clear roles."""
+        rows = []
+        for case in range(6):
+            for activity, resource in (("Register", f"Clerk_{case % 2}"),
+                                       ("Check", f"Clerk_{(case + 1) % 2}"),
+                                       ("Approve", f"Manager_{case % 2}")):
+                rows.append({"case:concept:name": f"c{case}", "concept:name": activity,
+                             "org:resource": resource})
+        return pd.DataFrame(rows)
+
+    def test_resources_with_the_same_work_get_the_same_role(self):
+        grouper = ResourceRoleGrouper().fit(self.roles_log(), "org:resource")
+        self.assertEqual(grouper.n_roles, 2)
+        self.assertEqual(grouper.mapping["Clerk_0"], grouper.mapping["Clerk_1"])
+        self.assertEqual(grouper.mapping["Manager_0"], grouper.mapping["Manager_1"])
+        self.assertNotEqual(grouper.mapping["Clerk_0"], grouper.mapping["Manager_0"])
+        # Clerks do 2 of the 3 activities, so they form the largest role.
+        self.assertEqual(grouper.mapping["Clerk_0"], "Role_1")
+
+    def test_labels_use_the_role_and_keep_the_user(self):
+        preprocessor = EventLogPreprocessor(self.roles_log())
+        mapping = ResourceRoleGrouper().fit(preprocessor.event_log, "org:resource").mapping
+        relabeled = preprocessor.relabel_events("org:resource", mapping)
+        self.assertEqual(relabeled[config.ACTIVITY_KEY].iloc[0], "Register_Role_1")
+        self.assertEqual(relabeled[config.ORIGINAL_VALUE_KEY].iloc[0], "Clerk_0")
+        self.assertEqual(relabeled[config.ATTRIBUTE_VALUE_KEY].iloc[0], "Role_1")
+
+    def test_grouping_question_accepts_yes_and_no(self):
+        answers = iter(["maybe", "Y"])
+        choice = EventLogPreprocessor.ask_for_grouping("org:resource", lambda prompt: next(answers))
+        self.assertEqual(choice, "roles")
+
+
 class RunPreprocessingTest(unittest.TestCase):
     def test_end_to_end_writes_readable_outputs(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
             log_path = write_dataframe_as_xes(tiny_log(), tmp / "tiny.xes")
             preprocessor = EventLogPreprocessor.from_xes(log_path, tmp / "out")
-            result = preprocessor.run("org:resource")
+            result = preprocessor.run("org:resource", grouping="none")
 
             self.assertEqual(result.output_dir.name, "org_resource")
             for name in ("attributes_overview.csv", "label_counts.csv",
