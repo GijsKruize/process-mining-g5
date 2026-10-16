@@ -10,9 +10,7 @@ import pandas as pd
 
 from orgmining import config
 from orgmining.log_io import read_xes_as_dataframe, write_dataframe_as_xes
-from orgmining.preprocessing import (describe_attributes, relabel_events,
-                                     run_preprocessing, summarise_labels,
-                                     validate_attribute)
+from orgmining.preprocessing import EventLogPreprocessor
 
 
 def tiny_log():
@@ -31,7 +29,7 @@ def tiny_log():
 
 class DescribeAttributesTest(unittest.TestCase):
     def test_lists_every_column_with_its_level(self):
-        overview = describe_attributes(tiny_log()).set_index("attribute")
+        overview = EventLogPreprocessor(tiny_log()).overview.set_index("attribute")
         self.assertEqual(len(overview), 5)
         self.assertEqual(overview.loc["case:LoanGoal", "level"], "trace")
         self.assertEqual(overview.loc["org:resource", "level"], "event")
@@ -40,24 +38,32 @@ class DescribeAttributesTest(unittest.TestCase):
         self.assertFalse(overview.loc["concept:name", "selectable"])
 
 
-class ValidateAttributeTest(unittest.TestCase):
+class SelectAttributeTest(unittest.TestCase):
     def setUp(self):
-        self.overview = describe_attributes(tiny_log())
+        self.preprocessor = EventLogPreprocessor(tiny_log())
 
     def test_accepts_name_and_number(self):
-        self.assertEqual(validate_attribute(self.overview, " org:resource "), "org:resource")
-        number = str(list(self.overview["attribute"]).index("org:resource") + 1)
-        self.assertEqual(validate_attribute(self.overview, number), "org:resource")
+        self.assertEqual(self.preprocessor.validate_attribute(" org:resource "), "org:resource")
+        number = str(list(self.preprocessor.overview["attribute"]).index("org:resource") + 1)
+        self.assertEqual(self.preprocessor.validate_attribute(number), "org:resource")
 
     def test_rejects_unknown_and_non_selectable(self):
         for bad_choice in ("department", "99", "concept:name"):
             with self.assertRaises(ValueError):
-                validate_attribute(self.overview, bad_choice)
+                self.preprocessor.validate_attribute(bad_choice)
+
+    def test_asks_again_after_invalid_answer(self):
+        answers = iter(["department", "org:resource"])
+        chosen = self.preprocessor.ask_for_attribute(input_fn=lambda prompt: next(answers))
+        self.assertEqual(chosen, "org:resource")
 
 
 class RelabelEventsTest(unittest.TestCase):
+    def setUp(self):
+        self.preprocessor = EventLogPreprocessor(tiny_log())
+
     def test_labels_are_activity_underscore_value(self):
-        relabeled = relabel_events(tiny_log(), "org:resource")
+        relabeled = self.preprocessor.relabel_events("org:resource")
         self.assertEqual(list(relabeled[config.ACTIVITY_KEY]), [
             "A-Submitted_User_1",
             "W-Validate-application_User_2",   # whitespace replaced for BIG
@@ -68,17 +74,17 @@ class RelabelEventsTest(unittest.TestCase):
         self.assertEqual(relabeled[config.ORIGINAL_ACTIVITY_KEY].iloc[1], "W-Validate application")
         self.assertEqual(relabeled[config.ATTRIBUTE_VALUE_KEY].iloc[0], "User_1")
 
-    def test_input_is_not_modified(self):
-        df = tiny_log()
-        relabel_events(df, "org:resource")
-        self.assertEqual(df[config.ACTIVITY_KEY].iloc[0], "A-Submitted")
+    def test_original_log_is_not_modified(self):
+        self.preprocessor.relabel_events("org:resource")
+        self.assertEqual(self.preprocessor.event_log[config.ACTIVITY_KEY].iloc[0], "A-Submitted")
 
     def test_trace_attribute_can_be_selected(self):
-        relabeled = relabel_events(tiny_log(), "case:LoanGoal")
+        relabeled = self.preprocessor.relabel_events("case:LoanGoal")
         self.assertEqual(relabeled[config.ACTIVITY_KEY].iloc[3], "A-Submitted_Home-improvement")
 
     def test_label_counts(self):
-        counts = summarise_labels(relabel_events(tiny_log(), "org:resource"))
+        counts = EventLogPreprocessor.summarise_labels(
+            self.preprocessor.relabel_events("org:resource"))
         self.assertEqual(len(counts), 4)
         self.assertEqual(counts.iloc[0]["label"], "A-Submitted_User_1")
         self.assertEqual(counts.iloc[0]["events"], 2)
@@ -89,7 +95,8 @@ class RunPreprocessingTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
             log_path = write_dataframe_as_xes(tiny_log(), tmp / "tiny.xes")
-            result = run_preprocessing(log_path, "org:resource", tmp / "out")
+            preprocessor = EventLogPreprocessor.from_xes(log_path, tmp / "out")
+            result = preprocessor.run("org:resource")
 
             self.assertEqual(result.output_dir.name, "org_resource")
             for name in ("attributes_overview.csv", "label_counts.csv",

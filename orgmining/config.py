@@ -6,11 +6,27 @@ with a different log only has to change this file.
 from pathlib import Path
 
 # --- Locations -------------------------------------------------------------
+# All paths are derived from the location of this file, never hard-coded, so
+# the project runs unchanged on any machine. The dataset folder is not in git;
+# see README.md for where to put it.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = PROJECT_ROOT / "datasets_group5_mining_organizational_patterns"
 DEFAULT_LOG_PATH = DATASET_DIR / "BPI2017Denied(3).xes"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 STEP1_OUTPUT_DIR = OUTPUT_DIR / "step1_preprocessing"
+
+
+def display_path(path):
+    """Path relative to the project root for messages and output files.
+
+    Keeps machine-specific parts such as 'C:/Users/<name>/...' out of the
+    terminal output and out of files that are shared with the team.
+    """
+    path = Path(path).resolve()
+    try:
+        return path.relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:  # outside the project, e.g. a temporary test folder
+        return path.as_posix()
 
 # --- Standard XES keys (as they appear in a pm4py DataFrame) ----------------
 ACTIVITY_KEY = "concept:name"        # event label; step 1 overwrites this
