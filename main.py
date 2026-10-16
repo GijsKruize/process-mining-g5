@@ -20,8 +20,10 @@ from orgmining.instance_graphs import (DEFAULT_NOISE_THRESHOLD, DEFAULT_WORKERS,
                                        InstanceGraphBuilder)
 from orgmining.preprocessing import GROUPING_CHOICES, EventLogPreprocessor
 from orgmining.roles import DEFAULT_ROLES_THRESHOLD
+from orgmining.visualization import DEFAULT_COLUMNS, InstanceGraphViewer
 
 DEFAULT_STEP1_RESULT = config.STEP1_OUTPUT_DIR / "org_resource_roles"
+DEFAULT_GRAPHS = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "instance_graphs.pkl"
 
 
 def build_parser():
@@ -55,6 +57,18 @@ def build_parser():
     graphs.add_argument("--output-dir", default=config.display_path(config.STEP2_OUTPUT_DIR),
                         help="Where the step 2 outputs are written (default: %(default)s)")
 
+    show = steps.add_parser(
+        "show-graph", help="Print an instance graph as text and save a plot of it")
+    which = show.add_mutually_exclusive_group(required=True)
+    which.add_argument("--case", help="Case id, e.g. Application_1691306052")
+    which.add_argument("--index", type=int, help="Position of the graph (0 = first trace)")
+    show.add_argument("--graphs", default=config.display_path(DEFAULT_GRAPHS),
+                      help="instance_graphs.pkl of step 2 (default: %(default)s)")
+    show.add_argument("--output", default=None,
+                      help="Image file (.png/.svg/.pdf); default: outputs/figures/<case>.png")
+    show.add_argument("--columns", type=int, default=DEFAULT_COLUMNS,
+                      help="Layers per row before the plot wraps (default: %(default)s)")
+
     convert = steps.add_parser(
         "convert-g", help="Convert an existing BIG .g file to networkx graphs (no BIG run)")
     convert.add_argument("g_file", help="The .g file to convert")
@@ -73,6 +87,16 @@ def convert_g_file(g_file, output=None):
     print(f"{len(graphs):,} graphs, {table['nodes'].sum():,} nodes, {table['edges'].sum():,} "
           f"edges; {100 * table['has_parallelism'].mean():.1f}% contain parallel branches")
     print(f"Saved to {config.display_path(output)}")
+
+
+def show_graph(args):
+    """Print one instance graph as text and save a plot of it."""
+    viewer = InstanceGraphViewer.from_pickle(args.graphs)
+    graph = viewer.find(case_id=args.case, index=args.index)
+    print(viewer.describe(graph))
+    output = args.output or config.OUTPUT_DIR / "figures" / f"{graph.graph.get('case_id')}.png"
+    viewer.plot(graph, output, columns=args.columns)
+    print(f"\nPlot saved to {config.display_path(output)}")
 
 
 def ensure_fixed_hash_seed():
@@ -98,6 +122,8 @@ def main():
     elif args.step == "instance-graphs":
         InstanceGraphBuilder(args.step1_dir, args.output_dir, args.noise_threshold,
                              args.workers, args.max_traces).run()
+    elif args.step == "show-graph":
+        show_graph(args)
     elif args.step == "convert-g":
         convert_g_file(args.g_file, args.output)
 

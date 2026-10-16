@@ -76,6 +76,8 @@ Useful variations:
 python main.py preprocess                          # asks for the attribute and the grouping
 python main.py instance-graphs --max-traces 50     # quick trial on the first 50 traces
 python main.py instance-graphs --workers 4         # use fewer CPU cores
+python main.py show-graph --index 0                # print the first instance graph and plot it
+python main.py show-graph --case Application_1691306052 --output graph.svg
 python main.py convert-g datasets_group5_mining_organizational_patterns/BPI2017Denied.g
                                                    # only convert an existing BIG .g file
 python main.py preprocess --help                   # all options of a step
@@ -101,12 +103,14 @@ orgmining/                  the code, one module per step
   roles.py                  step 1: class ResourceRoleGrouper (resources -> roles)
   instance_graphs.py        step 2: PetriNetDiscoverer, BigRunner, GFileConverter,
                             InstanceGraphBuilder
+  visualization.py          InstanceGraphViewer: print and plot instance graphs
 tests/                      unit tests per step, on tiny hand-made logs and graphs
 requirements.txt            pinned dependencies
 BIG.py                      BIG library from Canvas (not in git, see above)
 outputs/                    generated results (not in git)
   step1_preprocessing/<attribute>[_roles]/
   step2_instance_graphs/<step 1 folder>/
+  figures/                  plots made with show-graph
 ```
 
 ## Step 1 – preprocessing
@@ -218,6 +222,17 @@ on the step 1 output:
 In Python:
 `GFileConverter.load("outputs/step2_instance_graphs/org_resource_roles/instance_graphs.pkl")`
 returns the list of graphs.
+
+### Looking at instance graphs
+
+`python main.py show-graph --index N` (or `--case <case id>`) prints a graph
+as text (every node with its activity, role and successors) and saves a plot
+to `outputs/figures/`. The plot (`InstanceGraphViewer` in
+`orgmining/visualization.py`) needs no Graphviz: nodes are placed in layers by
+their longest path from the start, so parallel branches are drawn above each
+other, and long graphs wrap like a snake (left to right, then right to left).
+The role is shown by the colour of the node border *and* a tag such as `R2`,
+so the plot can also be read without colour.
 
 ### Results on the BPI 2017 log (roles)
 
