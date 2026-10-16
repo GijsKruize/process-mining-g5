@@ -1,7 +1,11 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
-output/*
-!output/.gitkeep
+
+# Generated results (re-create with main.py)
+outputs/
+
+# Editors
 .idea/
 .vscode/

@@ -1,47 +1,38 @@
-"""Main entry point: runs the whole JM0211 organizational pattern mining pipeline.
+"""Command-line entry point for the organizational pattern mining pipeline.
 
-    python main.py data/BPI2017Denied(3).xes
+Examples (run from the project root, with the virtual environment active):
 
-Runs preprocessing (step 1, interactive), instance graph generation (step 2),
-pattern mining (step 3), and evaluation against gold_standard.csv (step 4).
+    python main.py preprocess                          # asks which attribute
+    python main.py preprocess --attribute org:resource # no question asked
+    python main.py preprocess --log path/to/other.xes
+
+Every step is a sub-command; later steps will be added here as well.
 """
 import argparse
 
-import evaluate
-import pattern_mining
-from instance_graphs import InstanceGraphBuilder
-from preprocess import Preprocessor
+from orgmining import config
+from orgmining.preprocessing import run_preprocessing
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(description="Mining organizational patterns (JM0211, group 5)")
+    steps = parser.add_subparsers(dest="step", required=True)
+
+    preprocess = steps.add_parser(
+        "preprocess", help="Step 1: relabel every event as activity_selectedAttribute")
+    preprocess.add_argument("--log", default=str(config.DEFAULT_LOG_PATH),
+                            help="Input XES event log (default: the BPI 2017 log of the assignment)")
+    preprocess.add_argument("--attribute", default=None,
+                            help="Attribute to fuse with the activity; if omitted you are asked")
+    preprocess.add_argument("--output-dir", default=str(config.STEP1_OUTPUT_DIR),
+                            help="Where the step 1 outputs are written")
+    return parser
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run the full organizational pattern mining pipeline.")
-    parser.add_argument("input_path", help="Path to the input .xes event log")
-    parser.add_argument("--attribute", default=None,
-                         help="Attribute to fuse into the activity label (skips the interactive prompt)")
-    parser.add_argument("--output-dir", default="output")
-    parser.add_argument("--gold-standard", default="gold_standard.csv")
-    pattern_mining.add_subdue_arguments(parser)
-    args = parser.parse_args()
-
-    print("=== Step 1: preprocessing ===")
-    log_path = Preprocessor(args.input_path).run(attribute=args.attribute, output_dir=args.output_dir)
-
-    print("\n=== Step 2: instance graphs ===")
-    InstanceGraphBuilder(args.output_dir).run(log_path)
-
-    print("\n=== Step 3: pattern mining ===")
-    miner = pattern_mining.PatternMiner(args.output_dir)
-    patterns, stats, matrix, union_graph = miner.run(
-        f"{args.output_dir}/instance_graphs.pkl",
-        **pattern_mining.subdue_kwargs_from_args(args),
-    )
-
-    print("\n=== Step 4: evaluation ===")
-    gold_standard = evaluate.load_gold_standard(args.gold_standard)
-    mined_signatures = evaluate.mined_pattern_signatures(patterns, union_graph)
-    precision, recall = evaluate.evaluate(mined_signatures, gold_standard)
-    print(f"Precision: {precision:.2f}")
-    print(f"Recall:    {recall:.2f}")
+    args = build_parser().parse_args()
+    if args.step == "preprocess":
+        run_preprocessing(args.log, args.attribute, args.output_dir)
 
 
 if __name__ == "__main__":
