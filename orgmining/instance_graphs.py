@@ -29,7 +29,6 @@ import contextlib
 import json
 import math
 import os
-import pickle
 import shutil
 import sys
 import time
@@ -38,8 +37,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-import networkx as nx
-import pandas as pd
 import pm4py
 from pm4py.objects.log.exporter.xes import exporter as xes_exporter
 from pm4py.objects.log.importer.xes import importer as xes_importer
@@ -49,10 +46,9 @@ from pm4py.objects.petri_net.importer import importer as pnml_importer
 
 from . import config
 
-# The paper uses the *infrequent* Inductive Miner (iIM) with ProM's default
-# settings; 0.2 is ProM's default noise threshold. 0.0 gives the plain
-# Inductive Miner, which fits every trace but tends to overgeneralise (many
-# activities in parallel), which in turn makes the instance graphs imprecise.
+# The PM4Py 2.2.16 convenience API selects IM_CLEAN. IMf can be selected
+# explicitly for comparison; the variants are not interchangeable.
+# Keep the existing IM_CLEAN default so prior outputs remain reproducible.
 DEFAULT_NOISE_THRESHOLD = 0.2
 
 # BIG handles about 15 traces per minute per CPU core on the role-labelled
@@ -83,13 +79,21 @@ def working_directory(path):
 class PetriNetDiscoverer:
     """Discovers the process model that BIG uses to derive causal relations."""
 
-    def __init__(self, noise_threshold=DEFAULT_NOISE_THRESHOLD):
+    def __init__(self, noise_threshold=DEFAULT_NOISE_THRESHOLD, miner_variant="im_clean"):
         if not 0 <= noise_threshold <= 1:
             raise ValueError("The noise threshold must be between 0 and 1.")
+        if miner_variant not in ("im_clean", "imf"):
+            raise ValueError("Miner variant must be im_clean or imf.")
         self.noise_threshold = noise_threshold
+        self.miner_variant = miner_variant
 
     def discover(self, log):
         """Return (net, initial_marking, final_marking) for a pm4py EventLog."""
+        if self.miner_variant == "imf":
+            from pm4py.algo.discovery.inductive import algorithm as inductive
+            variant = inductive.Variants.IMf
+            return inductive.apply(log, variant=variant, parameters={
+                variant.value.Parameters.NOISE_THRESHOLD: self.noise_threshold})
         return pm4py.discover_petri_net_inductive(log, noise_threshold=self.noise_threshold)
 
     @staticmethod
@@ -148,8 +152,9 @@ class BigRunner:
 
     BIG treats every trace independently, so the log is cut into consecutive
     chunks, BIG runs on each chunk in its own process and folder, and the
-    chunks' outputs are joined in the original order. The result is the same
-    file a single BIG run on the whole log would write, only faster.
+    chunks' outputs are joined in the original order. Optimal alignment ties
+    can still give different valid graphs; seed and version alone do not
+    guarantee byte-for-byte equality in every case.
     """
 
     def __init__(self, output_dir, workers=DEFAULT_WORKERS):
@@ -203,107 +208,8 @@ class BigRunner:
 # 3. .g text -> networkx
 # ---------------------------------------------------------------------------
 
-class GFileConverter:
-    """Parses BIG's .g output into one ``networkx.DiGraph`` per trace.
-
-    Node ids in a .g file are local (every graph starts at 1). Each node gets a
-    unique global integer id instead; the local id is kept as attribute
-    ``local_id``, and edges are translated through the same mapping, so all
-    relations are preserved.
-
-    Node attributes: ``label`` (as in the .g file), ``local_id``, and, when the
-    step 1 label table is given, ``activity`` and ``value`` (e.g. the role).
-    Graph attributes: ``graph_index`` (0-based position in the file) and
-    ``case_id`` (when the case ids are given).
-    """
-
-    def __init__(self, label_parts=None):
-        """``label_parts``: optional {label: (activity, value)} from step 1."""
-        self.label_parts = label_parts or {}
-
-    @classmethod
-    def from_label_counts(cls, label_counts_csv):
-        """Build the label lookup from step 1's ``label_counts.csv``."""
-        table = pd.read_csv(label_counts_csv)
-        parts = {row.label: (row.original_activity, row.selected_attribute_value)
-                 for row in table.itertuples()}
-        return cls(parts)
-
-    def convert(self, g_path, case_ids=None):
-        """Read ``g_path`` and return the list of instance graphs."""
-        graphs = []
-        graph, local_to_global = None, {}
-        next_node_id = 0
-        with open(g_path, encoding="utf-8") as g_file:
-            for line_number, line in enumerate(g_file, start=1):
-                parts = line.split()
-                if not parts:
-                    continue
-                kind = parts[0]
-                if kind == "XP":                                   # a new graph starts
-                    graph = nx.DiGraph(graph_index=len(graphs))
-                    local_to_global = {}
-                    graphs.append(graph)
-                elif kind == "v" and graph is not None and len(parts) == 3:
-                    local_id, label = int(parts[1]), parts[2]
-                    if local_id in local_to_global:
-                        raise ValueError(f"{g_path}:{line_number}: node {local_id} defined twice")
-                    local_to_global[local_id] = next_node_id
-                    graph.add_node(next_node_id, **self._node_attributes(local_id, label))
-                    next_node_id += 1
-                elif kind == "e" and graph is not None and len(parts) == 4:
-                    source, target = int(parts[1]), int(parts[2])
-                    if source not in local_to_global or target not in local_to_global:
-                        raise ValueError(f"{g_path}:{line_number}: edge uses an unknown node")
-                    # BIG's repair step occasionally writes the same edge twice
-                    # (69 times in the example BPI2017Denied.g). An instance
-                    # graph is a set of edges, so DiGraph keeps it once.
-                    graph.add_edge(local_to_global[source], local_to_global[target], label=parts[3])
-                else:
-                    raise ValueError(f"{g_path}:{line_number}: cannot read line '{line.strip()}'")
-
-        if case_ids is not None:
-            if len(case_ids) != len(graphs):
-                raise ValueError(f"{len(graphs)} graphs in {g_path} but {len(case_ids)} traces "
-                                 "in the log; they must match one to one.")
-            for graph, case_id in zip(graphs, case_ids):
-                graph.graph["case_id"] = case_id
-        return graphs
-
-    def _node_attributes(self, local_id, label):
-        attributes = {"label": label, "local_id": local_id}
-        if label in self.label_parts:
-            attributes["activity"], attributes["value"] = self.label_parts[label]
-        return attributes
-
-    @staticmethod
-    def summarise(graphs):
-        """One row per graph: size and shape, useful to inspect BIG's output."""
-        rows = []
-        for graph in graphs:
-            rows.append({
-                "graph_index": graph.graph["graph_index"],
-                "case_id": graph.graph.get("case_id"),
-                "nodes": graph.number_of_nodes(),
-                "edges": graph.number_of_edges(),
-                # A node with more than one successor opens parallel branches.
-                "has_parallelism": any(degree > 1 for _, degree in graph.out_degree()),
-                "connected": graph.number_of_nodes() > 0 and nx.is_weakly_connected(graph),
-                "acyclic": nx.is_directed_acyclic_graph(graph),
-            })
-        return pd.DataFrame(rows)
-
-    @staticmethod
-    def save(graphs, path):
-        with open(path, "wb") as file:
-            pickle.dump(graphs, file)
-        return path
-
-    @staticmethod
-    def load(path):
-        """Load the graphs saved by ``save`` (used by step 3)."""
-        with open(path, "rb") as file:
-            return pickle.load(file)
+# Public compatibility import; implementation lives in graph_io.py.
+from .graph_io import GFileConverter
 
 
 # ---------------------------------------------------------------------------
@@ -325,20 +231,25 @@ class InstanceGraphBuilder:
         petri_net.pnml              the discovered model
         instance_graphs.g           BIG's raw output
         instance_graphs.pkl         list of networkx.DiGraph, input for step 3
-        instance_graphs_summary.csv one row per graph (size, parallelism, ...)
+        instance_graphs_summary.csv one row per graph (size, branching, ...)
         summary.json                settings, timings and headline numbers
     """
 
     def __init__(self, step1_dir, output_root=config.STEP2_OUTPUT_DIR,
                  noise_threshold=DEFAULT_NOISE_THRESHOLD, workers=DEFAULT_WORKERS,
-                 max_traces=None):
+                 max_traces=None, miner_variant="im_clean"):
         """``max_traces``: only use the first N traces, for a quick trial run."""
         self.step1_dir = Path(step1_dir)
         suffix = f"_first{max_traces}" if max_traces else ""
+        if miner_variant != "im_clean":
+            suffix += f"_{miner_variant}"
         self.output_dir = Path(output_root) / f"{self.step1_dir.name}{suffix}"
         self.noise_threshold = noise_threshold
         self.workers = workers
+        if max_traces is not None and max_traces < 1:
+            raise ValueError("max_traces must be positive.")
         self.max_traces = max_traces
+        self.miner_variant = miner_variant
 
     def load_log(self, xes_path):
         log = xes_importer.apply(str(xes_path))
@@ -364,11 +275,17 @@ class InstanceGraphBuilder:
         print(f"Discovering Petri net (Inductive Miner, noise threshold "
               f"{self.noise_threshold}) on {len(log):,} traces ...")
         started = time.time()
-        discoverer = PetriNetDiscoverer(self.noise_threshold)
+        discoverer = PetriNetDiscoverer(self.noise_threshold, self.miner_variant)
         net, initial_marking, final_marking = discoverer.discover(log)
         pnml_path = discoverer.save(net, initial_marking, final_marking,
                                     self.output_dir / PETRI_NET_FILE_NAME)
         net_size = discoverer.describe(net)
+        log_labels = {e[config.ACTIVITY_KEY] for trace in log for e in trace}
+        model_labels = {t.label for t in net.transitions if t.label is not None}
+        absent_labels = sorted(log_labels - model_labels)
+        if absent_labels:
+            print(f"  {len(absent_labels)} log labels absent from the model; "
+                  "these events require BIG repair (see summary.json)")
         timings["petri_net_seconds"] = round(time.time() - started, 1)
         print(f"  {net_size['visible_transitions']} visible transitions, {net_size['places']} "
               f"places ({timings['petri_net_seconds']} s)")
@@ -383,6 +300,7 @@ class InstanceGraphBuilder:
         print("Converting BIG output to networkx graphs ...")
         converter = GFileConverter.from_label_counts(self.step1_dir / "label_counts.csv")
         graphs = converter.convert(g_path, case_ids)
+        converter.validate_against_log(graphs, log)
         graphs_path = converter.save(graphs, self.output_dir / GRAPHS_FILE_NAME)
         graph_table = converter.summarise(graphs)
         graph_table.to_csv(self.output_dir / "instance_graphs_summary.csv", index=False)
@@ -393,19 +311,22 @@ class InstanceGraphBuilder:
             "input_log": config.display_path(xes_path),
             "max_traces": self.max_traces,
             "noise_threshold": self.noise_threshold,
+            "miner_variant": self.miner_variant,
+            "pm4py_version": pm4py.__version__,
+            "labels_absent_from_model": absent_labels,
             "workers": self.workers,
             "petri_net": net_size,
             "graphs": len(graphs),
             "nodes": int(graph_table["nodes"].sum()),
             "edges": int(graph_table["edges"].sum()),
-            "graphs_with_parallelism_pct": round(100 * graph_table["has_parallelism"].mean(), 1),
+            "graphs_with_branching_pct": round(100 * graph_table["has_branching"].mean(), 1),
             "graphs_not_connected": int((~graph_table["connected"]).sum()),
             **timings,
         }
         (self.output_dir / "summary.json").write_text(json.dumps(summary, indent=2),
                                                       encoding="utf-8")
         print(f"  {summary['graphs']:,} graphs, {summary['nodes']:,} nodes, "
-              f"{summary['edges']:,} edges; {summary['graphs_with_parallelism_pct']}% "
-              "contain parallel branches")
+              f"{summary['edges']:,} edges; {summary['graphs_with_branching_pct']}% "
+              "contain branching nodes")
         print(f"Step 2 outputs written to: {config.display_path(self.output_dir)}")
         return InstanceGraphResult(self.output_dir, graphs_path, len(graphs))

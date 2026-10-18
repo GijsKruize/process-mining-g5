@@ -33,7 +33,7 @@ class InstanceGraphViewerTest(unittest.TestCase):
 
     def test_describe_lists_nodes_in_order_with_successors(self):
         text = self.viewer.describe(parallel_graph())
-        self.assertIn("with parallel branches", text)
+        self.assertIn("with branching nodes", text)
         self.assertIn("start", text.splitlines()[3])
         self.assertIn("-> 2, 3", text.splitlines()[3])
 

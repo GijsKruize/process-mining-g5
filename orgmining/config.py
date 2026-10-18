@@ -11,6 +11,8 @@ from pathlib import Path
 # see README.md for where to put it.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = PROJECT_ROOT / "datasets_group5_mining_organizational_patterns"
+if not DATASET_DIR.exists() and (PROJECT_ROOT.parent / DATASET_DIR.name).exists():
+    DATASET_DIR = PROJECT_ROOT.parent / DATASET_DIR.name
 DEFAULT_LOG_PATH = DATASET_DIR / "BPI2017Denied(3).xes"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 STEP1_OUTPUT_DIR = OUTPUT_DIR / "step1_preprocessing"

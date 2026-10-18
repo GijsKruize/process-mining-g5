@@ -1,254 +1,121 @@
-# Mining Organizational Patterns (JM0211, group 5)
+# Organizational behavioral pattern mining — Group 5
 
-Implementation of the behavioral pattern mining approach of Diamantini, Genga &
-Potena (2016), *Behavioral process mining for unstructured processes*, on the
-BPI Challenge 2017 (denied applications) log.
+Python 3.9 + **PM4Py 2.2.16**. Entry point: `main.py`.
 
-| Step | What | Status |
-|------|------|--------|
-| 1 | Preprocessing: relabel every event as `activity_selectedAttribute`, optionally grouping resources into roles | done |
-| 2 | Inductive Miner Petri net + BIG instance graphs → networkx | done |
-| 3 | SUBDUE patterns, support, trace × pattern matrix, visualisation | to do |
-| 4 | Evaluation: precision / recall against a hand-made gold standard | to do |
+**Start with [the results guide](docs/RESULTATEN_LEESWIJZER.md).** It lists the actual outputs, conformance statistics, graph printouts and remaining human review. The historical audit is in [docs/AUDIT_BEVINDINGEN.md](docs/AUDIT_BEVINDINGEN.md).
 
-## Requirements
+## Weekend snapshot for teammates
 
-- **Python 3.9.** The assignment requires **pm4py 2.2.16** (needed for BIG),
-  and that version does not run on newer Python versions.
-- The assignment material from Canvas (see *Add the assignment material*
-  below). It is too large for git, so it is not in this repository.
+Read [the change rationale and limits](docs/WEEKEND_HANDOFF.md) and [the committed results index](results/weekend/README.md). The branch extends Friday commit `40b9a51`; automatic reference scores are separate from the still-pending human gold standard. All graph printouts are in the committed graph archive.
 
-## Installation
+## Project organization
 
-Run these commands in order, from a terminal (Git Bash, macOS or Linux):
-
-```bash
-# 1. Get the code
-git clone <repository-url> process-mining-g5
-cd process-mining-g5
-
-# 2. Create and activate a virtual environment with Python 3.9
-python3.9 -m venv .venv            # Windows: py -3.9 -m venv .venv
-source .venv/bin/activate          # Windows Git Bash: source .venv/Scripts/activate
-                                   # Windows PowerShell: .\.venv\Scripts\activate
-
-# 3. Install the pinned dependencies
-pip install -r requirements.txt
+```text
+main.py                     small entry point
+orgmining/
+  cli.py                    command-line arguments and dispatch
+  preprocessing.py          attribute selection and event relabelling
+  roles.py                  role discovery and dominant-resource assignment
+  instance_graphs.py        Petri-net discovery, BIG execution, step 2 orchestration
+  graph_io.py               BIG parsing, NetworkX persistence and integrity checks
+  conformance.py            full-log alignment, caching and statistics
+  subdue_adapter.py         pinned upstream integration and indexing optimizations
+  patterns.py               SUBDUE discovery, exact support, occurrences and matrix
+  exports.py                every graph as SVG/text/GraphML, full tables and ZIP
+  evaluation.py             draft gold, review packets, proxy and human evaluation
+  repair_diagnostics.py     inspect worst-fitting and branching cases
+  reporting.py              paper tables/figures/report and full results archive
+  research.py               resume the complete research workflow
+  visualization.py          matplotlib graph viewer
+  artifacts.py, log_io.py    shared artifact/XES helpers
+  config.py                 project paths and XES keys
+scripts/
+  diagnostics/              original audit and reference/single-case checks
+  install_subdue.ps1        download the pinned upstream dependency
+  run_conformance.py        direct convenience runner
+  run_patterns.py           direct convenience runner
+  export_all_graphs.py      direct convenience runner
+vendor/subdue.lock.json     upstream URL, revision and license
+vendor/subdue/              downloaded upstream source (MIT; ignored by Git)
+evaluation/                 editable gold-standard draft
+outputs/                    generated results, separated by pipeline stage
+  step1_preprocessing/      preserved preprocessed log and role tables
+  step2_instance_graphs/    preserved full baseline, no replacement
+  conformance/             one alignment-statistics row per case
+  step3_patterns/          discovered definitions, support, matrix, evidence
+  instance_graph_exports/  ALL graph printouts and machine-readable exports
+  evaluation/              automatic reference plus blank human review forms
+  paper/                   paper-ready tables, figures, report and results bundle
+tests/                      regression/unit/integration fixtures
+docs/                       methodology, review instructions and results guide
+BIG.py                      supplied course library, unmodified
 ```
 
-`requirements.txt` pins pm4py 2.2.16 and its complete dependency tree, so
-everyone gets exactly the same environment.
+New code imports the dedicated `graph_io` module. `GFileConverter` is still re-exported from `instance_graphs` for compatibility with earlier scripts. Input and output paths are derived from the project root. The dataset may be in the project or its immediate parent, as in the supplied working copy.
 
-### Add the assignment material
+## Environment and upstream dependency
 
-Download the assignment folder from Canvas and place it in the project root
-under exactly this name, together with `BIG.py`:
+Use the existing environment or create one with Python 3.9:
 
-```
-process-mining-g5/
-├── BIG.py                                          BIG library (Canvas)
-└── datasets_group5_mining_organizational_patterns/
-    ├── BPI2017Denied(3).xes                        the event log (input of step 1)
-    ├── BPI2017Denied.g                             example BIG output
-    ├── BPI2017Denied_petriNet.pnml                 example Petri net
-    └── *.pdf                                       assignment, log description, paper
+```powershell
+py -3.9 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+.\scripts\install_subdue.ps1
 ```
 
-## Running
+In this workspace the existing environment is one level above: `..\.venv\Scripts\python.exe`.
 
-Always run from the project root with the virtual environment active. These
-commands reproduce all results, in this order:
+The assignment's [holderlb/Subdue](https://github.com/holderlb/Subdue) Python implementation is pinned at `f33567dea2fa7e9595c27b807f16b120a7bdebb2`. Vendor source stays unchanged. The adapter avoids its defective NetworkX direction import by using explicit directed JSON, and indexes repeated membership/overlap checks. Discovery retains the upstream search and score. Exact matching independently verifies support and occurrences. This release scores edge compression; do not call those scores full MDL description lengths.
 
-```bash
-# Step 1: relabel events as <activity>_<role of org:resource>   (about 2 minutes)
+## Commands
+
+Run from the project root with the environment active:
+
+```powershell
+python main.py --help
 python main.py preprocess --attribute org:resource --grouping roles
+python main.py instance-graphs --workers 4
+python main.py show-graph --case Application_1691306052
+python main.py conformance --workers 3
+python main.py mine-patterns
+python main.py export-graphs
+python main.py inspect-repairs
+python main.py evaluate
+python main.py paper-report
+```
 
-# Step 2: Petri net + BIG instance graphs on the step 1 output   (about 1 hour)
-python main.py instance-graphs
+The existing step 1 and step 2 full artifacts are already present. **Do not rerun preprocessing/discovery just to regenerate the reports.** Continue from them with:
 
-# Unit tests (tiny logs, a few seconds)
+```powershell
+python main.py research
+```
+
+This fingerprints and retains the saved baseline, resumes conformance from its input-hashed variant cache, reuses pattern/graph exports when the graph hash matches, prepares evaluation, and packages results. `conformance` can safely resume; it does not mine a new net. The baseline must exist before `research`. `mine-patterns` explicitly reruns mining with its CLI settings; `research` reuses a matching existing run. Use a separate `--output` folder for alternate mining experiments.
+
+New step 2 output records the miner variant and PM4Py version. Existing baseline metadata is historical and was preserved. IM_CLEAN is the actual baseline variant; optional `--miner-variant imf` uses a separate `_imf` output folder. Noise threshold 0.2 is not proof of preserving 80% of observed behavior. `--max-traces` discovers a new model on a subset; it is not a one-case test with the full model.
+
+## Definitions that matter for the paper
+
+- A node represents an event occurrence. Repeated activity labels retain separate nodes and do not become loops in the DAG.
+- Node labels are `activity_role`; IDs, case IDs and event positions are metadata, excluded from pattern equality.
+- No cross-case edges are added. All exported graph edges remain directed.
+- Case support counts each trace once; occurrence counts include each distinct exact matching edge set, allowing overlaps.
+- SUBDUE uses bounded, heuristic beam search; it does not enumerate all patterns. Upstream-selected overlap-restricted instances and independently counted occurrences are different quantities.
+- Exact support uses directed labelled **non-induced** subgraph matching: extra host edges are allowed.
+- Graph branching is not proof of real-world concurrency. New summaries use `has_branching`; old baseline files retain the old metric name.
+- Fitness measures conformance to a model learned on these same data. It is not model precision or proof of causal correctness.
+- Human gold-standard metrics remain pending until the definitions and annotations have actually been reviewed. The automatic reference benchmark is labelled separately.
+
+See [gold-standard instructions](docs/GOLD_STANDARD_HANDLEIDING.md) before entering labels. `evaluate` preserves an existing manual form and does not fill empty labels automatically.
+
+## Checks
+
+```powershell
 python -m unittest discover tests -v
+python scripts/diagnostics/audit_group5_outputs.py --log outputs/step1_preprocessing/org_resource_roles/relabeled_log.xes --graphs outputs/step2_instance_graphs/org_resource_roles/instance_graphs.pkl --roles outputs/step1_preprocessing/org_resource_roles/resource_roles.csv
+python scripts/diagnostics/test_group5_single_case.py
+python scripts/diagnostics/test_group5_reference_big.py
 ```
 
-Useful variations:
-
-```bash
-python main.py preprocess                          # asks for the attribute and the grouping
-python main.py instance-graphs --max-traces 50     # quick trial on the first 50 traces
-python main.py instance-graphs --workers 4         # use fewer CPU cores
-python main.py show-graph --index 0                # print the first instance graph and plot it
-python main.py show-graph --case Application_1691306052 --output graph.svg
-python main.py convert-g datasets_group5_mining_organizational_patterns/BPI2017Denied.g
-                                                   # only convert an existing BIG .g file
-python main.py preprocess --help                   # all options of a step
-```
-
-Results are written to `outputs/` (not in git; re-create them with the
-commands above).
-
-**Reproducibility.** pm4py's Inductive Miner iterates over Python sets, whose
-order changes between runs unless the hash seed is fixed. `main.py` therefore
-restarts itself once with `PYTHONHASHSEED=0`, so that two runs give identical
-instance graphs. (The `.pnml` files still differ in the random ids pm4py gives
-to invisible transitions; the net itself is the same.)
-
-## Project structure
-
-```
-main.py                     the single entry point; one sub-command per step
-orgmining/                  the code, one module per step
-  config.py                 paths (derived, never absolute), XES column names, label format
-  log_io.py                 read XES -> DataFrame, write DataFrame -> XES
-  preprocessing.py          step 1: class EventLogPreprocessor
-  roles.py                  step 1: class ResourceRoleGrouper (resources -> roles)
-  instance_graphs.py        step 2: PetriNetDiscoverer, BigRunner, GFileConverter,
-                            InstanceGraphBuilder
-  visualization.py          InstanceGraphViewer: print and plot instance graphs
-tests/                      unit tests per step, on tiny hand-made logs and graphs
-requirements.txt            pinned dependencies
-BIG.py                      BIG library from Canvas (not in git, see above)
-outputs/                    generated results (not in git)
-  step1_preprocessing/<attribute>[_roles]/
-  step2_instance_graphs/<step 1 folder>/
-  figures/                  plots made with show-graph
-```
-
-## Step 1 – preprocessing
-
-`EventLogPreprocessor` (in `orgmining/preprocessing.py`) does the following:
-
-1. **Load** the XES log as a DataFrame (one row per event). Trace attributes
-   are copied to every event with the prefix `case:` (e.g. `case:LoanGoal`).
-2. **Show all attributes** (`describe_attributes`, `print_attribute_table`):
-   a numbered table with level (trace/event), number of distinct values, % of
-   events that have a value, and examples. The activity, case id and
-   timestamp are shown but cannot be selected.
-3. **Ask the user** (`ask_for_attribute`) for a number or name, and keep
-   asking until the answer is valid. `--attribute` skips the question.
-4. **Ask whether to group the values into roles** (`ask_for_grouping`;
-   `--grouping roles|none` skips the question), see below.
-5. **Relabel** (`relabel_events`): `concept:name` becomes
-   `<activity>_<value>`, e.g. `A-Submitted_User_1` or `A-Submitted_Role_4`.
-   - Whitespace in labels is replaced by `-`, because BIG's `.g` output is
-     space separated.
-   - Events without a value get `UNKNOWN` (the log's own default), so no
-     event is lost.
-   - Activity, original value (the user) and label value (the role) are also
-     kept as the columns `original_activity`, `original_attribute_value` and
-     `selected_attribute_value`. The label alone cannot be split back, since
-     values such as `User_1` contain `_` too.
-6. **Save** to `outputs/step1_preprocessing/<attribute>[_roles]/`:
-
-| File | Content |
-|------|---------|
-| `attributes_overview.csv` | the table shown to the user |
-| `label_counts.csv` | every new label with activity, value and frequency |
-| `roles.csv` | (roles only) every discovered role with its activities |
-| `resource_roles.csv` | (roles only) the role assigned to every resource |
-| `relabeled_log.xes` | the relabelled log, the input for step 2 |
-| `summary.json` | chosen attribute and grouping, pm4py version, counts |
-
-### Grouping resources into roles
-
-With `org:resource` the log has 134 users and 3,338 distinct `activity_user`
-labels: too slow for step 2 and too fragmented to find frequent patterns.
-`ResourceRoleGrouper` (in `orgmining/roles.py`) replaces each user by a role,
-using pm4py's role discovery (Burattin, Sperduti & Veluscek, 2013):
-
-1. Every activity starts as a role, described by how often each resource
-   performs it.
-2. The two roles with the most similar resource profiles are merged, as long
-   as their similarity is above a threshold (`--roles-threshold`, default
-   0.65, pm4py's default).
-3. A resource can appear in several of the resulting roles; it is assigned
-   its *dominant role*, the one in which it performs most of its events.
-   (Using the role of the *activity* instead would make the label carry no
-   information beyond the activity itself.)
-
-### Results on the BPI 2017 log
-
-3,093 traces, 124,866 events, 54 activities, 19 attributes.
-
-| Attribute | Grouping | Values in labels | Labels after step 1 |
-|-----------|----------|------------------|---------------------|
-| `org:resource` | none | 134 users | 3,338 |
-| `org:resource` | roles | 8 roles | 225 |
-| `EventOrigin` | none | 3 | 54 |
-
-The 8 roles are interpretable: for example `Role_1` (86 users) creates and
-sends offers, `Role_2` (21 users) validates applications, `Role_3` (18 users)
-denies applications and `Role_4` (2 users, including the system user
-`User_1`) creates applications. `EventOrigin` gives exactly one label per
-activity: it is determined by the activity, so it adds no organisational
-information.
-
-## Step 2 – instance graphs
-
-`InstanceGraphBuilder` (in `orgmining/instance_graphs.py`) does the following
-on the step 1 output:
-
-1. **Petri net** (`PetriNetDiscoverer`): the Inductive Miner on the
-   relabelled log. As in the paper, the *infrequent* variant is used, with
-   noise threshold 0.2 (ProM's default; `--noise-threshold`).
-2. **BIG** (`BigRunner`): runs the course's `BIG.py` *unchanged*. BIG aligns
-   every trace with the net, builds its instance graph and repairs it where
-   the trace does not fit the net. It handles about 15 traces per minute per
-   CPU core, so the log is cut into consecutive chunks, BIG runs on each
-   chunk in its own process and folder (`--workers`), and the outputs are
-   joined in the original order. Tested: the result is byte-for-byte the same
-   as one BIG run on the whole log.
-3. **Conversion** (`GFileConverter`): the `.g` text becomes one
-   `networkx.DiGraph` per trace.
-   - Every node gets a **unique global id**. BIG's local id (1, 2, ... in
-     every graph) is kept as attribute `local_id`, and edges are translated
-     through the same mapping, so all relations are preserved.
-   - Node attributes: `label`, `activity`, `value` (the role), `local_id`.
-     Graph attributes: `case_id`, `graph_index`.
-   - The `.g` file does not name the traces; its graphs are in log order, so
-     graph *i* gets the case id of trace *i*.
-   - BIG occasionally writes the same edge twice (69 times in the example
-     `BPI2017Denied.g`). An instance graph is a set of edges, so such an edge
-     is kept once.
-4. **Save** to `outputs/step2_instance_graphs/<step 1 folder>/`:
-
-| File | Content |
-|------|---------|
-| `petri_net.pnml` | the discovered model |
-| `instance_graphs.g` | BIG's raw output |
-| `instance_graphs.pkl` | list of `networkx.DiGraph`, the input for step 3 |
-| `instance_graphs_summary.csv` | per graph: nodes, edges, parallel branches, connected |
-| `summary.json` | settings, timings and totals |
-
-In Python:
-`GFileConverter.load("outputs/step2_instance_graphs/org_resource_roles/instance_graphs.pkl")`
-returns the list of graphs.
-
-### Looking at instance graphs
-
-`python main.py show-graph --index N` (or `--case <case id>`) prints a graph
-as text (every node with its activity, role and successors) and saves a plot
-to `outputs/figures/`. The plot (`InstanceGraphViewer` in
-`orgmining/visualization.py`) needs no Graphviz: nodes are placed in layers by
-their longest path from the start, so parallel branches are drawn above each
-other, and long graphs wrap like a snake (left to right, then right to left).
-The role is shown by the colour of the node border *and* a tag such as `R2`,
-so the plot can also be read without colour.
-
-### Results on the BPI 2017 log (roles)
-
-| | Value |
-|---|---|
-| Petri net | 219 visible transitions (of 225 labels), 134 silent, 167 places |
-| Instance graphs | 3,093 (one per trace), 124,866 nodes, 121,781 edges |
-| Graphs with parallel branches | 0.3% |
-| Graphs not connected | 0 |
-| Run time (11 workers) | Petri net 72 s, BIG 49 min |
-
-Almost every instance graph is a sequence. The discovered net has only one
-AND-split, at noise threshold 0.0, 0.1 and 0.2 alike, so this is not a matter
-of filtering. For comparison: the example `BPI2017Denied.g` (activities only,
-no resources) has parallel branches in 99.3% of the graphs. Adding the role to
-every label splits the concurrent behaviour of the original activities into
-many label combinations, which the Inductive Miner no longer recognises as
-parallel. The paper reports the same effect on its real-life log (12.5%
-parallel graphs), with mostly sequential patterns as a result.
+The supplied BIG library has a confirmed path-search defect. The baseline has deliberately been preserved. Selected-case diagnostics compare its repair result with a correct reachability function, on identical alignments; consult the resulting sensitivity summary before reporting the repair limitation. Event integrity alone does not establish semantic correctness of graph dependencies.

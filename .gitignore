@@ -13,3 +13,9 @@ outputs/
 # Assignment material: not in git, every team member downloads it (see README)
 datasets_group5_mining_organizational_patterns/
 BIG.py
+
+# Downloaded upstream dependency (pinned in vendor/subdue.lock.json)
+vendor/subdue/
+
+# Isolated publication checkout
+.publication-worktree/

@@ -1,0 +1,280 @@
+{
+  "status": "machine_suggested_draft_NOT_manual_gold",
+  "origin": "Event semantics and previous exploratory audit; not independently human selected or preregistered.",
+  "matching": "A mined pattern recovers a target when it contains the exact directed labelled target subgraph. A case is positive when any such mined pattern occurs in that case.",
+  "patterns": [
+    {
+      "pattern_id": "GS01",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "O-Create-Offer_Role_1"
+        },
+        {
+          "id": 2,
+          "label": "O-Created_Role_1"
+        },
+        {
+          "id": 3,
+          "label": "O-Sent-mail-and-online_Role_1"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "O-Create-Offer_Role_1__O-Created_Role_1"
+        },
+        {
+          "source": 2,
+          "target": 3,
+          "label": "O-Created_Role_1__O-Sent-mail-and-online_Role_1"
+        }
+      ],
+      "name": "Offer creation and sending",
+      "approved": false,
+      "reviewed_by": "",
+      "reference_semantics": "contiguous labels in original case event order"
+    },
+    {
+      "pattern_id": "GS02",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "W-Complete-application-start_Role_1"
+        },
+        {
+          "id": 2,
+          "label": "W-Complete-application-suspend_Role_1"
+        },
+        {
+          "id": 3,
+          "label": "W-Complete-application-resume_Role_1"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "W-Complete-application-start_Role_1__W-Complete-application-suspend_Role_1"
+        },
+        {
+          "source": 2,
+          "target": 3,
+          "label": "W-Complete-application-suspend_Role_1__W-Complete-application-resume_Role_1"
+        }
+      ],
+      "name": "Complete application suspend/resume",
+      "approved": false,
+      "reviewed_by": "",
+      "reference_semantics": "contiguous labels in original case event order"
+    },
+    {
+      "pattern_id": "GS03",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "W-Call-after-offers-schedule_Role_1"
+        },
+        {
+          "id": 2,
+          "label": "W-Call-after-offers-start_Role_1"
+        },
+        {
+          "id": 3,
+          "label": "A-Complete_Role_1"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "W-Call-after-offers-schedule_Role_1__W-Call-after-offers-start_Role_1"
+        },
+        {
+          "source": 2,
+          "target": 3,
+          "label": "W-Call-after-offers-start_Role_1__A-Complete_Role_1"
+        }
+      ],
+      "name": "Call after offers initiation",
+      "approved": false,
+      "reviewed_by": "",
+      "reference_semantics": "contiguous labels in original case event order"
+    },
+    {
+      "pattern_id": "GS04",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "W-Validate-application-schedule_Role_2"
+        },
+        {
+          "id": 2,
+          "label": "W-Validate-application-start_Role_2"
+        },
+        {
+          "id": 3,
+          "label": "A-Validating_Role_2"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+        },
+        {
+          "source": 2,
+          "target": 3,
+          "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+        }
+      ],
+      "name": "Validation initiation",
+      "approved": false,
+      "reviewed_by": "",
+      "reference_semantics": "contiguous labels in original case event order"
+    },
+    {
+      "pattern_id": "GS05",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "A-Denied_Role_3"
+        },
+        {
+          "id": 2,
+          "label": "O-Refused_Role_3"
+        },
+        {
+          "id": 3,
+          "label": "W-Validate-application-complete_Role_3"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "A-Denied_Role_3__O-Refused_Role_3"
+        },
+        {
+          "source": 2,
+          "target": 3,
+          "label": "O-Refused_Role_3__W-Validate-application-complete_Role_3"
+        }
+      ],
+      "name": "Denial and refusal completion",
+      "approved": false,
+      "reviewed_by": "",
+      "reference_semantics": "contiguous labels in original case event order"
+    },
+    {
+      "pattern_id": "GS06",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "W-Validate-application-resume_Role_3"
+        },
+        {
+          "id": 2,
+          "label": "W-Validate-application-suspend_Role_3"
+        },
+        {
+          "id": 3,
+          "label": "W-Validate-application-resume_Role_3"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "W-Validate-application-resume_Role_3__W-Validate-application-suspend_Role_3"
+        },
+        {
+          "source": 2,
+          "target": 3,
+          "label": "W-Validate-application-suspend_Role_3__W-Validate-application-resume_Role_3"
+        }
+      ],
+      "name": "Repeated validation resume/suspend",
+      "approved": false,
+      "reviewed_by": "",
+      "reference_semantics": "contiguous labels in original case event order"
+    },
+    {
+      "pattern_id": "GS07",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "W-Call-after-offers-ate-abort_Role_2"
+        },
+        {
+          "id": 2,
+          "label": "W-Validate-application-schedule_Role_2"
+        },
+        {
+          "id": 3,
+          "label": "W-Validate-application-start_Role_2"
+        },
+        {
+          "id": 4,
+          "label": "A-Validating_Role_2"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+        },
+        {
+          "source": 2,
+          "target": 3,
+          "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+        },
+        {
+          "source": 3,
+          "target": 4,
+          "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+        }
+      ],
+      "name": "Call to validation handoff",
+      "approved": false,
+      "reviewed_by": "",
+      "reference_semantics": "contiguous labels in original case event order"
+    },
+    {
+      "pattern_id": "GS08",
+      "nodes": [
+        {
+          "id": 1,
+          "label": "A-Accepted_Role_1"
+        },
+        {
+          "id": 2,
+          "label": "O-Create-Offer_Role_1"
+        },
+        {
+          "id": 3,
+          "label": "O-Created_Role_1"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "A-Accepted_Role_1__O-Create-Offer_Role_1"
+        },
+        {
+          "source": 2,
+          "target": 3,
+          "label": "O-Create-Offer_Role_1__O-Created_Role_1"
+        }
+      ],
+      "name": "Acceptance to offer creation",
+      "approved": false,
+      "reviewed_by": "",
+      "reference_semantics": "contiguous labels in original case event order"
+    }
+  ]
+}

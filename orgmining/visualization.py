@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import networkx as nx  # noqa: E402
 from matplotlib.patches import Patch  # noqa: E402
 
-from .instance_graphs import GFileConverter  # noqa: E402
+from .graph_io import GFileConverter  # noqa: E402
 
 # Categorical colours, assigned to roles in a fixed order (Role_1 always gets
 # the first colour). Colour-blind safe palette from the dataviz guidelines.
@@ -109,7 +109,7 @@ class InstanceGraphViewer:
         lines = [f"Instance graph {graph.graph.get('graph_index')} - case "
                  f"{graph.graph.get('case_id')}: {graph.number_of_nodes()} nodes, "
                  f"{graph.number_of_edges()} edges, "
-                 f"{'with' if parallel else 'no'} parallel branches", ""]
+                 f"{'with' if parallel else 'no'} branching nodes", ""]
         lines.append(f"{'id':>4}  {'activity':<38} {'role':<8} next")
         for node in order:
             data = graph.nodes[node]
@@ -123,6 +123,8 @@ class InstanceGraphViewer:
 
     def layout(self, graph, columns=DEFAULT_COLUMNS):
         """Positions {node: (x, y)}: layer = longest path from a start node, snake-wrapped."""
+        if columns < 1:
+            raise ValueError("columns must be positive.")
         layer = {}
         for node in self.node_order(graph):
             layer[node] = max((layer[p] + 1 for p in graph.predecessors(node)), default=0)
@@ -162,6 +164,7 @@ class InstanceGraphViewer:
             text = wrap_label(data.get("activity", data["label"]))
             if value is not None:
                 text = f"{text}\n{short_tag(value)}"
+            text = f"#{data.get('local_id', node)}  {text}"
             boxes[node] = ax.text(
                 x, y, text, ha="center", va="center", fontsize=7, color=TEXT_COLOUR,
                 zorder=3, bbox=dict(boxstyle="round,pad=0.35", facecolor="white",
@@ -187,7 +190,7 @@ class InstanceGraphViewer:
                                      label=f"{short_tag(v)} = {v}") for v in used],
                       loc="upper left", bbox_to_anchor=(1.0, 1.0), frameon=False, fontsize=8)
         ax.set_title(title or f"Instance graph of case {graph.graph.get('case_id')} "
-                              f"({graph.number_of_nodes()} events)",
+                              f"({graph.number_of_nodes()} events; follow arrows and event numbers)",
                      fontsize=10, color=TEXT_COLOUR, loc="left")
         ax.axis("off")
         fig.tight_layout()

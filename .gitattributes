@@ -1,0 +1,8 @@
+# Keep source portable and preserve captured-result hashes byte-for-byte.
+* text=auto
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+results/weekend/** -text linguist-generated=true
+results/weekend/README.md text eol=lf linguist-generated=false
+*.zip binary
