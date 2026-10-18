@@ -1,0 +1,327 @@
+{
+  "cases": 3093,
+  "patterns": 16,
+  "cross_role_patterns": [
+    {
+      "pattern_id": "P001",
+      "role_handoffs": [
+        [
+          "Role_1",
+          "Role_2"
+        ]
+      ]
+    },
+    {
+      "pattern_id": "P004",
+      "role_handoffs": [
+        [
+          "Role_1",
+          "Role_2"
+        ]
+      ]
+    },
+    {
+      "pattern_id": "P006",
+      "role_handoffs": [
+        [
+          "Role_1",
+          "Role_2"
+        ]
+      ]
+    },
+    {
+      "pattern_id": "P012",
+      "role_handoffs": [
+        [
+          "Role_1",
+          "Role_2"
+        ]
+      ]
+    }
+  ],
+  "cases_with_any_cross_role_pattern": 2679,
+  "observed_cross_role_edge_types": 35,
+  "observed_cross_role_pairs": [
+    {
+      "source": "Role_1",
+      "target": "Role_2",
+      "edges": 3924,
+      "cases": 2930,
+      "mined_patterns": "P001 P004 P006 P012",
+      "cases_with_selected_motif": 2679
+    },
+    {
+      "source": "Role_2",
+      "target": "Role_3",
+      "edges": 2397,
+      "cases": 2055,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_4",
+      "target": "Role_1",
+      "edges": 2306,
+      "cases": 2229,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_2",
+      "target": "Role_5",
+      "edges": 968,
+      "cases": 920,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_3",
+      "target": "Role_1",
+      "edges": 822,
+      "cases": 645,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_5",
+      "target": "Role_3",
+      "edges": 815,
+      "cases": 747,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_2",
+      "target": "Role_1",
+      "edges": 641,
+      "cases": 569,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_1",
+      "target": "Role_3",
+      "edges": 329,
+      "cases": 286,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_3",
+      "target": "Role_5",
+      "edges": 228,
+      "cases": 209,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_1",
+      "target": "Role_4",
+      "edges": 93,
+      "cases": 92,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_5",
+      "target": "Role_1",
+      "edges": 89,
+      "cases": 83,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_3",
+      "target": "Role_6",
+      "edges": 74,
+      "cases": 66,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_1",
+      "target": "Role_5",
+      "edges": 61,
+      "cases": 61,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_6",
+      "target": "Role_3",
+      "edges": 54,
+      "cases": 47,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_1",
+      "target": "Role_6",
+      "edges": 50,
+      "cases": 40,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_3",
+      "target": "Role_2",
+      "edges": 46,
+      "cases": 45,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_4",
+      "target": "Role_2",
+      "edges": 43,
+      "cases": 43,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_4",
+      "target": "Role_3",
+      "edges": 29,
+      "cases": 29,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_6",
+      "target": "Role_4",
+      "edges": 26,
+      "cases": 23,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_6",
+      "target": "Role_1",
+      "edges": 23,
+      "cases": 21,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_3",
+      "target": "Role_4",
+      "edges": 20,
+      "cases": 20,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_4",
+      "target": "Role_6",
+      "edges": 17,
+      "cases": 15,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_2",
+      "target": "Role_4",
+      "edges": 12,
+      "cases": 12,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_5",
+      "target": "Role_2",
+      "edges": 10,
+      "cases": 10,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_5",
+      "target": "Role_6",
+      "edges": 8,
+      "cases": 8,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_2",
+      "target": "Role_6",
+      "edges": 7,
+      "cases": 7,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_4",
+      "target": "Role_5",
+      "edges": 6,
+      "cases": 6,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_6",
+      "target": "Role_2",
+      "edges": 4,
+      "cases": 4,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_5",
+      "target": "Role_4",
+      "edges": 3,
+      "cases": 3,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_2",
+      "target": "Role_7",
+      "edges": 2,
+      "cases": 2,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_6",
+      "target": "Role_5",
+      "edges": 1,
+      "cases": 1,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_7",
+      "target": "Role_3",
+      "edges": 1,
+      "cases": 1,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_7",
+      "target": "Role_6",
+      "edges": 1,
+      "cases": 1,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_2",
+      "target": "Role_8",
+      "edges": 1,
+      "cases": 1,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    },
+    {
+      "source": "Role_8",
+      "target": "Role_3",
+      "edges": 1,
+      "cases": 1,
+      "mined_patterns": "",
+      "cases_with_selected_motif": 0
+    }
+  ],
+  "caveat": "Inferred resource profiles, not confirmed departments. Coverage describes the selected motifs on the existing graph representation; it is not manual-gold recall or proof of real-world handoffs."
+}

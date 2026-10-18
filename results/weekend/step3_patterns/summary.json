@@ -1,0 +1,22 @@
+{
+  "cases": 3093,
+  "patterns": 16,
+  "input_sha256": "632685d377faed7459094de1f88c829ee8a8d515c03498f64ab87fcb18989eb2",
+  "upstream_commit": "f33567dea2fa7e9595c27b807f16b120a7bdebb2",
+  "upstream_url": "https://github.com/holderlb/Subdue",
+  "settings": {
+    "beamWidth": 4,
+    "limit": 5000,
+    "maxSize": 5,
+    "minSize": 2,
+    "numBest": 20,
+    "overlap": "vertex",
+    "iterations": 1,
+    "prune": false,
+    "temporal": false
+  },
+  "elapsed_seconds": 31.55,
+  "support_semantics": "Exact directed labelled non-induced subgraphs; binary case presence, independently verified. All overlapping edge-set occurrences counted separately.",
+  "score_semantics": "Upstream edge-compression heuristic, NOT a full MDL bit-length score.",
+  "coverage": "All cases; bounded beam search is not exhaustive; additional exact verification does not recover undiscovered patterns."
+}

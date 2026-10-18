@@ -1,0 +1,7 @@
+{
+  "log_sha256": "e828a28b7093d58c09cf0f22c1892e15c725e258e05e9b0fda299cb4b6fc243d",
+  "net_sha256": "82605fa12540bf1f153896332d5aa38eb03252b6cf1d98b94ffab5ed665b4a9e",
+  "pm4py_version": "2.2.16",
+  "algorithm": "state_equation_a_star",
+  "cost_scheme": "PM4Py default; visible=10000, silent=1; fitness floor normalization"
+}

@@ -1,0 +1,7 @@
+{
+  "cases": 25,
+  "branching_cases": 8,
+  "original_rerun_matches_historical": 25,
+  "cases_with_edges_changed_by_correct_path_search": 0,
+  "scope": "All eight branching cases, ten lowest-fitness cases, earlier missing-label cases and example; not all repaired cases. Supplied BIG.py and baseline graphs preserved."
+}

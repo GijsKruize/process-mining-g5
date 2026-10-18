@@ -1,0 +1,15 @@
+Measure,Value
+Cases,3093.0
+Events,124866.0
+Instance graph edges,121781.0
+Completed alignments,3093.0
+Incomplete alignments,0.0
+Fully fitting cases (no visible deviations),1644.0
+Cases with visible deviations,1449.0
+Fitting cases (%),53.15227934044617
+Mean trace alignment fitness,0.9822157955726242
+Cost-weighted log alignment fitness,0.9808169990168506
+Log-only moves,1703.0
+Visible model-only moves,841.0
+Silent model moves,293452.0
+Discovered patterns,16.0

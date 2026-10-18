@@ -1,0 +1,11 @@
+{
+  "graphml_roundtrips": 3093,
+  "svg_documents_parsed": 3093,
+  "matrix_shape": [
+    3093,
+    16
+  ],
+  "support_and_occurrence_totals_verified": true,
+  "conformance_matches_official_pm4py_evaluation": true,
+  "archives_crc_valid": true
+}

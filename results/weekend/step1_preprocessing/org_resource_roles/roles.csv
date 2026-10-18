@@ -1,0 +1,24 @@
+role,resources_assigned,events_of_assigned_resources,n_activities,activities,resources_performing_these_activities
+Role_1,86,58471,12,A-Accepted | A-Complete | O-Create-Offer | O-Created | O-Sent-mail-and-online | W-Call-after-offers-schedule | W-Call-after-offers-start | W-Complete-application-ate-abort | W-Complete-application-complete | W-Complete-application-resume | W-Complete-application-start | W-Complete-application-suspend,102
+Role_2,21,25534,6,A-Validating | O-Returned | W-Call-after-offers-ate-abort | W-Call-incomplete-files-ate-abort | W-Validate-application-schedule | W-Validate-application-start,106
+Role_3,18,20624,3,A-Denied | O-Refused | end,92
+Role_4,2,14486,4,A-Concept | A-Create-Application | W-Complete-application-schedule | start,88
+Role_5,3,5030,1,W-Validate-application-resume,37
+Role_6,2,714,1,W-Assess-potential-fraud-resume,29
+Role_7,1,6,2,W-Assess-potential-fraud-schedule | W-Assess-potential-fraud-start,25
+Role_8,1,1,1,W-Validate-application-suspend,97
+,0,0,3,A-Incomplete | W-Call-incomplete-files-schedule | W-Call-incomplete-files-start,46
+,0,0,4,A-Submitted | W-Handle-leads-ate-abort | W-Handle-leads-schedule | W-Handle-leads-withdraw,17
+,0,0,1,O-Cancelled,62
+,0,0,1,W-Assess-potential-fraud-suspend,45
+,0,0,1,W-Call-after-offers-complete,24
+,0,0,1,W-Call-after-offers-resume,61
+,0,0,1,W-Call-after-offers-suspend,92
+,0,0,1,W-Call-after-offers-withdraw,1
+,0,0,1,W-Call-incomplete-files-resume,79
+,0,0,1,W-Call-incomplete-files-suspend,104
+,0,0,2,W-Handle-leads-complete | W-Handle-leads-start,61
+,0,0,2,W-Handle-leads-resume | W-Handle-leads-suspend,56
+,0,0,3,W-Shortened-completion-schedule | W-Shortened-completion-start | W-Shortened-completion-suspend,3
+,0,0,1,W-Validate-application-ate-abort,49
+,0,0,1,W-Validate-application-complete,44

@@ -1,0 +1,17 @@
+﻿event_position,label,resource,timestamp,role
+1,start_Role_4,User_1,2016-10-07T09:24:00.722000+02:00,Role_4
+2,A-Create-Application_Role_4,User_1,2016-10-07T09:24:00.722000+02:00,Role_4
+3,A-Submitted_Role_4,User_1,2016-10-07T09:24:01.608000+02:00,Role_4
+4,W-Handle-leads-schedule_Role_4,User_1,2016-10-07T09:24:01.826000+02:00,Role_4
+5,W-Handle-leads-withdraw_Role_4,User_1,2016-10-07T09:25:26.045000+02:00,Role_4
+6,W-Complete-application-schedule_Role_4,User_1,2016-10-07T09:25:26.051000+02:00,Role_4
+7,A-Concept_Role_4,User_1,2016-10-07T09:25:26.055000+02:00,Role_4
+8,W-Complete-application-start_Role_1,User_77,2016-10-07T14:05:59.518000+02:00,Role_1
+9,A-Accepted_Role_1,User_77,2016-10-07T14:15:17.632000+02:00,Role_1
+10,O-Create-Offer_Role_1,User_77,2016-10-07T14:21:56.351000+02:00,Role_1
+11,O-Created_Role_1,User_77,2016-10-07T14:21:56.848000+02:00,Role_1
+12,O-Cancelled_Role_1,User_77,2016-10-07T14:58:18.774000+02:00,Role_1
+13,W-Complete-application-suspend_Role_1,User_77,2016-10-07T14:58:30.020000+02:00,Role_1
+14,A-Denied_Role_1,User_77,2016-10-07T15:37:38.963000+02:00,Role_1
+15,W-Complete-application-ate-abort_Role_1,User_77,2016-10-07T15:37:38.988000+02:00,Role_1
+16,end_Role_1,User_77,2016-10-07T15:37:38.988000+02:00,Role_1

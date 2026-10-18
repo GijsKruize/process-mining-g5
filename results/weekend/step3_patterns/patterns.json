@@ -1,0 +1,930 @@
+[
+  {
+    "pattern_id": "P001",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-ate-abort_Role_2",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-ate-abort",
+        "value": "Role_2"
+      },
+      {
+        "id": 5,
+        "label": "O-Returned_Role_2",
+        "local_id": 5,
+        "activity": "O-Returned",
+        "value": "Role_2"
+      },
+      {
+        "id": 6,
+        "label": "W-Call-after-offers-suspend_Role_1",
+        "local_id": 6,
+        "activity": "W-Call-after-offers-suspend",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      },
+      {
+        "source": 3,
+        "target": 5,
+        "label": "A-Validating_Role_2__O-Returned_Role_2"
+      },
+      {
+        "source": 4,
+        "target": 1,
+        "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+      },
+      {
+        "source": 6,
+        "target": 4,
+        "label": "W-Call-after-offers-suspend_Role_1__W-Call-after-offers-ate-abort_Role_2"
+      }
+    ],
+    "upstream_score": 0.1015757794729884,
+    "upstream_selected_instances": 2475
+  },
+  {
+    "pattern_id": "P002",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Call-after-offers-schedule_Role_1",
+        "local_id": 1,
+        "activity": "W-Call-after-offers-schedule",
+        "value": "Role_1"
+      },
+      {
+        "id": 2,
+        "label": "W-Call-after-offers-start_Role_1",
+        "local_id": 2,
+        "activity": "W-Call-after-offers-start",
+        "value": "Role_1"
+      },
+      {
+        "id": 3,
+        "label": "A-Complete_Role_1",
+        "local_id": 3,
+        "activity": "A-Complete",
+        "value": "Role_1"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-suspend_Role_1",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-suspend",
+        "value": "Role_1"
+      },
+      {
+        "id": 5,
+        "label": "W-Call-after-offers-resume_Role_1",
+        "local_id": 5,
+        "activity": "W-Call-after-offers-resume",
+        "value": "Role_1"
+      },
+      {
+        "id": 6,
+        "label": "W-Call-after-offers-suspend_Role_1",
+        "local_id": 6,
+        "activity": "W-Call-after-offers-suspend",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Call-after-offers-schedule_Role_1__W-Call-after-offers-start_Role_1"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Call-after-offers-start_Role_1__A-Complete_Role_1"
+      },
+      {
+        "source": 3,
+        "target": 4,
+        "label": "A-Complete_Role_1__W-Call-after-offers-suspend_Role_1"
+      },
+      {
+        "source": 4,
+        "target": 5,
+        "label": "W-Call-after-offers-suspend_Role_1__W-Call-after-offers-resume_Role_1"
+      },
+      {
+        "source": 5,
+        "target": 6,
+        "label": "W-Call-after-offers-resume_Role_1__W-Call-after-offers-suspend_Role_1"
+      }
+    ],
+    "upstream_score": 0.10030300293149177,
+    "upstream_selected_instances": 2444
+  },
+  {
+    "pattern_id": "P003",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-ate-abort_Role_2",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-ate-abort",
+        "value": "Role_2"
+      },
+      {
+        "id": 5,
+        "label": "O-Returned_Role_2",
+        "local_id": 5,
+        "activity": "O-Returned",
+        "value": "Role_2"
+      },
+      {
+        "id": 6,
+        "label": "W-Validate-application-suspend_Role_2",
+        "local_id": 6,
+        "activity": "W-Validate-application-suspend",
+        "value": "Role_2"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      },
+      {
+        "source": 3,
+        "target": 5,
+        "label": "A-Validating_Role_2__O-Returned_Role_2"
+      },
+      {
+        "source": 4,
+        "target": 1,
+        "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+      },
+      {
+        "source": 5,
+        "target": 6,
+        "label": "O-Returned_Role_2__W-Validate-application-suspend_Role_2"
+      }
+    ],
+    "upstream_score": 0.09923551292894622,
+    "upstream_selected_instances": 2418
+  },
+  {
+    "pattern_id": "P004",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-ate-abort_Role_2",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-ate-abort",
+        "value": "Role_2"
+      },
+      {
+        "id": 5,
+        "label": "W-Call-after-offers-suspend_Role_1",
+        "local_id": 5,
+        "activity": "W-Call-after-offers-suspend",
+        "value": "Role_1"
+      },
+      {
+        "id": 6,
+        "label": "W-Call-after-offers-resume_Role_1",
+        "local_id": 6,
+        "activity": "W-Call-after-offers-resume",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      },
+      {
+        "source": 4,
+        "target": 1,
+        "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+      },
+      {
+        "source": 5,
+        "target": 4,
+        "label": "W-Call-after-offers-suspend_Role_1__W-Call-after-offers-ate-abort_Role_2"
+      },
+      {
+        "source": 6,
+        "target": 5,
+        "label": "W-Call-after-offers-resume_Role_1__W-Call-after-offers-suspend_Role_1"
+      }
+    ],
+    "upstream_score": 0.09861965331209302,
+    "upstream_selected_instances": 2403
+  },
+  {
+    "pattern_id": "P005",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-ate-abort_Role_2",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-ate-abort",
+        "value": "Role_2"
+      },
+      {
+        "id": 5,
+        "label": "O-Returned_Role_2",
+        "local_id": 5,
+        "activity": "O-Returned",
+        "value": "Role_2"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      },
+      {
+        "source": 3,
+        "target": 5,
+        "label": "A-Validating_Role_2__O-Returned_Role_2"
+      },
+      {
+        "source": 4,
+        "target": 1,
+        "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+      }
+    ],
+    "upstream_score": 0.08835532636453962,
+    "upstream_selected_instances": 2691
+  },
+  {
+    "pattern_id": "P006",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-ate-abort_Role_2",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-ate-abort",
+        "value": "Role_2"
+      },
+      {
+        "id": 5,
+        "label": "W-Call-after-offers-suspend_Role_1",
+        "local_id": 5,
+        "activity": "W-Call-after-offers-suspend",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      },
+      {
+        "source": 4,
+        "target": 1,
+        "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+      },
+      {
+        "source": 5,
+        "target": 4,
+        "label": "W-Call-after-offers-suspend_Role_1__W-Call-after-offers-ate-abort_Role_2"
+      }
+    ],
+    "upstream_score": 0.08796117620975358,
+    "upstream_selected_instances": 2679
+  },
+  {
+    "pattern_id": "P007",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "O-Returned_Role_2",
+        "local_id": 4,
+        "activity": "O-Returned",
+        "value": "Role_2"
+      },
+      {
+        "id": 5,
+        "label": "W-Validate-application-suspend_Role_2",
+        "local_id": 5,
+        "activity": "W-Validate-application-suspend",
+        "value": "Role_2"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      },
+      {
+        "source": 3,
+        "target": 4,
+        "label": "A-Validating_Role_2__O-Returned_Role_2"
+      },
+      {
+        "source": 4,
+        "target": 5,
+        "label": "O-Returned_Role_2__W-Validate-application-suspend_Role_2"
+      }
+    ],
+    "upstream_score": 0.0806037066537473,
+    "upstream_selected_instances": 2455
+  },
+  {
+    "pattern_id": "P008",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Call-after-offers-schedule_Role_1",
+        "local_id": 1,
+        "activity": "W-Call-after-offers-schedule",
+        "value": "Role_1"
+      },
+      {
+        "id": 2,
+        "label": "W-Call-after-offers-start_Role_1",
+        "local_id": 2,
+        "activity": "W-Call-after-offers-start",
+        "value": "Role_1"
+      },
+      {
+        "id": 3,
+        "label": "A-Complete_Role_1",
+        "local_id": 3,
+        "activity": "A-Complete",
+        "value": "Role_1"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-suspend_Role_1",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-suspend",
+        "value": "Role_1"
+      },
+      {
+        "id": 5,
+        "label": "W-Call-after-offers-resume_Role_1",
+        "local_id": 5,
+        "activity": "W-Call-after-offers-resume",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Call-after-offers-schedule_Role_1__W-Call-after-offers-start_Role_1"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Call-after-offers-start_Role_1__A-Complete_Role_1"
+      },
+      {
+        "source": 3,
+        "target": 4,
+        "label": "A-Complete_Role_1__W-Call-after-offers-suspend_Role_1"
+      },
+      {
+        "source": 4,
+        "target": 5,
+        "label": "W-Call-after-offers-suspend_Role_1__W-Call-after-offers-resume_Role_1"
+      }
+    ],
+    "upstream_score": 0.0803737857301221,
+    "upstream_selected_instances": 2448
+  },
+  {
+    "pattern_id": "P009",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-ate-abort_Role_2",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-ate-abort",
+        "value": "Role_2"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      },
+      {
+        "source": 4,
+        "target": 1,
+        "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+      }
+    ],
+    "upstream_score": 0.0718585000944318,
+    "upstream_selected_instances": 2918
+  },
+  {
+    "pattern_id": "P010",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Call-after-offers-schedule_Role_1",
+        "local_id": 1,
+        "activity": "W-Call-after-offers-schedule",
+        "value": "Role_1"
+      },
+      {
+        "id": 2,
+        "label": "W-Call-after-offers-start_Role_1",
+        "local_id": 2,
+        "activity": "W-Call-after-offers-start",
+        "value": "Role_1"
+      },
+      {
+        "id": 3,
+        "label": "A-Complete_Role_1",
+        "local_id": 3,
+        "activity": "A-Complete",
+        "value": "Role_1"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-suspend_Role_1",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-suspend",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Call-after-offers-schedule_Role_1__W-Call-after-offers-start_Role_1"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Call-after-offers-start_Role_1__A-Complete_Role_1"
+      },
+      {
+        "source": 3,
+        "target": 4,
+        "label": "A-Complete_Role_1__W-Call-after-offers-suspend_Role_1"
+      }
+    ],
+    "upstream_score": 0.07129190924692685,
+    "upstream_selected_instances": 2895
+  },
+  {
+    "pattern_id": "P011",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "O-Returned_Role_2",
+        "local_id": 4,
+        "activity": "O-Returned",
+        "value": "Role_2"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      },
+      {
+        "source": 3,
+        "target": 4,
+        "label": "A-Validating_Role_2__O-Returned_Role_2"
+      }
+    ],
+    "upstream_score": 0.06720260139102159,
+    "upstream_selected_instances": 2729
+  },
+  {
+    "pattern_id": "P012",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Call-after-offers-ate-abort_Role_2",
+        "local_id": 1,
+        "activity": "W-Call-after-offers-ate-abort",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 3,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 4,
+        "label": "W-Call-after-offers-suspend_Role_1",
+        "local_id": 4,
+        "activity": "W-Call-after-offers-suspend",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 4,
+        "target": 1,
+        "label": "W-Call-after-offers-suspend_Role_1__W-Call-after-offers-ate-abort_Role_2"
+      }
+    ],
+    "upstream_score": 0.06597088215731518,
+    "upstream_selected_instances": 2679
+  },
+  {
+    "pattern_id": "P013",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 1,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "A-Validating_Role_2",
+        "local_id": 3,
+        "activity": "A-Validating",
+        "value": "Role_2"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-start_Role_2__A-Validating_Role_2"
+      }
+    ],
+    "upstream_score": 0.06483770046230529,
+    "upstream_selected_instances": 3949
+  },
+  {
+    "pattern_id": "P014",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "O-Create-Offer_Role_1",
+        "local_id": 1,
+        "activity": "O-Create-Offer",
+        "value": "Role_1"
+      },
+      {
+        "id": 2,
+        "label": "O-Created_Role_1",
+        "local_id": 2,
+        "activity": "O-Created",
+        "value": "Role_1"
+      },
+      {
+        "id": 3,
+        "label": "O-Sent-mail-and-online_Role_1",
+        "local_id": 3,
+        "activity": "O-Sent-mail-and-online",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "O-Create-Offer_Role_1__O-Created_Role_1"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "O-Created_Role_1__O-Sent-mail-and-online_Role_1"
+      }
+    ],
+    "upstream_score": 0.05544378843990442,
+    "upstream_selected_instances": 3377
+  },
+  {
+    "pattern_id": "P015",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Call-after-offers-schedule_Role_1",
+        "local_id": 1,
+        "activity": "W-Call-after-offers-schedule",
+        "value": "Role_1"
+      },
+      {
+        "id": 2,
+        "label": "W-Call-after-offers-start_Role_1",
+        "local_id": 2,
+        "activity": "W-Call-after-offers-start",
+        "value": "Role_1"
+      },
+      {
+        "id": 3,
+        "label": "A-Complete_Role_1",
+        "local_id": 3,
+        "activity": "A-Complete",
+        "value": "Role_1"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Call-after-offers-schedule_Role_1__W-Call-after-offers-start_Role_1"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Call-after-offers-start_Role_1__A-Complete_Role_1"
+      }
+    ],
+    "upstream_score": 0.04948226734876541,
+    "upstream_selected_instances": 3014
+  },
+  {
+    "pattern_id": "P016",
+    "nodes": [
+      {
+        "id": 1,
+        "label": "W-Call-after-offers-ate-abort_Role_2",
+        "local_id": 1,
+        "activity": "W-Call-after-offers-ate-abort",
+        "value": "Role_2"
+      },
+      {
+        "id": 2,
+        "label": "W-Validate-application-schedule_Role_2",
+        "local_id": 2,
+        "activity": "W-Validate-application-schedule",
+        "value": "Role_2"
+      },
+      {
+        "id": 3,
+        "label": "W-Validate-application-start_Role_2",
+        "local_id": 3,
+        "activity": "W-Validate-application-start",
+        "value": "Role_2"
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2,
+        "label": "W-Call-after-offers-ate-abort_Role_2__W-Validate-application-schedule_Role_2"
+      },
+      {
+        "source": 2,
+        "target": 3,
+        "label": "W-Validate-application-schedule_Role_2__W-Validate-application-start_Role_2"
+      }
+    ],
+    "upstream_score": 0.0479056667296212,
+    "upstream_selected_instances": 2918
+  }
+]

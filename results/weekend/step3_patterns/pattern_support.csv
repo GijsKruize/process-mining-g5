@@ -1,0 +1,17 @@
+﻿pattern_id,nodes,edges,support_cases,support_pct,total_exact_occurrences,upstream_score,description
+P001,6,5,2475,80.01939864209506,2475,0.1015757794729884,W-Call-after-offers-suspend_Role_1 -> W-Call-after-offers-ate-abort_Role_2 -> W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2 -> O-Returned_Role_2
+P002,6,5,2444,79.01713546718396,2444,0.10030300293149177,W-Call-after-offers-schedule_Role_1 -> W-Call-after-offers-start_Role_1 -> A-Complete_Role_1 -> W-Call-after-offers-suspend_Role_1 -> W-Call-after-offers-resume_Role_1 -> W-Call-after-offers-suspend_Role_1
+P003,6,5,2418,78.17652764306499,2418,0.09923551292894622,W-Call-after-offers-ate-abort_Role_2 -> W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2 -> O-Returned_Role_2 -> W-Validate-application-suspend_Role_2
+P004,6,5,2403,77.69156159068865,2403,0.09861965331209302,W-Call-after-offers-resume_Role_1 -> W-Call-after-offers-suspend_Role_1 -> W-Call-after-offers-ate-abort_Role_2 -> W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2
+P005,5,4,2691,87.00290979631426,2691,0.08835532636453962,W-Call-after-offers-ate-abort_Role_2 -> W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2 -> O-Returned_Role_2
+P006,5,4,2679,86.6149369544132,2679,0.08796117620975358,W-Call-after-offers-suspend_Role_1 -> W-Call-after-offers-ate-abort_Role_2 -> W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2
+P007,5,4,2451,79.24345295829292,2455,0.0806037066537473,W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2 -> O-Returned_Role_2 -> W-Validate-application-suspend_Role_2
+P008,5,4,2448,79.14645974781766,2448,0.0803737857301221,W-Call-after-offers-schedule_Role_1 -> W-Call-after-offers-start_Role_1 -> A-Complete_Role_1 -> W-Call-after-offers-suspend_Role_1 -> W-Call-after-offers-resume_Role_1
+P009,4,3,2918,94.34206272227611,2918,0.0718585000944318,W-Call-after-offers-ate-abort_Role_2 -> W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2
+P010,4,3,2895,93.5984481086324,2895,0.07129190924692685,W-Call-after-offers-schedule_Role_1 -> W-Call-after-offers-start_Role_1 -> A-Complete_Role_1 -> W-Call-after-offers-suspend_Role_1
+P011,4,3,2717,87.84351762043323,2729,0.06720260139102159,W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2 -> O-Returned_Role_2
+P012,4,3,2679,86.6149369544132,2679,0.06597088215731518,W-Call-after-offers-suspend_Role_1 -> W-Call-after-offers-ate-abort_Role_2 -> W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2
+P013,3,2,2935,94.89169091496929,3949,0.06483770046230529,W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2 -> A-Validating_Role_2
+P014,3,2,2944,95.18267054639509,3377,0.05544378843990442,O-Create-Offer_Role_1 -> O-Created_Role_1 -> O-Sent-mail-and-online_Role_1
+P015,3,2,3014,97.44584545748464,3014,0.04948226734876541,W-Call-after-offers-schedule_Role_1 -> W-Call-after-offers-start_Role_1 -> A-Complete_Role_1
+P016,3,2,2918,94.34206272227611,2918,0.0479056667296212,W-Call-after-offers-ate-abort_Role_2 -> W-Validate-application-schedule_Role_2 -> W-Validate-application-start_Role_2

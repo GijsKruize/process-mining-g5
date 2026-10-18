@@ -1,0 +1,227 @@
+﻿..\.venv\Scripts\python.exe : test_default_preserves_existing_discovery_api 
+(test_instance_graphs.DiscoveryAndValidationTest) ... ok
+At line:9 char:1
++ ..\.venv\Scripts\python.exe -m unittest discover tests -v 2>&1 | Out- ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_default_pr...ionTest) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+test_imf_uses_its_own_noise_parameter (test_instance_graphs.DiscoveryAndValidationTest) ... ok
+test_integrity_validation_rejects_wrong_labels_and_backwards_edges (test_instance_graphs.DiscoveryAndValidationTest) 
+... ok
+test_case_id_count_must_match (test_instance_graphs.GFileConverterTest) ... ok
+test_label_parts_from_step1_are_attached (test_instance_graphs.GFileConverterTest) ... ok
+test_node_ids_are_unique_and_edges_preserved (test_instance_graphs.GFileConverterTest) ... ok
+test_one_graph_per_block_with_case_ids (test_instance_graphs.GFileConverterTest) ... ok
+test_save_and_load_round_trip (test_instance_graphs.GFileConverterTest) ... ok
+test_summary_detects_parallelism (test_instance_graphs.GFileConverterTest) ... ok
+test_unknown_node_in_edge_is_an_error (test_instance_graphs.GFileConverterTest) ... ok
+test_chunks_keep_every_trace_in_order (test_instance_graphs.SplitLogTest) ... 
+exporting log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+exporting log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+
+exporting log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+exporting log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+
+exporting log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+exporting log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+
+exporting log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+exporting log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+
+exporting log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+exporting log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:348: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_000\\log.xes'>
+  f = open(filename, "rb")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+parsing log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+parsing log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:300: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_000\\log.xes'>
+  return import_log(filename, parameters)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:348: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_001\\log.xes'>
+  f = open(filename, "rb")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+parsing log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+parsing log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:300: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_001\\log.xes'>
+  return import_log(filename, parameters)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:348: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_002\\log.xes'>
+  f = open(filename, "rb")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+parsing log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+parsing log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:300: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_002\\log.xes'>
+  return import_log(filename, parameters)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:348: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_003\\log.xes'>
+  f = open(filename, "rb")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+parsing log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+parsing log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:300: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_003\\log.xes'>
+  return import_log(filename, parameters)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:348: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_004\\log.xes'>
+  f = open(filename, "rb")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+parsing log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+parsing log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:300: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpxrbw45en\\chunks\\chunk_004\\log.xes'>
+  return import_log(filename, parameters)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_cached_empty_trace_cost_matches_pm4py_facade (test_patterns_evaluation.ConformanceTests) ... C:\school\aaa - Fall 
+2026\Progress Mining\Group Project\process-mining-g5\.venv\lib\site-packages\numpy\matrixlib\defmatrix.py:70: 
+PendingDeprecationWarning: the matrix subclass is not the recommended way to represent matrices or deal with linear 
+algebra (see https://docs.scipy.org/doc/numpy/user/numpy-for-matlab-users.html). Please adjust your code to use 
+regular ndarray.
+  return matrix(data, dtype=dtype, copy=False)
+C:\school\aaa - Fall 2026\Progress Mining\Group Project\process-mining-g5\.venv\lib\site-packages\pm4py\algo\conformanc
+e\alignments\petri_net\variants\state_equation_a_star.py:425: PendingDeprecationWarning: the matrix subclass is not 
+the recommended way to represent matrices or deal with linear algebra (see 
+https://docs.scipy.org/doc/numpy/user/numpy-for-matlab-users.html). Please adjust your code to use regular ndarray.
+  h_cvx = np.matrix(np.zeros(len(sync_net.transitions))).transpose()
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\petri_net\utils\align_utils.py:251: 
+PendingDeprecationWarning: the matrix subclass is not the recommended way to represent matrices or deal with linear 
+algebra (see https://docs.scipy.org/doc/numpy/user/numpy-for-matlab-users.html). Please adjust your code to use 
+regular ndarray.
+  b_term = np.matrix([x * 1.0 for x in b_term]).transpose()
+ok
+test_empty_manual_form_has_no_fabricated_scores (test_patterns_evaluation.EvaluationTests) ... C:\school\aaa - Fall 
+2026\Progress Mining\Group Project\process-mining-g5\friday1610-code-for-chatgpt\orgmining\evaluation.py:149: 
+ResourceWarning: unclosed file <_io.TextIOWrapper name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmpf1z7o1du\\form.csv' 
+mode='r' encoding='utf-8-sig'>
+  rows=list(csv.DictReader(Path(manual).open(encoding='utf-8-sig')))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_precision_and_recall (test_patterns_evaluation.EvaluationTests) ... ok
+test_direction_and_metadata (test_patterns_evaluation.PatternMatchingTests) ... ok
+test_indexed_operations_match_upstream_initial_patterns (test_patterns_evaluation.PatternMatchingTests) ... ok
+test_non_induced_and_case_boundaries (test_patterns_evaluation.PatternMatchingTests) ... ok
+Upstream SUBDUE: 12 vertices, 8 directed edges
+Finished: 1 patterns across 4 traces
+test_real_engine_renumbered_nodes_keep_their_labels (test_patterns_evaluation.PatternMatchingTests) ... ok
+test_repeated_labels_keep_distinct_events_and_overlap (test_patterns_evaluation.PatternMatchingTests) ... ok
+test_lists_every_column_with_its_level (test_preprocessing.DescribeAttributesTest) ... ok
+test_label_counts (test_preprocessing.RelabelEventsTest) ... ok
+test_labels_are_activity_underscore_value (test_preprocessing.RelabelEventsTest) ... ok
+test_original_log_is_not_modified (test_preprocessing.RelabelEventsTest) ... ok
+test_trace_attribute_can_be_selected (test_preprocessing.RelabelEventsTest) ... ok
+test_grouping_question_accepts_yes_and_no (test_preprocessing.RoleGroupingTest) ... ok
+test_labels_use_the_role_and_keep_the_user (test_preprocessing.RoleGroupingTest) ... ok
+test_resources_with_the_same_work_get_the_same_role (test_preprocessing.RoleGroupingTest) ... ok
+  Please answer y or n.
+test_end_to_end_writes_readable_outputs (test_preprocessing.RunPreprocessingTest) ... 
+exporting log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+exporting log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:348: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmps78andxy\\tiny.xes'>
+  f = open(filename, "rb")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+Reading event log: C:/Users/sophi/AppData/Local/Temp/tmps78andxy/tiny.xes
+
+parsing log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+parsing log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:300: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmps78andxy\\tiny.xes'>
+  return import_log(filename, parameters)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+Event log: 2 traces, 5 events, 5 attributes
+
+  #  attribute                    level  distinct  filled  examples
+-------------------------------------------------------------------
+  1  concept:name                 event         3  100.0%  A-Submitted, W-Validate application, A-Denied  (not selectable)
+  2  org:resource                 event         2   80.0%  User_1, User_2
+  3  time:timestamp               event         5  100.0%  2016-01-01 10:00:00+00:00, 2016-01-01 11:00:0  (not selectable)
+  4  case:LoanGoal                trace         2  100.0%  Car, Home improvement
+  5  case:concept:name            trace         2  100.0%  c1, c2  (not selectable)
+
+Selected attribute: org:resource
+  3 activities x 3 label values of 'org:resource' -> 4 distinct labels actually occurring
+  1 events had no value and were labelled '<activity>_UNKNOWN'
+
+  Most frequent new labels:
+    A-Submitted_User_1                                  2 events (40.0%)
+    A-Denied_UNKNOWN                                    1 events (20.0%)
+    A-Denied_User_2                                     1 events (20.0%)
+    W-Validate-application_User_2                       1 events (20.0%)
+
+Writing relabelled log (this takes a moment for large logs) ...
+
+exporting log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+exporting log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:348: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmps78andxy\\out\\org_resource\\relabeled_log.xes'>
+  f = open(filename, "rb")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+Step 1 outputs written to: C:/Users/sophi/AppData/Local/Temp/tmps78andxy/out/org_resource
+
+parsing log, completed traces ::   0%|          | 0/2 [00:00<?, ?it/s]
+parsing log, completed traces :: 100%|##########| 2/2 [00:00<?, ?it/s]
+C:\school\aaa - Fall 2026\Progress Mining\Group 
+Project\process-mining-g5\.venv\lib\site-packages\pm4py\objects\log\importer\xes\variants\iterparse.py:300: 
+ResourceWarning: unclosed file <_io.BufferedReader 
+name='C:\\Users\\sophi\\AppData\\Local\\Temp\\tmps78andxy\\out\\org_resource\\relabeled_log.xes'>
+  return import_log(filename, parameters)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_accepts_name_and_number (test_preprocessing.SelectAttributeTest) ... ok
+test_asks_again_after_invalid_answer (test_preprocessing.SelectAttributeTest) ... ok
+test_rejects_unknown_and_non_selectable (test_preprocessing.SelectAttributeTest) ... ok
+test_describe_lists_nodes_in_order_with_successors (test_visualization.InstanceGraphViewerTest) ... ok
+test_find_by_case_and_index (test_visualization.InstanceGraphViewerTest) ... ok
+test_label_helpers (test_visualization.InstanceGraphViewerTest) ... ok
+test_long_chain_snakes_back (test_visualization.InstanceGraphViewerTest) ... ok
+test_parallel_nodes_share_a_layer (test_visualization.InstanceGraphViewerTest) ... ok
+test_plot_writes_an_image (test_visualization.InstanceGraphViewerTest) ... ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 0.487s
+
+OK
+  'department' is not an attribute of this log. Please try again.

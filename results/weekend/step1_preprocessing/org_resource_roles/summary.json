@@ -1,0 +1,16 @@
+{
+  "step": "1 - preprocessing",
+  "created": "2026-10-16T16:53:27",
+  "pm4py_version": "2.2.16",
+  "input_log": "C:/school/aaa - Fall 2026/Progress Mining/Group Project/process-mining-g5/datasets_group5_mining_organizational_patterns/BPI2017Denied(3).xes",
+  "selected_attribute": "org:resource",
+  "grouping": "roles",
+  "roles_threshold": 0.65,
+  "label_format": "<activity>_<role of org:resource>",
+  "traces": 3093,
+  "events": 124866,
+  "distinct_activities": 54,
+  "distinct_attribute_values": 8,
+  "distinct_labels": 225,
+  "events_without_value": 0
+}

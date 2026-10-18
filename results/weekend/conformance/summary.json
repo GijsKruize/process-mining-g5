@@ -1,0 +1,32 @@
+{
+  "cases_total": 3093,
+  "cases_completed": 3093,
+  "cases_incomplete": 0,
+  "unique_variants": 2316,
+  "workers": 3,
+  "timeout_seconds": 600,
+  "fitting_cases": 1644,
+  "cases_requiring_visible_repair": 1449,
+  "event_rows": 124866,
+  "average_trace_fitness": 0.9822157955726242,
+  "log_fitness": 0.9808169990168506,
+  "visible_cost_log_fitness": 0.9810354467181035,
+  "fitness_quantiles": {
+    "0": 0.7777777777777778,
+    "0.25": 0.972972972972973,
+    "0.5": 1.0,
+    "0.75": 1.0,
+    "1": 1.0
+  },
+  "totals": {
+    "synchronous_moves": 123163,
+    "log_moves": 1703,
+    "visible_model_moves": 841,
+    "silent_model_moves": 293452
+  },
+  "elapsed_seconds_this_run": 0.03,
+  "note": "Recomputed alignments of the saved model; optimal tie breaks can differ from historical BIG alignments. Fitness is in-sample, not held-out validation.",
+  "fitting_cases_pct": 53.15227934044617,
+  "first_full_run_wall_seconds": 667.78,
+  "alignment_worker_seconds": 1986.406099999998
+}

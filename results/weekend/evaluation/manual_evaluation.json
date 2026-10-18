@@ -1,0 +1,14 @@
+{
+  "status": "pending_human_review",
+  "annotation_cells": 280,
+  "reviewed_cells": 0,
+  "pending_cells": 280,
+  "all_target_definitions_human_approved": false,
+  "metrics_on_reviewed_cells": null,
+  "final_assignment_evaluation_complete": false,
+  "note": "No manual labels have been invented. The stratified reviewed sample is not a probability sample; report its scope and selection.",
+  "mined_patterns_for_relevance_review": 16,
+  "mined_patterns_relevance_reviewed": 0,
+  "precision_of_reviewed_mined_patterns": null,
+  "recall_of_approved_target_types": null
+}

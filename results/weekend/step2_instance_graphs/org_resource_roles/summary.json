@@ -1,0 +1,21 @@
+{
+  "step": "2 - instance graphs",
+  "created": "2026-10-16T18:16:11",
+  "input_log": "outputs/step1_preprocessing/org_resource_roles/relabeled_log.xes",
+  "max_traces": null,
+  "noise_threshold": 0.2,
+  "workers": 4,
+  "petri_net": {
+    "places": 167,
+    "transitions": 353,
+    "visible_transitions": 219,
+    "arcs": 708
+  },
+  "graphs": 3093,
+  "nodes": 124866,
+  "edges": 121781,
+  "graphs_with_parallelism_pct": 0.3,
+  "graphs_not_connected": 0,
+  "petri_net_seconds": 72.3,
+  "big_seconds": 4690.7
+}

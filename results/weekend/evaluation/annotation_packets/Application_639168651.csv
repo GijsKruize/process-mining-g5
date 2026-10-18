@@ -1,0 +1,16 @@
+﻿event_position,activity,role,resource,timestamp,label
+1,start,Role_1,User_14,2016-06-20T09:40:38.455000+02:00,start_Role_1
+2,A-Create-Application,Role_1,User_14,2016-06-20T09:40:38.455000+02:00,A-Create-Application_Role_1
+3,W-Complete-application-schedule,Role_1,User_14,2016-06-20T09:40:38.471000+02:00,W-Complete-application-schedule_Role_1
+4,W-Complete-application-start,Role_1,User_14,2016-06-20T09:40:38.474000+02:00,W-Complete-application-start_Role_1
+5,A-Concept,Role_1,User_14,2016-06-20T09:40:38.478000+02:00,A-Concept_Role_1
+6,A-Accepted,Role_1,User_14,2016-06-20T09:41:46.168000+02:00,A-Accepted_Role_1
+7,W-Complete-application-suspend,Role_1,User_14,2016-06-20T09:51:57.846000+02:00,W-Complete-application-suspend_Role_1
+8,W-Complete-application-resume,Role_1,User_46,2016-06-21T11:48:10.877000+02:00,W-Complete-application-resume_Role_1
+9,W-Complete-application-suspend,Role_1,User_46,2016-06-21T11:49:13.450000+02:00,W-Complete-application-suspend_Role_1
+10,O-Create-Offer,Role_1,User_32,2016-06-25T11:58:33.166000+02:00,O-Create-Offer_Role_1
+11,O-Created,Role_1,User_32,2016-06-25T11:58:34.823000+02:00,O-Created_Role_1
+12,O-Cancelled,Role_1,User_32,2016-06-25T12:01:45.071000+02:00,O-Cancelled_Role_1
+13,A-Denied,Role_1,User_32,2016-06-25T12:04:33.500000+02:00,A-Denied_Role_1
+14,W-Complete-application-ate-abort,Role_1,User_32,2016-06-25T12:04:33.536000+02:00,W-Complete-application-ate-abort_Role_1
+15,end,Role_1,User_32,2016-06-25T12:04:33.536000+02:00,end_Role_1
