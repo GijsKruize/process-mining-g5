@@ -32,6 +32,7 @@ from . import config
 
 DEFAULT_ROLES_THRESHOLD = 0.65  # pm4py's default, as in Burattin et al. (2013)
 ROLE_NAME_PREFIX = "Role"
+OTHER_ROLE = "Other"            # name of the merged small roles when top_k is used
 
 
 class ResourceRoleGrouper:
@@ -39,16 +40,21 @@ class ResourceRoleGrouper:
 
     Usage::
 
-        grouper = ResourceRoleGrouper(threshold=0.65).fit(event_log, "org:resource")
+        grouper = ResourceRoleGrouper(threshold=0.65, top_k=4).fit(event_log, "org:resource")
         grouper.mapping          # {"User_1": "Role_3", ...}
         grouper.roles_table()    # one row per role
         grouper.resources_table()# one row per resource
     """
 
-    def __init__(self, threshold=DEFAULT_ROLES_THRESHOLD):
+    def __init__(self, threshold=DEFAULT_ROLES_THRESHOLD, top_k=None):
+        """``top_k``: keep only the k roles with the most events; the resources of
+        all smaller roles are put together in one role 'Other'. None keeps all."""
         if not 0 < threshold < 1:
             raise ValueError("The roles threshold must be between 0 and 1.")
+        if top_k is not None and top_k < 1:
+            raise ValueError("top_k must be at least 1.")
         self.threshold = threshold
+        self.top_k = top_k
         self.mapping = {}
         self._discovered_roles = []   # pm4py output: [[activities], {resource: events}]
         self._role_names = {}         # index in pm4py output -> "Role_k"
@@ -83,17 +89,22 @@ class ResourceRoleGrouper:
         return self
 
     def _name_roles(self):
-        """Name the roles that are somebody's dominant role: Role_1 has the most events."""
+        """Name the roles that are somebody's dominant role: Role_1 has the most events.
+
+        With ``top_k``, roles ranked below k are all named 'Other'.
+        """
         events_per_role = Counter()
         for resource, (role_index, _) in self._dominant.items():
             events_per_role[role_index] += self._events_per_resource[resource]
         ranked = sorted(events_per_role, key=lambda index: (-events_per_role[index], index))
-        self._role_names = {index: f"{ROLE_NAME_PREFIX}_{rank}"
-                            for rank, index in enumerate(ranked, start=1)}
+        self._role_names = {
+            index: (f"{ROLE_NAME_PREFIX}_{rank}" if self.top_k is None or rank <= self.top_k
+                    else OTHER_ROLE)
+            for rank, index in enumerate(ranked, start=1)}
 
     @property
     def n_roles(self):
-        return len(self._role_names)
+        return len(set(self._role_names.values()))
 
     def roles_table(self):
         """One row per discovered role; roles nobody has as dominant role have no name."""

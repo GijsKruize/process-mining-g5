@@ -13,8 +13,10 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{caption}
 \usepackage{subcaption}
+\captionsetup{font=small}
 
 \title{1JM0211 Process Mining \\Mining Organizational Patterns}
 \author{Group 5, Members: Sophie Veltmans, Lotte van der Vlies, Gijs Kruize}
@@ -31,59 +33,37 @@
 Page limit: 5 pages excluding references; use appropriate scientific references where possible \cite{DBLP:books/sp/Aalst16}; your short paper shall follow the structure outlined below
 \end{mybox}
 
-% =====================================================================
+
 \section{Motivation and Scientific Background}\label{sec:motivation}
+Organizational mining studies who performs which activities, which resources
+play similar roles and how work is handed over~\cite{song2008organizational,
+vanderaalst2005social}. Classical results such as handover-of-work networks
+describe relations between actors, but not \emph{which tasks} they perform
+together and in which structure. Discovering a process model on
+activity--resource labels does show this, but with many resources it yields
+unreadable ``spaghetti'' models. Diamantini et al.~\cite{diamantini2016behavioral}
+therefore build one \emph{instance graph} per case, which shows the order and
+the parallelism of its events, and mine the most relevant subgraphs over all
+instance graphs. Such a \emph{behavioral pattern} is a recurring work practice.
+In the loan process of the BPI Challenge 2017~\cite{vandongen2017bpi}, for
+example, ``the offer team calls the customer, after which the validation team
+takes over'' tells an analyst how work is divided, which a model of activities
+alone cannot show.
 
-Process mining discovers, checks and improves processes from the events that
-information systems record~\cite{DBLP:books/sp/Aalst16}. Most of its
-techniques focus on the control flow: which activities happen in which order.
-\emph{Organizational mining} adds the actors: it asks who performs which
-activities, which resources play similar roles and how work is handed over
-between them~\cite{song2008organizational}. Classical results are role and
-team discovery and social networks such as the handover-of-work
-network~\cite{vanderaalst2005social}. These describe relations between actors,
-but not \emph{which tasks} the actors perform together and in which structure.
+The topic combines several course topics: event abstraction (choosing the
+label), process discovery (Inductive Miner~\cite{leemans2014infrequent}),
+conformance checking (alignments repair irregular instance
+graphs~\cite{diamantini2016big,adriansyah2011alignments}) and organizational
+mining. Unlike discovery, it does not aim at one model for all cases; unlike
+social network analysis, it keeps the tasks and their order.
 
-A direct way to combine both perspectives is to label each event with an
-activity--resource pair and to discover a process model on these labels. With
-many resources this produces large, unreadable ``spaghetti'' models.
-Diamantini et al.~\cite{diamantini2016behavioral} therefore propose
-\emph{behavioral process mining}: build one \emph{instance graph} per case,
-which shows the order and the parallelism of its events, and mine the most
-relevant subgraphs over all instance graphs. Such a subgraph, a
-\emph{behavioral pattern}, is a recurring work practice: for example, ``two
-clerks complete the application in parallel, after which a manager decides''.
-
-\paragraph{Running example.} In the loan application process of the BPI
-Challenge 2017~\cite{vandongen2017bpi}, an application is submitted online,
-completed by phone, an offer is sent, and the returned offer is validated
-before a decision is made. A pattern such as ``the offer team calls the
-customer, after which the validation team takes over'' tells an analyst how
-the work is divided, which a model on activities alone cannot show.
-
-\paragraph{Relation to the course.} The approach combines several course
-topics: event log preprocessing and event abstraction (choosing the label),
-process discovery (the Inductive Miner~\cite{leemans2014infrequent}),
-conformance checking (BIG aligns every trace with the model to repair irregular
-instance graphs~\cite{diamantini2016big,adriansyah2011alignments}) and
-organizational mining (roles and handovers). Unlike process discovery, it does
-not aim at one model for all cases; unlike social network analysis, it keeps
-the tasks and their order in the result.
-
-\paragraph{Contribution.} We (i) implement the complete pipeline of
-Figure~\ref{fig:pipeline} with pm4py~\cite{berti2019pm4py}, BIG and SUBDUE,
-(ii) group resources into discovered roles to keep the approach tractable and
-interpretable, (iii) speed up SUBDUE without changing its results, and (iv)
-evaluate the patterns against a gold standard and a baseline.
-
-% =====================================================================
 \section{Conceptual Approach}\label{sec:conceptual_approach}
 
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[
   box/.style={draw, rounded corners=2pt, align=center, font=\footnotesize,
-              minimum height=1.1cm, text width=2.15cm, fill=blue!4},
+              minimum height=1cm, text width=2.15cm, fill=blue!4},
   data/.style={font=\scriptsize\itshape, align=center, text width=2.3cm},
   arr/.style={-{Stealth[length=2mm]}, thick, gray!70!black}]
 \node[box] (log) {Event log\\(XES)};
@@ -95,401 +75,246 @@ evaluate the patterns against a gold standard and a baseline.
 \draw[arr] (pre) -- (net);
 \draw[arr] (net) -- (big);
 \draw[arr] (big) -- (sub);
-\draw[arr] (pre.south) |- ++(0,-0.5) -| (big.south);
-\node[data, below=0.65cm of pre] {user picks attribute;\\resources $\to$ roles};
-\node[data, below=0.65cm of net] {Petri net\\(causal relations)};
-\node[data, below=0.65cm of big] {one networkx graph\\per case};
-\node[data, below=0.65cm of sub] {support, trace\,$\times$\,pattern\\matrix, figures};
+\draw[arr] (pre.south) |- ++(0,-0.45) -| (big.south);
+\node[data, below=0.55cm of pre] {attribute chosen by user; resources $\to$ roles};
+\node[data, below=0.55cm of net] {Petri net\\(causal relations)};
+\node[data, below=0.55cm of big] {one networkx graph per case};
+\node[data, below=0.55cm of sub] {support, trace\,$\times$\,pattern matrix, figures};
 \end{tikzpicture}
-\caption{Pipeline. Step~1 relabels every event with its activity and the role of
-the selected attribute; step~2 discovers a Petri net and builds one instance
-graph per case with BIG; step~3 mines behavioral patterns with SUBDUE.}
+\caption{Pipeline of the approach.}
 \label{fig:pipeline}
 \end{figure}
 
-\subsection{Step 1: event log preprocessing}
+\paragraph{Input.} An event log (XES) with a case id, an activity and a
+timestamp per event, plus at least one organizational attribute (e.g.\\
+\texttt{org:resource}). The control flow is needed for the instance graphs, the
+attribute for the organizational view.
 
-\paragraph{Input.} An event log in XES format; each event has at least a case
-identifier, an activity (\texttt{concept:name}) and a timestamp, plus further
-attributes. Trace attributes are copied to every event of the case.
+\paragraph{Step 1: relabelling and roles.} The tool lists all attributes with
+their level (event/trace), number of values, coverage and examples, and asks on
+the command line which attribute to use. Every event is relabelled
+\texttt{activity\_value}, an \emph{entity specification} in the terms
+of~\cite{diamantini2016behavioral}; missing values become \texttt{UNKNOWN}.
+Individual resources are often too fine: on BPI~2017 they give 3,338 labels,
+half of which occur fewer than 10 times, and a first attempt with the 80\% most
+frequent resources gave uninterpretable results. Resources are therefore
+grouped into roles with the method of Burattin et al.~\cite{burattin2013roles}:
+every activity starts as a role described by the multiset of its resources, and
+the two most similar roles are merged while their similarity exceeds $\theta$
+(default 0.65). Each resource gets its \emph{dominant role} (the one with most
+of its events); labelling events with the role of their \emph{activity} would
+add no information. Parameter $k$ keeps only the $k$ largest roles and merges
+the rest into \texttt{Other}.
 
-\paragraph{Attribute selection and relabelling.} The tool lists all attributes
-of the log with their level (event or trace), number of distinct values, share
-of events that have a value and examples, and asks the user on the command
-line which attribute to analyse. Every event is then relabelled as
-\texttt{activity\_value}, e.g.\ \texttt{A-Submitted\_User\_1}: an instance of an
-\emph{entity specification} (activity, executor) in the terms
-of~\cite{diamantini2016behavioral}. Missing values become \texttt{UNKNOWN} so no
-event is lost, and whitespace is replaced because BIG's output format is space
-separated. The original activity and value are kept as separate attributes,
-because a label such as \texttt{A-Submitted\_User\_1} cannot be split back
-unambiguously.
+\paragraph{Step 2: instance graphs.} An instance graph~\cite{vandongen2004instance}
+is a DAG of the events of one case whose edges are causal relations, so events
+that may happen in any order lie on parallel branches. The relations come from
+a Petri net discovered with the infrequent Inductive Miner (noise threshold
+0.2, as in~\cite{diamantini2016behavioral}). BIG~\cite{diamantini2016big} aligns
+every trace with the net, builds its instance graph and repairs inserted and
+deleted events. Its text output is converted to one \texttt{networkx} graph per
+case; every node gets a unique global id (the local id is kept) and its
+activity and role, and graph $i$ is linked to case $i$.
 
-\paragraph{Grouping resources into roles.} With \texttt{org:resource} the BPI
-log has 134 users and 3,338 distinct labels; almost half of these labels occur
-fewer than 10 times. Such fine labels make discovery and BIG slow and spread
-the same behaviour over many labels, so few patterns are frequent. Optionally,
-the values are therefore replaced by \emph{roles} discovered with the method of
-Burattin et al.~\cite{burattin2013roles} (pm4py): every activity starts as a
-role, described by the multiset of resources that perform it, and the two roles
-with the most similar (normalised) resource multisets are merged as long as
-their similarity exceeds a threshold $\theta$ (default $0.65$). A resource can
-belong to several of the resulting roles; we assign it its \emph{dominant
-role}, the one in which it performs most of its events. Labelling an event with
-the role of its \emph{activity} instead would add no information beyond the
-activity itself; the dominant role of the \emph{resource} also shows when
-somebody works outside their usual role.
+\paragraph{Step 3: patterns.} All instance graphs form one disconnected graph
+for SUBDUE~\cite{cook1994subdue,jonyer2002subdue}, matched on node labels with
+directed edges. SUBDUE's beam search returns the subgraphs $s$ that best
+compress the graph, value $=(k_s-1)|E_s|/|E|$ for $k_s$ non-overlapping
+instances, preferring frequent and large patterns. With several
+\emph{iterations}, the best pattern is compressed into one node and the search
+is repeated, giving a pattern hierarchy~\cite{diamantini2016behavioral}.
+Parameters: beam width (4 in~\cite{diamantini2016behavioral}), pattern size
+(2--10 edges), patterns per iteration (3) and iterations. The output per
+pattern is its graph, roles, number of instances (occurrence-based support),
+number of cases containing it (transaction-based support) and a trace $\times$
+pattern matrix; functions draw graphs, patterns, support and role handovers.
 
-\paragraph{Output.} The relabelled log (XES) plus tables of the roles, the
-role of every resource and the frequency of every label.
-
-\subsection{Step 2: instance graphs}
-
-An instance graph~\cite{vandongen2004instance} represents one case as a
-directed acyclic graph: nodes are the events, edges the causal order between
-them. Events that may happen in any order are placed on parallel branches
-instead of in their arbitrary recorded order. The causal relations come from a
-process model, which we discover with the \emph{infrequent} Inductive
-Miner~\cite{leemans2014infrequent} on the relabelled log (noise threshold
-$0.2$, ProM's default, as in~\cite{diamantini2016behavioral}). The provided BIG
-library~\cite{diamantini2016big} aligns every trace with this Petri net, builds
-its instance graph and repairs the graphs of traces that do not fit the model
-(inserted and deleted events). BIG writes all graphs to one text file
-(\texttt{.g}), one block per case with local node ids.
-
-We convert this file to one \texttt{networkx} graph per case. Every node gets a
-\emph{unique global id}; the local id is kept as an attribute and all edges are
-translated through the same mapping, so all relations are preserved. Because
-the \texttt{.g} file does not name the cases, graph $i$ is linked to case $i$ of
-the log. Every node carries its label, activity and role.
-
-\subsection{Step 3: behavioral patterns with SUBDUE}
-
-All instance graphs are given to SUBDUE~\cite{cook1994subdue,jonyer2002subdue}
-as one disconnected graph. Nodes are matched on their label; all edges get the
-same label and are directed. SUBDUE searches, with a beam search, the subgraph
-that best compresses this graph. The Python implementation we use scores a
-pattern $s$ with $k$ non-overlapping instances and $|E_s|$ edges in a graph
-with $|E|$ edges as
-\begin{equation}
-  \text{value}(s) = \frac{(k-1)\,|E_s|}{|E|},
-\end{equation}
-so frequent and large patterns score highest, in the spirit of the minimum
-description length criterion of~\cite{diamantini2016behavioral}. With more than
-one \emph{iteration}, every instance of the best pattern is compressed into a
-single node and the search is repeated; later patterns can contain earlier ones,
-which yields the pattern hierarchy of~\cite{diamantini2016behavioral}.
-
-\paragraph{Parameters.} Beam width (number of candidates kept per level, 4 as
-in~\cite{diamantini2016behavioral}), minimum and maximum pattern size (2 and 10
-edges), number of reported patterns per iteration, number of iterations, and
-\emph{limit}, the number of candidates SUBDUE extends. The Python SUBDUE starts
-from all one-edge patterns in the order of the edges, not by value, and stops
-after \emph{limit} extensions; a small limit thus makes the result depend on
-the arbitrary edge order. We therefore set it automatically to the number of
-one-edge patterns plus beam width times maximum size, so that every one-edge
-pattern is extended once and the beam can reach the maximum size.
-
-\paragraph{Output.} For every pattern: its graph, the number of instances
-(occurrence-based support, as in~\cite{diamantini2016behavioral}), the number
-and share of cases that contain it (transaction-based support), its roles, and
-a \emph{trace $\times$ pattern matrix} with a 1 when the pattern occurs in the
-case. Visualisation functions draw instance graphs and patterns (roles by
-colour and tag), the support per pattern, the overlap between patterns and the
-handover of work between roles.
-
-% =====================================================================
 \section{Implementation}\label{sec:implementation}
+Python~3.9 with pm4py~2.2.16 (as BIG requires), \texttt{networkx}, the provided
+BIG and the Python SUBDUE (both unmodified); one module per step, a single
+entry point with command-line parameters, and 40 unit tests. Three details
+matter for reproducibility and run time. (i) pm4py's Inductive Miner iterates
+over Python sets, so the hash seed is fixed; repeated runs then give identical
+graphs. (ii) BIG handles $\approx$15 cases per minute; it runs on consecutive
+chunks of the log in parallel and the outputs are joined in order (identical to
+one run; 49 instead of $\approx$210 minutes on BPI). (iii) SUBDUE compares
+candidates pairwise. We replace three of its helper functions at run time by
+versions that first group candidates by a fingerprint that every matching pair
+shares, keeping SUBDUE's own matcher and order: the output is identical
+(tested), and 1,000 BPI graphs take 63\,s instead of 282\,s. SUBDUE's networkx
+interface silently drops edge directions, so its input is built directly, and
+its \emph{limit} is set so that every one-edge pattern is extended, since a
+lower limit makes the result depend on the edge order.
 
-The pipeline is a Python~3.9 package with one module per step and a single
-command-line entry point (\texttt{main.py}); all parameters are command-line
-options and the README lists the exact commands. pm4py~2.2.16 is used as BIG
-requires. Three implementation details matter for the results:
-
-\begin{itemize}
-\item \textbf{Reproducibility.} pm4py's Inductive Miner iterates over Python
-sets, whose order changes between runs, so the discovered Petri net could
-differ between two runs on the same log. The program fixes the hash seed, after
-which repeated runs give identical instance graphs.
-\item \textbf{BIG in parallel.} BIG processed about 15 cases per minute (3.5
-hours for the log). Because it treats every case independently, we run the
-unmodified BIG on consecutive chunks of the log in parallel processes and
-concatenate the outputs in order; the result is byte-for-byte identical to a
-single run, in 49 minutes on 11 cores.
-\item \textbf{SUBDUE speed-up.} SUBDUE compares candidates pairwise (every edge
-with every edge, every extended instance with every other), which is quadratic.
-Without changing SUBDUE's code we replace three helper functions at run time:
-candidates are first grouped by a fingerprint that every pair of matching
-graphs shares (vertex labels with degree, edge labels), SUBDUE's own graph
-matcher decides within a group, and overlap is tested against a set of used
-vertices. Groups are processed in the original order, so the output (patterns,
-values and instances) is identical; this is verified by unit tests and on the
-data (Table~\ref{tab:performance}). We also found that SUBDUE's networkx
-interface silently makes all edges undirected, so we build its input directly.
-\end{itemize}
-
-\begin{table}[t]
-\centering
-\caption{SUBDUE run time on the first $N$ instance graphs (beam 4, max.\ size 10).
-Both versions return identical patterns and instances.}
-\label{tab:performance}
-\begin{tabular}{rrrrr}
-\toprule
-Instance graphs & Edges & Original & Accelerated & Speed-up \\
-\midrule
-250 & 9,898 & 23.6\,s & 11.0\,s & 2.1$\times$ \\
-1,000 & 39,221 & 282.4\,s & 63.2\,s & 4.5$\times$ \\
-3,093 (all) & 121,781 & not run & 142.7\,s & -- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-% =====================================================================
 \section{Evaluation Design and Results}\label{sec:evaluation}
 
-\subsection{Data}
+\paragraph{Data.} (1) \emph{Synthetic logs} with a known ground truth: a
+simplified loan process with four departments (Intake, Offer, Validation,
+Decision; 16 employees) and 500 cases. Five work practices are injected
+(Table~\ref{tab:synthetic}), two handovers and one with parallel work
+(documents and fraud are checked in any order). Noise is added at four levels:
+in 0, 10, 20 or 30\% of the cases one disturbance (event by an employee of
+another department, extra event, missing event, or two events swapped). (2) The
+\emph{BPI 2017} log of denied applications~\cite{vandongen2017bpi} (3,093 cases,
+124,866 events, 54 activities, 134 resources), relabelled with
+\texttt{org:resource}.
 
-We use the provided subset of the BPI Challenge 2017
-log~\cite{vandongen2017bpi}: 3,093 loan applications that were denied, with
-124,866 events, 54 activities and 19 attributes. Activity names start with
-\texttt{A-} (application states), \texttt{O-} (offer states) or \texttt{W-}
-(work items, whose lifecycle step is part of the name, e.g.\
-\texttt{W-Validate-application-start}). We analyse the attribute
-\texttt{org:resource} (134 users, one of which, \texttt{User\_1}, is the
-system). Other attributes are less suited: \texttt{EventOrigin} is determined
-by the activity and adds no information, and trace attributes such as the loan
-goal are constant within a case, so they split the cases into groups but cannot
-show any handover.
-
-\subsection{Evaluation design}
-
-\paragraph{Gold standard.} We built a gold standard of 9 expected work
-practices (Table~\ref{tab:gold}) from the process phases in the log
-description (submission, completion by phone, offer, assessment of the returned
-offer, incomplete files, decision), the lifecycle order of the BPI~2017
-activities, and the role that performs most of each activity according to the
-\emph{step~1} role table (Figure~\ref{fig:roles}). Two of them are handovers
-between roles. The gold standard is thus derived independently of the SUBDUE
-output; however, it was written after we had seen preliminary results, which we
-discuss as a limitation.
+\paragraph{Design.} On the synthetic logs the whole pipeline runs, discovered
+roles are mapped to departments via the employees, and the injected patterns
+are the gold standard. A gold pattern is \emph{found} if a discovered pattern
+contains it as a labelled subgraph; a discovered pattern is \emph{correct} if it
+contains a gold pattern or is part of one; this gives precision, recall and F1.
+As a baseline we use the most frequent label paths of 3 edges, as many as
+SUBDUE returns (sequential pattern mining without compression). A parameter
+study varies $k$, beam width and iterations. On BPI, where no ground truth
+exists, we validate one instance graph against its trace, inspect the roles and
+patterns, and compare with 9 expected work practices derived from the log
+description and the role table (in the repository).
 
 \begin{table}[t]
-\centering
-\caption{Gold standard: expected work practices (R$k$ = Role\_$k$).}
-\label{tab:gold}
-\small
-\begin{tabular}{lll}
+\centering\small
+\caption{Injected work practices (synthetic log) and their recovery at 0\% / $\geq$10\% noise.}
+\label{tab:synthetic}
+\begin{tabular}{llcc}
 \toprule
-ID & Work practice & Roles \\
+ID & Work practice & 0\% & $\geq$10\% \\
 \midrule
-G1 & Application submission: start $\to$ create $\to$ submitted & R4 \\
-G2 & Lead handling after submission & R4 \\
-G3 & Concept created, completion started by phone (\emph{handover}) & R4 $\to$ R1 \\
-G4 & Application accepted, offer created and sent & R1 \\
-G5 & Calling the customer after the offer & R1 \\
-G6 & Call aborted when the offer returns (\emph{handover}) & R1 $\to$ R2 \\
-G7 & Validation scheduled, started, validating & R2 \\
-G8 & Calling the customer for incomplete files & R3 \\
-G9 & Final decision: denied, offer refused & R3 \\
+G1 & Intake registers and checks & \checkmark & \checkmark \\
+G2 & Handover Intake $\to$ Offer: call customer, complete application & \checkmark & \checkmark \\
+G3 & Offer team creates and sends the offer & \checkmark & \checkmark \\
+G4 & Validation checks documents $\parallel$ fraud, then decision & \checkmark & -- \\
+G5 & Handover Decision $\to$ Offer: deny, notify customer & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Measures.} A gold pattern is \emph{found} if a discovered pattern
-contains it as a labelled subgraph; a discovered pattern is \emph{correct} if it
-contains a gold pattern or is part of one. Precision is the share of correct
-discovered patterns, recall the share of found gold patterns; we also report
-F1 and, as partial credit, precision and recall on edge level (pairs of
-labels). Following~\cite{diamantini2016behavioral} we further report the
-support of the patterns.
+\paragraph{Synthetic results.} Role discovery recovers the four departments
+perfectly at every noise level (all employees in the right role). Without
+noise, 71\% of the instance graphs contain the parallel branch and SUBDUE (5
+iterations) finds all five practices with precision 0.93 (F1 0.97), clearly
+above the baseline (F1 0.77), which cannot represent parallelism
+(Figure~\ref{fig:synthetic}, Table~\ref{tab:results}). With 10\% noise or more, however, the Inductive
+Miner no longer finds the parallel block, at any noise threshold from 0 to 0.8:
+the noisy labels (24 instead of 12) change the discovered structure. All
+instance graphs become sequences, G4 is lost and SUBDUE (F1 0.69) is no better
+than the baseline (0.80). The parameter study on the 10\% log shows that the
+number of iterations matters most: 3 iterations give F1 0.89 (precision 1.0),
+1 iteration finds only 3 practices (F1 0.75), and 5--10 iterations add
+fragments (precision 0.60--0.33). Beam width (2, 4, 10) has no effect on these
+small graphs and only costs time; $k=2$ merges two departments into
+\texttt{Other} without changing the scores.
 
-\paragraph{Configurations and baseline.} We compare a single SUBDUE iteration
-(20 best patterns) with a hierarchical run of 10 iterations (3 patterns each),
-and vary the beam width (4, 10, 20) as in~\cite{diamantini2016behavioral}. As a
-simple baseline we take the most frequent label paths of 2, 3 and 4 edges in the
-instance graphs (as many as SUBDUE returns), which corresponds to sequential
-pattern mining without compression.
 
-\subsection{Results}
-
-\paragraph{Roles.} Role discovery groups the 134 users into 8 roles
-($\theta=0.65$), reducing the labels from 3,338 to 225. The four large roles are
-interpretable (Figure~\ref{fig:roles}): Role\_1 (86 users) completes
-applications and creates, sends and follows up offers; Role\_2 (21 users)
-validates returned offers; Role\_3 (18 users) handles fraud checks, incomplete
-files and denials; Role\_4 (2 users, including the system user) registers
-applications. 32 of the 54 activities are performed for more than 90\% by a
-single role.
-Roles 5--8 are small (3, 2, 1 and 1 users, the last two with 6 and 1 events)
-and are artefacts of the dominant-role assignment.
+\begin{table}[t]
+\centering\small
+\caption{Precision (P), recall (R) and F1 of the discovered patterns. Baseline: most
+frequent label paths of 3 edges, same number of patterns.}
+\label{tab:results}
+\begin{tabular}{llrrrr}
+\toprule
+Log & SUBDUE configuration & P & R & F1 & Baseline F1 \\
+\midrule
+Synthetic, 0\% noise & 5 iterations, beam 4 & 0.93 & 1.00 & 0.97 & 0.77 \\
+Synthetic, 10--30\% noise & 5 iterations, beam 4 & 0.60 & 0.80 & 0.69 & 0.80 \\
+Synthetic, 10\% noise & 1 iteration (any beam, $k$) & 1.00 & 0.60 & 0.75 & -- \\
+Synthetic, 10\% noise & 3 iterations (any beam, $k$) & 1.00 & 0.80 & 0.89 & -- \\
+Synthetic, 10\% noise & 10 iterations (any beam, $k$) & 0.33 & 0.80 & 0.47 & -- \\
+\midrule
+BPI 2017 & 1 iteration, beam 4 & 1.00 & 0.33 & 0.50 & -- \\
+BPI 2017 & 10 iterations, beam 4 & 0.63 & 0.89 & 0.74 & 0.72 \\
+BPI 2017 & 10 iterations, beam 10 & 0.77 & 0.89 & 0.82 & 0.72 \\
+BPI 2017 & 10 iterations, beam 20 & 0.87 & 1.00 & 0.93 & 0.72 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.62\textwidth]{figures/roles_per_activity.png}
-\caption{Share of each activity's events performed by each discovered role
-(step~1). Each block of dark cells is the work of one role.}
-\label{fig:roles}
+\includegraphics[width=0.62\textwidth]{figures/synthetic_results.png}
+\caption{Synthetic logs: SUBDUE (5 iterations, beam 4) and frequent-path baseline per noise level.}
+\label{fig:synthetic}
 \end{figure}
 
-\paragraph{Instance graphs.} BIG produced 3,093 instance graphs (one per case)
-with 124,866 nodes and 121,781 edges, all connected. Only 0.3\% contain parallel
-branches: the discovered Petri net (219 visible and 134 silent transitions) has
-a single AND-split. This is \emph{not} caused by the roles: the same miner on
-the plain activities, at any noise threshold between 0 and 1, also finds one
-AND-split, whereas the Petri net provided with the assignment has five and its
-instance graphs are parallel in 99.3\% of the cases. Figure~\ref{fig:ig} shows a
-typical instance graph, in which the case passes from Role\_4 to Role\_1,
-Role\_2 and Role\_3.
+\paragraph{BPI 2017 results.} Role discovery groups the 134 resources into 8
+roles (3,338 $\to$ 225 labels): Role\_1 (86 users) completes applications and
+handles offers, Role\_2 (21) validates, Role\_3 (18) handles fraud, incomplete
+files and denials, Role\_4 (2, incl.\ the system user) registers applications;
+roles 5--8 are small (3, 2, 1, 1 users). For case Application\_1691306052 the
+instance graph (Figure~\ref{fig:ig}) matches the trace exactly: 33 events and nodes with the same
+labels, the right role for every event, and all 32 edges between consecutive
+events. As in the noisy synthetic logs, only 0.3\% of the 3,093 graphs contain
+parallel branches: the net has one AND-split, also on plain activities, whereas
+the net provided with the assignment has five. The hierarchical run finds a
+different process phase in every iteration (Table~\ref{tab:patterns}), e.g.\ the offer team (Role\_1)
+handing cases to the validation team (Role\_2) after calling the customer
+(Figure~\ref{fig:pattern}, 61\% of the cases), and the intake (Role\_4) handing
+over to Role\_1 (45\%). Over all graphs 80--93\% of the edges stay within a role
+(Figure~\ref{fig:handover}). Against the 9 expected practices (Table~\ref{tab:results}), beam width does
+matter on this large graph: F1 0.74 (beam 4), 0.82 (10) and 0.93 (20, all 9
+found), above the baseline (0.72 for paths of 3 edges, 0.80 for 4 edges), at
+10, 13 and 16 minutes. A single iteration
+finds only 3 of 9 (F1 0.50) because its patterns are variants of one sequence.
+Failed cases: incomplete-file handling is split between two roles (37/55\%),
+which fragments its labels; and \texttt{A-Concept} is shared 46/53\% by Role\_1
+and Role\_4, so patterns with either role count as only half right.
+
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/instance_graph_example.png}
-\caption{Instance graph of one case (read as a snake: left to right, then right
-to left). Border colour and tag show the role: intake (R4), offer team (R1),
-validation (R2) and decision (R3).}
+\caption{Instance graph of BPI case Application\_1691306052 (read as a snake: left to
+right, then right to left). The case passes from the intake (R4) to the offer team
+(R1), validation (R2) and decision (R3); every edge links two consecutive events.}
 \label{fig:ig}
 \end{figure}
 
-\paragraph{Patterns.} SUBDUE starts from 541 one-edge patterns. A single
-iteration returns 20 overlapping variants of one sequence (54--80\% of the
-cases): the beam search keeps refining the same region of the graph. The
-hierarchical run finds a different process phase in every iteration
-(Table~\ref{tab:patterns}). Patterns P1.1 and P2.1 (Figure~\ref{fig:patterns})
-are handovers: after calling the customer about the offer, the offer team
-(Role\_1) hands the case over to the validation team (Role\_2), in 61\% of the
-cases; and the intake (Role\_4) hands over to Role\_1 to complete the
-application, in 45\%. Over all instance graphs, 80--93\% of the edges stay
-within a role (Figure~\ref{fig:handover}); the main handovers are
-Role\_4$\to$Role\_1 (16\% of Role\_4's edges), Role\_5$\to$Role\_3 (17\%),
-Role\_2$\to$Role\_3 (9\%) and Role\_1$\to$Role\_2 (7\%).
-
 \begin{table}[t]
-\centering
-\caption{Best pattern of each of the 10 SUBDUE iterations (beam 4).}
+\centering\small
+\caption{BPI 2017: best pattern of the first iterations (10 iterations, beam 4).}
 \label{tab:patterns}
-\small
 \begin{tabular}{llrlr}
 \toprule
 Pattern & What it shows & Edges & Roles & Cases \\
 \midrule
 P1.1 & Offer team calls after the offer, validation takes over & 10 & R1, R2 & 61\% \\
-P2.1 & Intake registers the application, R1 continues & 7 & R1, R4 & 45\% \\
-P3.1 & Offer accepted, created and sent & 3 & R1 & 82\% \\
+P2.1 & Intake registers the application, R1 continues & 7 & R4, R1 & 45\% \\
+P3.1 & Application accepted, offer created and sent & 3 & R1 & 82\% \\
 P4.1 & Call for incomplete files, validation takes over & 6 & R1, R2 & 23\% \\
-P5.1 & Validation started & 3 & R2 & 33\% \\
-P6.1 & Application completed (concept) & 2 & R1 & 40\% \\
 P7.1 & Denied, offer refused, case ends & 3 & R3 & 31\% \\
-P8.1 & Offer refused, validation aborted & 2 & R3 & 38\% \\
-P9.1 & Completion suspended and resumed & 2 & R1 & 29\% \\
-P10.1 & Customer called after the offer & 2 & R1 & 37\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[t]
 \centering
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/pattern_P1_1.png}
-  \caption{P1.1: handover from the offer team (R1) to the validation team (R2).}
+\begin{subfigure}[b]{0.6\textwidth}
+  \includegraphics[width=\textwidth]{figures/pattern_P1_1.png}
+  \caption{Pattern P1.1: offer team (R1) $\to$ validation team (R2).}
+  \label{fig:pattern}
+\end{subfigure}\hfill
+\begin{subfigure}[b]{0.38\textwidth}
+  \includegraphics[width=\textwidth]{figures/role_handover.png}
+  \caption{Handover of work between roles.}
+  \label{fig:handover}
 \end{subfigure}
-
-\vspace{0.5em}
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/pattern_P2_1.png}
-  \caption{P2.1: handover from the intake (R4) to the offer team (R1).}
-\end{subfigure}
-\caption{Two discovered behavioral patterns with a handover of work.}
-\label{fig:patterns}
+\caption{BPI 2017: a discovered handover pattern and the handovers over all instance graphs.}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.62\textwidth]{figures/role_handover.png}
-\caption{Handover of work between roles over all instance graphs: share of the
-outgoing edges of a role that lead to an event of each role.}
-\label{fig:handover}
-\end{figure}
-
-\paragraph{Gold standard.} Table~\ref{tab:evaluation} and
-Figure~\ref{fig:evaluation} compare the configurations. The single iteration is
-precise but finds only 3 of the 9 gold patterns, because its patterns are
-variants of one sequence. The hierarchical run finds 8 of 9 (recall 0.89) with
-precision 0.63 (F1 0.74). \emph{Failed cases:} G8 (incomplete files) is missed
-because its activities are split between Role\_2 and Role\_3 (37\% and 55\%),
-which spreads the behaviour over several labels. Of the 11 discovered patterns
-counted as incorrect, several are plausible practices that the gold standard
-does not contain (e.g.\ P8.1, a denial variant), and P6.1 contains
-\texttt{A-Concept} performed by Role\_1, whereas the gold standard assigns this
-activity to Role\_4; it is in fact shared 46/53\% between the two roles.
-The baseline of frequent paths reaches a similar score (F1 0.72--0.80 for
-paths of 3--4 edges). Because the instance graphs are almost purely sequential,
-the advantage of graph mining, representing parallel behaviour compactly, cannot
-show here.
-
-\begin{table}[t]
-\centering
-\caption{Discovered patterns against the gold standard (pattern and edge level).
-Beam 10 and 20: see the note in the text.}
-\label{tab:evaluation}
-\small
-\begin{tabular}{lrrrrrr}
-\toprule
-Method & Patterns & Precision & Recall & F1 & Edge prec. & Edge rec. \\
-\midrule
-SUBDUE, 1 iteration (beam 4) & 20 & 1.00 & 0.33 & 0.50 & 0.46 & 0.29 \\
-SUBDUE, 10 iterations (beam 4) & 30 & 0.63 & 0.89 & 0.74 & 0.42 & 0.88 \\
-SUBDUE, 10 iterations (beam 10) & 30 & tbd & tbd & tbd & tbd & tbd \\
-SUBDUE, 10 iterations (beam 20) & 30 & tbd & tbd & tbd & tbd & tbd \\
-Frequent paths, 2 edges & 30 & 0.37 & 0.78 & 0.50 & 0.44 & 0.88 \\
-Frequent paths, 3 edges & 30 & 0.60 & 0.89 & 0.72 & 0.43 & 0.88 \\
-Frequent paths, 4 edges & 30 & 0.73 & 0.89 & 0.80 & 0.41 & 0.88 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.75\textwidth]{figures/evaluation.png}
-\caption{Precision, recall and F1 of SUBDUE and the frequent-path baseline.}
-\label{fig:evaluation}
-\end{figure}
-
-% =====================================================================
 \section{Limitations and Future Work}\label{sec:limitations_futurework}
-
-\paragraph{Process model.} The Inductive Miner in pm4py~2.2.16 finds almost no
-parallelism on this log, even without roles, so the instance graphs are
-sequences and the patterns are sequential. This removes the main advantage of
-instance graphs over traces~\cite{diamantini2016behavioral}, and explains why a
-frequent-path baseline performs as well as SUBDUE. Future work: derive the
-causal relations from another miner or from the activity-level model and lift
-them to the role labels.
-
-\paragraph{Roles.} The dominant-role assignment creates very small roles (Role\_7
-and Role\_8) and one large role (Role\_1, 86 users) that probably merges
-several functions. A higher similarity threshold, or assigning roles per event
-instead of per resource, should be evaluated. Activities shared by roles (e.g.\
-\texttt{A-Concept}, incomplete files) fragment patterns.
-
-\paragraph{Gold standard.} The gold standard is small (9 patterns), written by
-ourselves after seeing preliminary results, and partly uses the role table of
-our own step~1. Precision is underestimated where plausible patterns are
-missing from it. Future work: a synthetic log with injected work practices and
-known roles, as in~\cite{diamantini2016behavioral}, which gives an objective
-ground truth, and the structural measures of the paper (coverage, diversity).
-
-\paragraph{Search.} SUBDUE's beam search returns overlapping variants within an
-iteration, and its value function favours long sequences. More iterations,
-or reporting only maximal patterns, make the result more diverse.
-
-\paragraph{Conclusion.} We implemented behavioral pattern mining from instance graphs for
-organizational analysis. Grouping resources into discovered roles makes the
-approach tractable on a real log and yields interpretable work practices,
-including handovers between teams. A hierarchical SUBDUE search finds most
-expected work practices, while the discovered process model, rather than the
-pattern miner, is the bottleneck for revealing parallel collaboration.
+\textbf{Process model.} The synthetic logs show the main limitation: pm4py's
+Inductive Miner loses parallelism under modest noise, after which instance
+graphs are sequences and graph mining has no advantage over sequential
+patterns. This explains the BPI results. Future work: other miners, or causal
+relations derived from the activity-level model and lifted to the role labels.
+\textbf{Roles.} Dominant-role assignment yields tiny roles on BPI (top-$k$
+helps) and one large role (86 users); activities shared by roles fragment
+patterns. Assigning roles per event, or a higher $\theta$, should be tested.
+\textbf{Evaluation.} The synthetic process is small and its noise model simple;
+the BPI reference practices were written by us after seeing first results.
+Larger synthetic processes with known roles, and the structural measures of
+\cite{diamantini2016behavioral} (coverage, diversity), are next steps.
+\textbf{Search.} Later iterations add fragments; the number of iterations
+should be chosen per log, e.g.\ by stopping when patterns become small.
 
 \printbibliography
 

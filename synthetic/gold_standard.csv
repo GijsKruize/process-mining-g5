@@ -1,0 +1,6 @@
+id,name,edges
+G1,Intake registers and checks the application,Register_Intake -> Check-completeness_Intake
+G2,Handover intake -> offer team: call and complete,Check-completeness_Intake -> Call-customer_Offer; Call-customer_Offer -> Complete-application_Offer
+G3,Offer team creates and sends the offer,Create-offer_Offer -> Send-offer_Offer
+G4,"Validation checks documents and fraud in parallel, then decision",Send-offer_Offer -> Validate-documents_Validation; Send-offer_Offer -> Check-fraud_Validation; Validate-documents_Validation -> Decide_Decision; Check-fraud_Validation -> Decide_Decision
+G5,Handover decision -> offer team after a denial,Decide_Decision -> Deny_Decision; Deny_Decision -> Notify-customer_Offer

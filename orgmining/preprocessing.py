@@ -220,12 +220,15 @@ class EventLogPreprocessor:
     # -- 4. Put it together -------------------------------------------------
 
     @staticmethod
-    def output_folder_name(attribute, grouping=GROUPING_NONE):
-        """Folder-safe name, e.g. ('org:resource', 'roles') -> 'org_resource_roles'."""
+    def output_folder_name(attribute, grouping=GROUPING_NONE, top_k=None):
+        """Folder-safe name, e.g. ('org:resource', 'roles', 4) -> 'org_resource_roles_top4'."""
         name = re.sub(r"[^A-Za-z0-9]+", "_", attribute).strip("_")
-        return name if grouping == GROUPING_NONE else f"{name}_{grouping}"
+        if grouping == GROUPING_NONE:
+            return name
+        return f"{name}_{grouping}" + (f"_top{top_k}" if top_k else "")
 
-    def run(self, attribute=None, grouping=None, roles_threshold=DEFAULT_ROLES_THRESHOLD):
+    def run(self, attribute=None, grouping=None, roles_threshold=DEFAULT_ROLES_THRESHOLD,
+            top_k=None):
         """Run step 1 end to end and write its outputs.
 
         ``attribute`` and ``grouping`` are asked interactively when they are
@@ -250,16 +253,16 @@ class EventLogPreprocessor:
         if grouping not in GROUPING_CHOICES:
             raise ValueError(f"Unknown grouping '{grouping}', choose from {GROUPING_CHOICES}.")
 
-        output_dir = self.output_root / self.output_folder_name(attribute, grouping)
+        output_dir = self.output_root / self.output_folder_name(attribute, grouping, top_k)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         value_mapping = None
         if grouping == GROUPING_ROLES:
-            grouper = ResourceRoleGrouper(roles_threshold).fit(self.event_log, attribute)
+            grouper = ResourceRoleGrouper(roles_threshold, top_k).fit(self.event_log, attribute)
             value_mapping = grouper.mapping
             grouper.roles_table().to_csv(output_dir / "roles.csv", index=False)
             grouper.resources_table().to_csv(output_dir / "resource_roles.csv", index=False)
-            print(f"  Role discovery (threshold {roles_threshold}): "
+            print(f"  Role discovery (threshold {roles_threshold}, top-k {top_k or 'all'}): "
                   f"{len(value_mapping)} values of '{attribute}' -> {grouper.n_roles} roles")
 
         relabeled = self.relabel_events(attribute, value_mapping)
@@ -283,6 +286,7 @@ class EventLogPreprocessor:
             "selected_attribute": attribute,
             "grouping": grouping,
             "roles_threshold": roles_threshold if grouping == GROUPING_ROLES else None,
+            "roles_top_k": top_k if grouping == GROUPING_ROLES else None,
             "label_format": (f"<activity>{config.LABEL_SEPARATOR}<role of {attribute}>"
                              if grouping == GROUPING_ROLES
                              else f"<activity>{config.LABEL_SEPARATOR}<{attribute}>"),

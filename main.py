@@ -25,6 +25,9 @@ from orgmining.evaluation import run_evaluation
 from orgmining.pattern_report import PatternReport
 from orgmining.preprocessing import GROUPING_CHOICES, EventLogPreprocessor
 from orgmining.roles import DEFAULT_ROLES_THRESHOLD
+from orgmining.validation import TraceValidator
+from orgmining.synthetic_experiment import (DEFAULT_NOISE_LEVELS, DEFAULT_SYNTHETIC_SETTINGS,
+                                            SYNTHETIC_OUTPUT_DIR, SyntheticExperiment)
 from orgmining.model_views import PetriNetRenderer, RoleActivityMatrix
 from orgmining.visualization import DEFAULT_COLUMNS, InstanceGraphViewer
 
@@ -52,6 +55,9 @@ def build_parser():
                                  "'none': use the values as they are; if omitted you are asked")
     preprocess.add_argument("--roles-threshold", type=float, default=DEFAULT_ROLES_THRESHOLD,
                             help="Similarity above which pm4py merges two roles (default: %(default)s)")
+    preprocess.add_argument("--top-roles", type=int, default=None,
+                            help="Keep only the k largest roles; the others become 'Other' "
+                                 "(default: keep all)")
     preprocess.add_argument("--output-dir", default=config.display_path(config.STEP1_OUTPUT_DIR),
                             help="Where the step 1 outputs are written (default: %(default)s)")
 
@@ -114,6 +120,38 @@ def build_parser():
                             help="instance_graphs.pkl, for the baseline (default: %(default)s)")
     evaluation.add_argument("--output-dir", default=config.display_path(config.OUTPUT_DIR / "evaluation"),
                             help="Where the evaluation is written (default: %(default)s)")
+
+    validate = steps.add_parser(
+        "validate-trace", help="Compare one raw trace with its instance graph (sanity check)")
+    validate.add_argument("--case", default="Application_1691306052",
+                          help="Case id (default: %(default)s)")
+    validate.add_argument("--step1-dir", default=config.display_path(DEFAULT_STEP1_RESULT),
+                          help="Step 1 output folder (default: %(default)s)")
+    validate.add_argument("--graphs", default=config.display_path(DEFAULT_GRAPHS),
+                          help="instance_graphs.pkl of step 2 (default: %(default)s)")
+
+    synthetic = steps.add_parser(
+        "synthetic", help="Evaluation on synthetic logs with injected patterns and noise")
+    synthetic.add_argument("--noise", type=float, nargs="+", default=list(DEFAULT_NOISE_LEVELS),
+                           help="Noise levels: share of cases with one disturbance "
+                                "(default: %(default)s)")
+    synthetic.add_argument("--cases", type=int, default=500, help="Cases per log (default: %(default)s)")
+    synthetic.add_argument("--seed", type=int, default=42, help="Random seed (default: %(default)s)")
+    synthetic.add_argument("--iterations", type=int, default=DEFAULT_SYNTHETIC_SETTINGS.iterations,
+                           help="SUBDUE iterations (default: %(default)s)")
+    synthetic.add_argument("--num-best", type=int, default=DEFAULT_SYNTHETIC_SETTINGS.num_best,
+                           help="SUBDUE patterns per iteration (default: %(default)s)")
+    synthetic.add_argument("--beam", type=int, default=DEFAULT_BEAM_WIDTH,
+                           help="SUBDUE beam width (default: %(default)s)")
+    synthetic.add_argument("--top-roles", type=int, default=None,
+                           help="Keep only the k largest roles (default: all)")
+    synthetic.add_argument("--workers", type=int, default=4,
+                           help="CPU cores for BIG (default: %(default)s)")
+    synthetic.add_argument("--sweep", action="store_true",
+                           help="Parameter study on the first noise level: top-k roles x beam "
+                                "width x iterations, instead of the noise experiment")
+    synthetic.add_argument("--output-dir", default=config.display_path(SYNTHETIC_OUTPUT_DIR),
+                           help="Where the results are written (default: %(default)s)")
 
     show = steps.add_parser(
         "show-graph", help="Print an instance graph as text and save a plot of it")
@@ -228,7 +266,7 @@ def main():
     args = build_parser().parse_args()
     if args.step == "preprocess":
         preprocessor = EventLogPreprocessor.from_xes(args.log, args.output_dir)
-        preprocessor.run(args.attribute, args.grouping, args.roles_threshold)
+        preprocessor.run(args.attribute, args.grouping, args.roles_threshold, args.top_roles)
     elif args.step == "instance-graphs":
         InstanceGraphBuilder(args.step1_dir, args.output_dir, args.noise_threshold,
                              args.workers, args.max_traces).run()
@@ -246,6 +284,28 @@ def main():
         table = run_evaluation(runs, args.gold, GFileConverter.load(args.graphs), args.output_dir)
         print(table.to_string(index=False))
         print(f"\nEvaluation written to {args.output_dir}")
+    elif args.step == "validate-trace":
+        trace, checks = TraceValidator(args.step1_dir, args.graphs).validate(args.case)
+        print(trace.to_string(index=False))
+        print("\nChecks:\n  " + "\n  ".join(checks))
+        path = config.OUTPUT_DIR / "validation" / f"{args.case}.csv"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        trace.to_csv(path, index=False)
+        print(f"\nTable saved to {config.display_path(path)}")
+    elif args.step == "synthetic":
+        settings = SubdueSettings(beam_width=args.beam, iterations=args.iterations,
+                                  num_best=args.num_best)
+        experiment = SyntheticExperiment(args.noise, args.cases, args.seed, settings,
+                                         top_k=args.top_roles, workers=args.workers,
+                                         output_root=args.output_dir)
+        if args.sweep:
+            table = experiment.sweep(args.noise[0])
+            print(table.drop(columns=["gold_found"]).to_string(index=False))
+        else:
+            table = experiment.run()
+            print(table[["noise", "roles", "role_purity", "parallel_graphs_pct", "precision",
+                         "recall", "f1", "baseline_f1"]].to_string(index=False))
+        print(f"\nResults written to {args.output_dir}")
     elif args.step == "show-graph":
         show_graph(args)
     elif args.step == "show-net":

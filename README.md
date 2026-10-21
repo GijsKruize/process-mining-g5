@@ -9,7 +9,7 @@ BPI Challenge 2017 (denied applications) log.
 | 1 | Preprocessing: relabel every event as `activity_selectedAttribute`, optionally grouping resources into roles | done |
 | 2 | Inductive Miner Petri net + BIG instance graphs → networkx | done |
 | 3 | SUBDUE patterns, support, trace × pattern matrix, visualisation | done |
-| 4 | Evaluation: precision / recall against a hand-made gold standard and a baseline | done (first version) |
+| 4 | Evaluation: synthetic logs with injected patterns and noise (gold standard), BPI checks, parameter study | done |
 
 ## Requirements
 
@@ -73,8 +73,18 @@ python main.py pattern-report                                   # figures for th
 # Step 3, hierarchical (10 SUBDUE iterations, as in the paper)  (about 20 minutes)
 python main.py mine-patterns --iterations 10 --num-best 3 --output-dir outputs/step3_patterns_hierarchy
 
-# Evaluation against the gold standard, with the frequent-path baseline       (under a minute)
-python main.py evaluate --run "SUBDUE 1 iteration=outputs/step3_patterns/org_resource_roles" --run "SUBDUE 10 iterations=outputs/step3_patterns_hierarchy/org_resource_roles"
+# Evaluation 1: synthetic logs with injected patterns, noise 0/10/20/30%     (about 2 minutes)
+python main.py synthetic
+# Evaluation 2: parameter study (top-k roles x beam x iterations), 10% noise  (about 5 minutes)
+python main.py synthetic --noise 0.1 --sweep
+
+# Evaluation 3 (BPI): validate one instance graph against its trace
+python main.py validate-trace --case Application_1691306052
+# Evaluation 4 (BPI): runs with beam 10 and 20 (about 15 minutes each), then the
+# comparison with the expected work practices and the frequent-path baseline
+python main.py mine-patterns --beam 10 --iterations 10 --num-best 3 --output-dir outputs/step3_beam10
+python main.py mine-patterns --beam 20 --iterations 10 --num-best 3 --output-dir outputs/step3_beam20
+python main.py evaluate --run "SUBDUE 1 iteration (beam 4)=outputs/step3_patterns/org_resource_roles" --run "SUBDUE 10 iterations (beam 4)=outputs/step3_patterns_hierarchy/org_resource_roles" --run "SUBDUE 10 iterations (beam 10)=outputs/step3_beam10/org_resource_roles" --run "SUBDUE 10 iterations (beam 20)=outputs/step3_beam20/org_resource_roles"
 
 # Unit tests (tiny logs, a few seconds)
 python -m unittest discover tests -v
@@ -90,6 +100,8 @@ python main.py mine-patterns --max-graphs 300      # quick trial on the first 30
 python main.py mine-patterns --original-subdue     # SUBDUE without speed-ups (same result, slow)
 python main.py show-graph --index 0                # print the first instance graph and plot it
 python main.py show-roles                          # heatmap: which role does which activity
+python main.py preprocess --attribute org:resource --grouping roles --top-roles 4
+                                                   # keep only the 4 largest roles, rest 'Other'
 python main.py show-net --describe-only            # size and parallel constructs of the net
 python main.py show-net                            # draw the net (needs Graphviz, see below)
 python main.py show-graph --case Application_1691306052 --output graph.svg
@@ -127,7 +139,11 @@ orgmining/                  the code, one module per step
   visualization.py          InstanceGraphViewer: print and plot instance graphs and patterns
   model_views.py            PetriNetRenderer, RoleActivityMatrix (checks by eye)
   evaluation.py             gold standard matching, precision/recall, frequent-path baseline
-gold_standard/              hand-made gold standard (CSV, with the rationale per pattern)
+  synthetic.py              synthetic loan logs with known departments, patterns and noise
+  synthetic_experiment.py   whole pipeline on synthetic logs, noise levels, parameter study
+  validation.py             TraceValidator: one trace next to its instance graph
+synthetic/                  generated synthetic logs (seeded), their gold standard and employees
+gold_standard/              expected work practices for BPI 2017 (CSV, with the rationale)
 paper/                      short paper (LaTeX), references and figures
 subdue/                     SUBDUE v1.4 (Python), unmodified copy, MIT licence
 tests/                      unit tests per step, on tiny hand-made logs and graphs
@@ -390,11 +406,68 @@ Role_2 → Role_3 (9%) and Role_1 → Role_2 (7%).
 
 ## Evaluation
 
-`python main.py evaluate` (`orgmining/evaluation.py`) compares discovered
-patterns with the gold standard in `gold_standard/bpi2017_org_resource_roles.csv`:
-9 expected work practices, each with the reason it is expected (process phases
-of the log description, lifecycle order of the activities, and the main role of
-each activity from the step 1 role table).
+### 1. Synthetic logs with a known gold standard (main evaluation)
+
+A real log has no ground truth, so `orgmining/synthetic.py` generates a
+simplified loan process with four departments (Intake 3, Offer 6, Validation 4,
+Decision 3 employees) and 500 cases, in which five work practices are
+*injected* (`synthetic/gold_standard.csv`):
+
+| ID | Injected work practice |
+|---|---|
+| G1 | Intake registers and checks the application |
+| G2 | Handover Intake -> Offer: call the customer and complete the application |
+| G3 | Offer team creates and sends the offer |
+| G4 | Validation checks documents and fraud **in parallel** (any order), then decision |
+| G5 | Handover Decision -> Offer: deny, then notify the customer |
+
+Noise: in 0, 10, 20 or 30% of the cases one random disturbance (an event done
+by an employee of another department, an extra event, a missing event, or two
+events swapped). `python main.py synthetic` runs the whole pipeline on every
+log (roles, Inductive Miner, BIG, SUBDUE with 5 iterations), maps the discovered
+roles to the departments via the employees, and compares the patterns with the
+injected ones. The logs are seeded and stored in `synthetic/`.
+
+| Noise | Roles correct | Parallel graphs | Precision | Recall | F1 | Baseline F1 |
+|---|---|---|---|---|---|---|
+| 0% | 100% | 71% | 0.93 | 1.00 | 0.97 | 0.77 |
+| 10-30% | 100% | 0% | 0.60 | 0.80 | 0.69 | 0.80 |
+
+Without noise every practice is found and SUBDUE beats the frequent-path
+baseline, which cannot represent parallel work. From 10% noise on, pm4py's
+Inductive Miner no longer finds the parallel block (at any noise threshold
+between 0 and 0.8), all instance graphs become sequences and G4 is lost; this
+is the same effect as on BPI 2017.
+
+**Parameter study** (`--sweep`, 10% noise; `outputs/synthetic/sweep.csv`): the
+number of iterations matters most (1: F1 0.75, 3: 0.89, 5: 0.69, 10: 0.47; later
+iterations add fragments). Beam width 2, 4 or 10 gives the same result on these
+small graphs and only costs time; top-k roles 2, 3 or all give the same scores
+(k = 2 merges two departments into `Other`).
+
+### 2. BPI 2017
+
+- **Validation of one instance graph** (`validate-trace`): for
+  Application_1691306052 the graph has the same 33 events and labels as the
+  trace, the right role for every event, and all 32 edges link consecutive
+  events (`outputs/validation/`).
+- **Expected work practices**: `gold_standard/bpi2017_org_resource_roles.csv`
+  lists 9 practices derived from the log description, the lifecycle order of
+  the activities and the step 1 role table (written after seeing first
+  results, so it is a secondary check). Matching as above; baseline: the most
+  frequent label paths of 2, 3 and 4 edges.
+
+| SUBDUE run | Patterns | Precision | Recall | F1 | SUBDUE time |
+|---|---|---|---|---|---|
+| 1 iteration, beam 4 | 20 | 1.00 | 0.33 | 0.50 | 2.4 min |
+| 10 iterations, beam 4 | 30 | 0.63 | 0.89 | 0.74 | 10 min |
+| 10 iterations, beam 10 | 30 | 0.77 | 0.89 | 0.82 | 13 min |
+| 10 iterations, beam 20 | 30 | 0.87 | 1.00 | 0.93 | 16 min |
+| Frequent paths, 3 / 4 edges | 30 | 0.60 / 0.73 | 0.89 | 0.72 / 0.80 | |
+
+On this large graph the beam width does matter: beam 20 finds all 9 practices.
+
+### Matching rules
 
 - A gold pattern is *found* if a discovered pattern contains it (same labels,
   including the role, and all its edges).
@@ -402,18 +475,9 @@ each activity from the step 1 role table).
   of one.
 - Precision = correct / discovered, recall = found / gold, plus F1 and the same
   on edge level (pairs of labels) as partial credit.
-- Baseline: the most frequent label paths of 2, 3 and 4 edges in the instance
-  graphs, as many as SUBDUE returns.
 
-Outputs in `outputs/evaluation/`: `evaluation.csv`, `evaluation_per_pattern.csv`
-and `evaluation.png`.
+## Short paper
 
-| Method | Patterns | Precision | Recall | F1 |
-|---|---|---|---|---|
-| SUBDUE, 1 iteration (beam 4) | 20 | 1.00 | 0.33 | 0.50 |
-| SUBDUE, 10 iterations (beam 4) | 30 | 0.63 | 0.89 | 0.74 |
-| Frequent paths, 3 edges | 30 | 0.60 | 0.89 | 0.72 |
-| Frequent paths, 4 edges | 30 | 0.73 | 0.89 | 0.80 |
-
-Because almost all instance graphs are sequences (see step 2), graph mining
-has no advantage over frequent paths here.
+`paper/short_paper.tex` (course template, 5 pages including references),
+`paper/literature.bib` and `paper/figures/`. In Overleaf: replace `main.tex` and
+`literature.bib` and upload the `figures/` folder.
