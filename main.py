@@ -20,10 +20,13 @@ from orgmining.instance_graphs import (DEFAULT_NOISE_THRESHOLD, DEFAULT_WORKERS,
                                        InstanceGraphBuilder)
 from orgmining.preprocessing import GROUPING_CHOICES, EventLogPreprocessor
 from orgmining.roles import DEFAULT_ROLES_THRESHOLD
+from orgmining.model_views import PetriNetRenderer, RoleActivityMatrix
 from orgmining.visualization import DEFAULT_COLUMNS, InstanceGraphViewer
 
 DEFAULT_STEP1_RESULT = config.STEP1_OUTPUT_DIR / "org_resource_roles"
 DEFAULT_GRAPHS = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "instance_graphs.pkl"
+DEFAULT_NET = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "petri_net.pnml"
+FIGURES_DIR = config.OUTPUT_DIR / "figures"
 
 
 def build_parser():
@@ -69,6 +72,28 @@ def build_parser():
     show.add_argument("--columns", type=int, default=DEFAULT_COLUMNS,
                       help="Layers per row before the plot wraps (default: %(default)s)")
 
+    net = steps.add_parser(
+        "show-net", help="Describe and draw a Petri net (needs the Graphviz program 'dot')")
+    source = net.add_mutually_exclusive_group()
+    source.add_argument("--pnml", help="Petri net file to draw "
+                                       f"(default: {config.display_path(DEFAULT_NET)})")
+    source.add_argument("--log", help="Discover the net from this .xes log instead, with the "
+                                      "same Inductive Miner settings as step 2")
+    net.add_argument("--noise-threshold", type=float, default=DEFAULT_NOISE_THRESHOLD,
+                     help="With --log: noise threshold of the Inductive Miner (default: %(default)s)")
+    net.add_argument("--output", default=None,
+                     help="Image file, .svg (zoomable, default), .png or .pdf; "
+                          "default: outputs/figures/<name>.svg")
+    net.add_argument("--describe-only", action="store_true",
+                     help="Only print the size and parallel constructs; draw nothing")
+
+    roles = steps.add_parser(
+        "show-roles", help="Heatmap of which role performs which share of each activity")
+    roles.add_argument("--step1-dir", default=config.display_path(DEFAULT_STEP1_RESULT),
+                       help="Step 1 output folder with roles (default: %(default)s)")
+    roles.add_argument("--output", default=None,
+                       help="Image file; default: outputs/figures/roles_per_activity.png")
+
     convert = steps.add_parser(
         "convert-g", help="Convert an existing BIG .g file to networkx graphs (no BIG run)")
     convert.add_argument("g_file", help="The .g file to convert")
@@ -99,6 +124,36 @@ def show_graph(args):
     print(f"\nPlot saved to {config.display_path(output)}")
 
 
+def show_net(args):
+    """Describe a Petri net and draw it, from a .pnml file or discovered from a log."""
+    if args.log:
+        print(f"Discovering the net of {args.log} (noise threshold {args.noise_threshold}) ...")
+        net, initial_marking, final_marking = PetriNetRenderer.discover(args.log, args.noise_threshold)
+        name = f"net_{Path(args.log).stem}_noise{args.noise_threshold}"
+    else:
+        pnml = Path(args.pnml) if args.pnml else DEFAULT_NET
+        net, initial_marking, final_marking = PetriNetRenderer.load(pnml)
+        name = f"net_{pnml.parent.name}" if pnml.name == "petri_net.pnml" else f"net_{pnml.stem}"
+    print(PetriNetRenderer.describe(net))
+    if not args.describe_only:
+        output = Path(args.output) if args.output else FIGURES_DIR / f"{name}.svg"
+        PetriNetRenderer.render(net, initial_marking, final_marking, output)
+        print(f"Drawing saved to {config.display_path(output)}")
+
+
+def show_roles(args):
+    """Heatmap and table of which role performs which share of every activity."""
+    matrix = RoleActivityMatrix.from_step1(args.step1_dir)
+    summary = matrix.summary()
+    csv_path = Path(args.step1_dir) / "roles_per_activity.csv"
+    summary.to_csv(csv_path)
+    output = Path(args.output) if args.output else FIGURES_DIR / "roles_per_activity.png"
+    matrix.plot(output)
+    print(summary.to_string())
+    print(f"\nTable saved to {config.display_path(csv_path)}")
+    print(f"Heatmap saved to {config.display_path(output)}")
+
+
 def ensure_fixed_hash_seed():
     """Restart this script once with PYTHONHASHSEED=0, so every run gives the same result.
 
@@ -124,6 +179,10 @@ def main():
                              args.workers, args.max_traces).run()
     elif args.step == "show-graph":
         show_graph(args)
+    elif args.step == "show-net":
+        show_net(args)
+    elif args.step == "show-roles":
+        show_roles(args)
     elif args.step == "convert-g":
         convert_g_file(args.g_file, args.output)
 

@@ -244,11 +244,13 @@ so the plot can also be read without colour.
 | Graphs not connected | 0 |
 | Run time (11 workers) | Petri net 72 s, BIG 49 min |
 
-Almost every instance graph is a sequence. The discovered net has only one
-AND-split, at noise threshold 0.0, 0.1 and 0.2 alike, so this is not a matter
-of filtering. For comparison: the example `BPI2017Denied.g` (activities only,
-no resources) has parallel branches in 99.3% of the graphs. Adding the role to
-every label splits the concurrent behaviour of the original activities into
-many label combinations, which the Inductive Miner no longer recognises as
-parallel. The paper reports the same effect on its real-life log (12.5%
-parallel graphs), with mostly sequential patterns as a result.
+Almost every instance graph is a sequence, because the discovered net has only
+one AND-split. This is **not caused by the roles**: pm4py's Inductive Miner
+also finds only one AND-split on the original activities (no roles), at every
+noise threshold from 0.0 to 1.0 (`python main.py show-net --log <log>
+--describe-only`). The example net of the assignment
+(`BPI2017Denied_petriNet.pnml`, activities only) has five AND-splits, and its
+instance graphs (`BPI2017Denied.g`) have parallel branches in 99.3% of the
+cases, so that net was made with a different tool or different settings (to
+be checked). The paper reports mostly sequential graphs on its real-life log
+too (12.5% parallel).
