@@ -1,50 +1,41 @@
-% Short paper draft - JM0211 Process Mining, group 5: Mining Organizational Patterns
-% Compiles on its own; to use the course template, copy everything between
-% \begin{document} and \end{document} (and the packages below) into it.
-% Figures: upload the folder figures/ to Overleaf. Bibliography: references.bib.
-\documentclass[11pt,a4paper]{article}
-\usepackage[margin=2.5cm]{geometry}
+\documentclass{article}
+\usepackage[a4paper, bindingoffset=0 cm, left=2.5cm, right=2.5cm, top=1.5cm, bottom=1.5cm, footskip=0.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usepackage{biblatex}
+\usepackage{csquotes}
+\addbibresource{literature.bib}
+\usepackage{hyperref}
+% Added for the figures and tables of this paper
+\usetikzlibrary{positioning,arrows.meta}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{tikz}
-\usetikzlibrary{positioning,arrows.meta}
-\usepackage[hidelinks]{hyperref}
 
-\title{Mining Organizational Behavioral Patterns from Instance Graphs:\\
-       Roles, Handovers and Work Practices in the BPI Challenge 2017 Log}
-\author{Group 5 -- JM0211 Process Mining}
-\date{Draft for peer review, 21 October 2026}
+\title{1JM0211 Process Mining \\Mining Organizational Patterns}
+\author{Group 5, Members: Sophie Veltmans, Lotte van der Vlies, Gijs Kruize}
+\date{Submission Date}
 
 \begin{document}
+\newmdenv[linewidth=1.5pt, frametitlerule=true, roundcorner=3pt]{mybox}
+\pagestyle{empty}
+\let\svmaketitle\maketitle
+\def\maketitle{\svmaketitle\thispagestyle{empty}}
 \maketitle
 
-\begin{abstract}
-Organizational mining studies how work is distributed among the actors of a
-process. Mining a process model on activity--resource pairs quickly yields
-spaghetti models, so we follow the behavioral pattern mining approach of
-Diamantini et al.\ and extract frequent subgraphs from instance graphs instead.
-We implement the full pipeline: events are relabelled with a user-selected
-organizational attribute, resources are grouped into discovered roles, instance
-graphs are built with BIG on an Inductive Miner model, and patterns are mined
-with SUBDUE. On the BPI Challenge 2017 log of denied applications (3,093 cases)
-grouping 134 resources into 8 roles reduces the labels from 3,338 to 225. A
-hierarchical SUBDUE run finds 8 of 9 work practices of a hand-made gold
-standard (precision 0.63, recall 0.89), among them handovers from the offer
-team to the validation team in 61\% of the cases. We also make SUBDUE about
-4.5$\times$ faster on 1,000 graphs without changing its output, and show that
-the discovered model, not the roles, limits the parallelism in the instance
-graphs.
-\end{abstract}
+\begin{mybox}[frametitle = Remarks (to be removed upon submission)]
+Page limit: 5 pages excluding references; use appropriate scientific references where possible \cite{DBLP:books/sp/Aalst16}; your short paper shall follow the structure outlined below
+\end{mybox}
 
 % =====================================================================
-\section{Introduction and background}
-\label{sec:intro}
+\section{Motivation and Scientific Background}\label{sec:motivation}
 
 Process mining discovers, checks and improves processes from the events that
-information systems record~\cite{vanderaalst2016process}. Most of its
+information systems record~\cite{DBLP:books/sp/Aalst16}. Most of its
 techniques focus on the control flow: which activities happen in which order.
 \emph{Organizational mining} adds the actors: it asks who performs which
 activities, which resources play similar roles and how work is handed over
@@ -86,8 +77,7 @@ interpretable, (iii) speed up SUBDUE without changing its results, and (iv)
 evaluate the patterns against a gold standard and a baseline.
 
 % =====================================================================
-\section{Approach}
-\label{sec:approach}
+\section{Conceptual Approach}\label{sec:conceptual_approach}
 
 \begin{figure}[t]
 \centering
@@ -209,8 +199,7 @@ colour and tag), the support per pattern, the overlap between patterns and the
 handover of work between roles.
 
 % =====================================================================
-\section{Implementation}
-\label{sec:implementation}
+\section{Implementation}\label{sec:implementation}
 
 The pipeline is a Python~3.9 package with one module per step and a single
 command-line entry point (\texttt{main.py}); all parameters are command-line
@@ -256,8 +245,7 @@ Instance graphs & Edges & Original & Accelerated & Speed-up \\
 \end{table}
 
 % =====================================================================
-\section{Evaluation}
-\label{sec:evaluation}
+\section{Evaluation Design and Results}\label{sec:evaluation}
 
 \subsection{Data}
 
@@ -469,8 +457,7 @@ Frequent paths, 4 edges & 30 & 0.73 & 0.89 & 0.80 & 0.41 & 0.88 \\
 \end{figure}
 
 % =====================================================================
-\section{Limitations and future work}
-\label{sec:limitations}
+\section{Limitations and Future Work}\label{sec:limitations_futurework}
 
 \paragraph{Process model.} The Inductive Miner in pm4py~2.2.16 finds almost no
 parallelism on this log, even without roles, so the instance graphs are
@@ -497,17 +484,22 @@ ground truth, and the structural measures of the paper (coverage, diversity).
 iteration, and its value function favours long sequences. More iterations,
 or reporting only maximal patterns, make the result more diverse.
 
-% =====================================================================
-\section{Conclusion}
-
-We implemented behavioral pattern mining from instance graphs for
+\paragraph{Conclusion.} We implemented behavioral pattern mining from instance graphs for
 organizational analysis. Grouping resources into discovered roles makes the
 approach tractable on a real log and yields interpretable work practices,
 including handovers between teams. A hierarchical SUBDUE search finds most
 expected work practices, while the discovered process model, rather than the
 pattern miner, is the bottleneck for revealing parallel collaboration.
 
-\bibliographystyle{plain}
-\bibliography{references}
+\printbibliography
+
+\section{Technology Statement}
+During the preparation of this work, I/We used [NAME TOOL / SERVICE / VERSION OF AI
+TOOL] in order to [REASON]. The following parts of the assignment were
+affected/generated by AI tool usage: [INTRODUCTION / METHODS / xxx, DISCUSSION].
+After using this tool/service, [NAME STUDENT(S)] evaluated the validity of the tool's
+outputs, including the sources that generative AI tools have used, and edited the
+content as needed. As a consequence, [NAME STUDENT (S)] take(s) full responsibility
+for the content of their work
 
 \end{document}
