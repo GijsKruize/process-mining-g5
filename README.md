@@ -9,7 +9,7 @@ BPI Challenge 2017 (denied applications) log.
 | 1 | Preprocessing: relabel every event as `activity_selectedAttribute`, optionally grouping resources into roles | done |
 | 2 | Inductive Miner Petri net + BIG instance graphs → networkx | done |
 | 3 | SUBDUE patterns, support, trace × pattern matrix, visualisation | done |
-| 4 | Evaluation: precision / recall against a hand-made gold standard | to do |
+| 4 | Evaluation: precision / recall against a hand-made gold standard and a baseline | done (first version) |
 
 ## Requirements
 
@@ -73,6 +73,9 @@ python main.py pattern-report                                   # figures for th
 # Step 3, hierarchical (10 SUBDUE iterations, as in the paper)  (about 20 minutes)
 python main.py mine-patterns --iterations 10 --num-best 3 --output-dir outputs/step3_patterns_hierarchy
 
+# Evaluation against the gold standard, with the frequent-path baseline       (under a minute)
+python main.py evaluate --run "SUBDUE 1 iteration=outputs/step3_patterns/org_resource_roles" --run "SUBDUE 10 iterations=outputs/step3_patterns_hierarchy/org_resource_roles"
+
 # Unit tests (tiny logs, a few seconds)
 python -m unittest discover tests -v
 ```
@@ -123,6 +126,9 @@ orgmining/                  the code, one module per step
   pattern_report.py         step 3: PatternReport (figures for the report)
   visualization.py          InstanceGraphViewer: print and plot instance graphs and patterns
   model_views.py            PetriNetRenderer, RoleActivityMatrix (checks by eye)
+  evaluation.py             gold standard matching, precision/recall, frequent-path baseline
+gold_standard/              hand-made gold standard (CSV, with the rationale per pattern)
+paper/                      short paper (LaTeX), references and figures
 subdue/                     SUBDUE v1.4 (Python), unmodified copy, MIT licence
 tests/                      unit tests per step, on tiny hand-made logs and graphs
 requirements.txt            pinned dependencies
@@ -380,3 +386,34 @@ and the intake (Role_4) hands over to Role_1. Over all instance graphs, most
 work stays within a role (80-93% of the edges, `role_handover.png`); the main
 handovers are Role_4 → Role_1 (16% of Role_4's edges), Role_5 → Role_3 (17%),
 Role_2 → Role_3 (9%) and Role_1 → Role_2 (7%).
+
+
+## Evaluation
+
+`python main.py evaluate` (`orgmining/evaluation.py`) compares discovered
+patterns with the gold standard in `gold_standard/bpi2017_org_resource_roles.csv`:
+9 expected work practices, each with the reason it is expected (process phases
+of the log description, lifecycle order of the activities, and the main role of
+each activity from the step 1 role table).
+
+- A gold pattern is *found* if a discovered pattern contains it (same labels,
+  including the role, and all its edges).
+- A discovered pattern is *correct* if it contains a gold pattern or is part
+  of one.
+- Precision = correct / discovered, recall = found / gold, plus F1 and the same
+  on edge level (pairs of labels) as partial credit.
+- Baseline: the most frequent label paths of 2, 3 and 4 edges in the instance
+  graphs, as many as SUBDUE returns.
+
+Outputs in `outputs/evaluation/`: `evaluation.csv`, `evaluation_per_pattern.csv`
+and `evaluation.png`.
+
+| Method | Patterns | Precision | Recall | F1 |
+|---|---|---|---|---|
+| SUBDUE, 1 iteration (beam 4) | 20 | 1.00 | 0.33 | 0.50 |
+| SUBDUE, 10 iterations (beam 4) | 30 | 0.63 | 0.89 | 0.74 |
+| Frequent paths, 3 edges | 30 | 0.60 | 0.89 | 0.72 |
+| Frequent paths, 4 edges | 30 | 0.73 | 0.89 | 0.80 |
+
+Because almost all instance graphs are sequences (see step 2), graph mining
+has no advantage over frequent paths here.

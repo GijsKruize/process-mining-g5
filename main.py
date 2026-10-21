@@ -21,6 +21,7 @@ from orgmining.instance_graphs import (DEFAULT_NOISE_THRESHOLD, DEFAULT_WORKERS,
 from orgmining.pattern_mining import (DEFAULT_BEAM_WIDTH, DEFAULT_ITERATIONS, DEFAULT_LIMIT,
                                       DEFAULT_MAX_SIZE, DEFAULT_MIN_SIZE, DEFAULT_NUM_BEST,
                                       PatternMiner, SubdueSettings)
+from orgmining.evaluation import run_evaluation
 from orgmining.pattern_report import PatternReport
 from orgmining.preprocessing import GROUPING_CHOICES, EventLogPreprocessor
 from orgmining.roles import DEFAULT_ROLES_THRESHOLD
@@ -32,6 +33,8 @@ DEFAULT_GRAPHS = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "instance_grap
 DEFAULT_NET = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "petri_net.pnml"
 FIGURES_DIR = config.OUTPUT_DIR / "figures"
 DEFAULT_STEP3_RESULT = config.STEP3_OUTPUT_DIR / "org_resource_roles"
+DEFAULT_HIERARCHY_RESULT = config.OUTPUT_DIR / "step3_patterns_hierarchy" / "org_resource_roles"
+DEFAULT_GOLD = config.PROJECT_ROOT / "gold_standard" / "bpi2017_org_resource_roles.csv"
 
 
 def build_parser():
@@ -98,6 +101,19 @@ def build_parser():
     report.add_argument("--graphs", default=config.display_path(DEFAULT_GRAPHS),
                         help="instance_graphs.pkl of step 2 (default: %(default)s)")
     report.add_argument("--top", type=int, default=20, help="Patterns to include (default: %(default)s)")
+
+    evaluation = steps.add_parser(
+        "evaluate", help="Precision/recall of step 3 runs and a baseline against the gold standard")
+    evaluation.add_argument("--run", action="append", metavar="NAME=FOLDER",
+                            help="A step 3 output folder to evaluate, e.g. "
+                                 "'SUBDUE beam 4=outputs/step3_patterns_hierarchy/org_resource_roles'"
+                                 "; repeat for several runs (default: the hierarchical run)")
+    evaluation.add_argument("--gold", default=config.display_path(DEFAULT_GOLD),
+                            help="Gold standard CSV (default: %(default)s)")
+    evaluation.add_argument("--graphs", default=config.display_path(DEFAULT_GRAPHS),
+                            help="instance_graphs.pkl, for the baseline (default: %(default)s)")
+    evaluation.add_argument("--output-dir", default=config.display_path(config.OUTPUT_DIR / "evaluation"),
+                            help="Where the evaluation is written (default: %(default)s)")
 
     show = steps.add_parser(
         "show-graph", help="Print an instance graph as text and save a plot of it")
@@ -224,6 +240,12 @@ def main():
     elif args.step == "pattern-report":
         paths = PatternReport(args.step3_dir, args.graphs).build(args.top)
         print(f"{len(paths)} figures saved to {config.display_path(paths[0].parent)}")
+    elif args.step == "evaluate":
+        runs = dict(run.split("=", 1) for run in args.run) if args.run else {
+            "SUBDUE (10 iterations, beam 4)": DEFAULT_HIERARCHY_RESULT}
+        table = run_evaluation(runs, args.gold, GFileConverter.load(args.graphs), args.output_dir)
+        print(table.to_string(index=False))
+        print(f"\nEvaluation written to {args.output_dir}")
     elif args.step == "show-graph":
         show_graph(args)
     elif args.step == "show-net":
