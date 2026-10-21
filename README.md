@@ -8,7 +8,7 @@ BPI Challenge 2017 (denied applications) log.
 |------|------|--------|
 | 1 | Preprocessing: relabel every event as `activity_selectedAttribute`, optionally grouping resources into roles | done |
 | 2 | Inductive Miner Petri net + BIG instance graphs → networkx | done |
-| 3 | SUBDUE patterns, support, trace × pattern matrix, visualisation | to do |
+| 3 | SUBDUE patterns, support, trace × pattern matrix, visualisation | done |
 | 4 | Evaluation: precision / recall against a hand-made gold standard | to do |
 
 ## Requirements
@@ -66,6 +66,13 @@ python main.py preprocess --attribute org:resource --grouping roles
 # Step 2: Petri net + BIG instance graphs on the step 1 output   (about 1 hour)
 python main.py instance-graphs
 
+# Step 3: SUBDUE patterns, support, trace x pattern matrix        (about 2.5 minutes)
+python main.py mine-patterns
+python main.py pattern-report                                   # figures for the report
+
+# Step 3, hierarchical (10 SUBDUE iterations, as in the paper)  (about 20 minutes)
+python main.py mine-patterns --iterations 10 --num-best 3 --output-dir outputs/step3_patterns_hierarchy
+
 # Unit tests (tiny logs, a few seconds)
 python -m unittest discover tests -v
 ```
@@ -76,7 +83,12 @@ Useful variations:
 python main.py preprocess                          # asks for the attribute and the grouping
 python main.py instance-graphs --max-traces 50     # quick trial on the first 50 traces
 python main.py instance-graphs --workers 4         # use fewer CPU cores
+python main.py mine-patterns --max-graphs 300      # quick trial on the first 300 graphs
+python main.py mine-patterns --original-subdue     # SUBDUE without speed-ups (same result, slow)
 python main.py show-graph --index 0                # print the first instance graph and plot it
+python main.py show-roles                          # heatmap: which role does which activity
+python main.py show-net --describe-only            # size and parallel constructs of the net
+python main.py show-net                            # draw the net (needs Graphviz, see below)
 python main.py show-graph --case Application_1691306052 --output graph.svg
 python main.py convert-g datasets_group5_mining_organizational_patterns/BPI2017Denied.g
                                                    # only convert an existing BIG .g file
@@ -85,6 +97,10 @@ python main.py preprocess --help                   # all options of a step
 
 Results are written to `outputs/` (not in git; re-create them with the
 commands above).
+
+`show-net` draws Petri nets with pm4py, which needs the Graphviz *program*
+(`pip install graphviz` only installs the Python wrapper). On Windows:
+`winget install --id Graphviz.Graphviz -e`, then open a new terminal.
 
 **Reproducibility.** pm4py's Inductive Miner iterates over Python sets, whose
 order changes between runs unless the hash seed is fixed. `main.py` therefore
@@ -103,14 +119,19 @@ orgmining/                  the code, one module per step
   roles.py                  step 1: class ResourceRoleGrouper (resources -> roles)
   instance_graphs.py        step 2: PetriNetDiscoverer, BigRunner, GFileConverter,
                             InstanceGraphBuilder
-  visualization.py          InstanceGraphViewer: print and plot instance graphs
+  pattern_mining.py         step 3: PatternMiner, SubdueAccelerator (SUBDUE speed-ups)
+  pattern_report.py         step 3: PatternReport (figures for the report)
+  visualization.py          InstanceGraphViewer: print and plot instance graphs and patterns
+  model_views.py            PetriNetRenderer, RoleActivityMatrix (checks by eye)
+subdue/                     SUBDUE v1.4 (Python), unmodified copy, MIT licence
 tests/                      unit tests per step, on tiny hand-made logs and graphs
 requirements.txt            pinned dependencies
 BIG.py                      BIG library from Canvas (not in git, see above)
 outputs/                    generated results (not in git)
   step1_preprocessing/<attribute>[_roles]/
   step2_instance_graphs/<step 1 folder>/
-  figures/                  plots made with show-graph
+  step3_patterns/<step 2 folder>/        patterns, matrix, figures/
+  figures/                  plots made with show-graph, show-roles, show-net
 ```
 
 ## Step 1 – preprocessing
@@ -254,3 +275,108 @@ instance graphs (`BPI2017Denied.g`) have parallel branches in 99.3% of the
 cases, so that net was made with a different tool or different settings (to
 be checked). The paper reports mostly sequential graphs on its real-life log
 too (12.5% parallel).
+
+## Step 3 – behavioral patterns
+
+`PatternMiner` (in `orgmining/pattern_mining.py`) does the following on the
+step 2 output:
+
+1. **SUBDUE input**: all instance graphs become one disconnected graph for
+   SUBDUE. Vertices are matched on their label (`activity_role`); all edges
+   get the label `next` and are explicitly directed. (SUBDUE's own networkx
+   loader, `nx_subdue`, silently makes every edge undirected because of a bug,
+   so it is not used.) Every vertex keeps its unique id from step 2, so every
+   pattern instance can be traced back to its trace.
+2. **SUBDUE** (`subdue/`, the unmodified Python version from
+   https://github.com/holderlb/Subdue) finds the subgraphs that best compress
+   the graph: value = (instances − 1) × edges / edges of the graph, with
+   non-overlapping instances. Settings (all on the command line):
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--beam` | 4 | beam width, as in the paper |
+| `--min-size` / `--max-size` | 2 / 10 | pattern size in edges |
+| `--num-best` | 20 | patterns reported per iteration |
+| `--iterations` | 1 | >1: compress the graph with the best pattern and search again, which gives a hierarchy of patterns like Fig. 4 of the paper |
+| `--limit` | auto | patterns SUBDUE extends; *auto* = every one-edge pattern once, plus `beam` per level up to `max-size` |
+
+   *Why `--limit auto`:* SUBDUE starts from all one-edge patterns in the order
+   of the edges, not ordered by value, and stops after extending `limit`
+   patterns. A smaller limit makes the result depend on the arbitrary edge
+   order.
+3. **Statistics** per pattern (`patterns.csv`): number of instances
+   (occurrence-based support, as in the paper), number and share of traces
+   that contain it (transaction-based support), size, roles involved and a
+   readable description. `trace_pattern_matrix.csv` has one row per trace and
+   one column per pattern, with 1 if the pattern occurs in the trace.
+4. **Report figures** (`python main.py pattern-report`, `PatternReport` in
+   `orgmining/pattern_report.py`), in `outputs/step3_patterns/<run>/figures/`:
+   every pattern drawn like the instance graphs, the support per pattern, the
+   overlap between patterns (share of traces in common) and the handover of
+   work between roles over all instance graphs.
+
+### Performance
+
+SUBDUE compares candidate patterns pairwise: every edge with every other
+edge, and every extended instance with every other one. On the 121,781 edges
+of the BPI 2017 graphs that does not finish in reasonable time.
+`SubdueAccelerator` replaces three of SUBDUE's helper functions at run time
+by versions that give **exactly the same result**:
+
+1. one-edge patterns are first grouped by their labels, because only edges
+   with the same labels can match;
+2. extended instances are grouped by a fingerprint (vertex labels with
+   degree, edge labels) that every pair of matching graphs shares, and their
+   graphs are built once instead of again for every comparison; SUBDUE's own
+   `GraphMatch` still decides within a group;
+3. the overlap test uses one set of the vertices already used instead of
+   comparing with every accepted instance.
+
+Groups are processed in the original order, so the patterns, their values
+and their instances are identical. This is checked by
+`tests/test_pattern_mining.py` (random graphs, several settings, including
+iterations) and on the real data (table below). `--original-subdue` runs
+SUBDUE without the speed-ups.
+
+Measured on the BPI 2017 instance graphs (default settings, max size 10;
+the first N graphs; same machine, other jobs running):
+
+| Instance graphs | Edges | Original SUBDUE | Accelerated | Speed-up | Same result |
+|---|---|---|---|---|---|
+| 250 | 9,898 | 23.6 s | 11.0 s | 2.1× | yes |
+| 500 | 19,659 | 24.4 s | 11.5 s | 2.1× | yes |
+| 1,000 | 39,221 | 282.4 s | 63.2 s | 4.5× | yes |
+| 3,093 (all) | 121,781 | not run | 142.7 s | | |
+
+The speed-up grows with the size of the input, because the original's
+pairwise comparisons grow quadratically.
+
+### Results on the BPI 2017 log (roles)
+
+Single run (`mine-patterns`, 20 best patterns, 2.4 minutes): the best
+patterns are all overlapping variants of the same sequence (in 54-80% of the
+traces), because SUBDUE's beam search keeps refining one region of the graph.
+
+Hierarchical run (`--iterations 10 --num-best 3`, 10 minutes): after every
+iteration the best pattern is compressed, so every iteration finds a new part
+of the process. Best pattern per iteration:
+
+| Pattern | What it shows | Edges | Roles | Traces |
+|---|---|---|---|---|
+| P1.1 | Role_1 calls after the offer, Role_2 takes over and validates | 10 | Role_1, Role_2 | 1,883 (61%) |
+| P2.1 | Role_4 registers the application, Role_1 continues it | 7 | Role_1, Role_4 | 1,394 (45%) |
+| P3.1 | Role_1 accepts, creates and sends the offer | 3 | Role_1 | 2,522 (82%) |
+| P4.1 | Role_1 calls for incomplete files, Role_2 takes over and validates | 6 | Role_1, Role_2 | 698 (23%) |
+| P5.1 | Role_2 starts the validation | 3 | Role_2 | 1,035 (33%) |
+| P6.1 | Role_1 completes the application (concept) | 2 | Role_1 | 1,252 (40%) |
+| P7.1 | Role_3 denies, the offer is refused, the case ends | 3 | Role_3 | 954 (31%) |
+| P8.1 | Role_3 refuses the offer and aborts the validation | 2 | Role_3 | 1,164 (38%) |
+| P9.1 | Role_1 suspends and resumes completing the application | 2 | Role_1 | 888 (29%) |
+| P10.1 | Role_1 calls the customer after the offer | 2 | Role_1 | 1,131 (37%) |
+
+Patterns with two roles show a **handover of work**: the offer team (Role_1)
+hands cases over to the validation team (Role_2) after calling the customer,
+and the intake (Role_4) hands over to Role_1. Over all instance graphs, most
+work stays within a role (80-93% of the edges, `role_handover.png`); the main
+handovers are Role_4 → Role_1 (16% of Role_4's edges), Role_5 → Role_3 (17%),
+Role_2 → Role_3 (9%) and Role_1 → Role_2 (7%).

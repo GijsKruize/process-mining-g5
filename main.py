@@ -18,6 +18,10 @@ from pathlib import Path
 from orgmining import config
 from orgmining.instance_graphs import (DEFAULT_NOISE_THRESHOLD, DEFAULT_WORKERS, GFileConverter,
                                        InstanceGraphBuilder)
+from orgmining.pattern_mining import (DEFAULT_BEAM_WIDTH, DEFAULT_ITERATIONS, DEFAULT_LIMIT,
+                                      DEFAULT_MAX_SIZE, DEFAULT_MIN_SIZE, DEFAULT_NUM_BEST,
+                                      PatternMiner, SubdueSettings)
+from orgmining.pattern_report import PatternReport
 from orgmining.preprocessing import GROUPING_CHOICES, EventLogPreprocessor
 from orgmining.roles import DEFAULT_ROLES_THRESHOLD
 from orgmining.model_views import PetriNetRenderer, RoleActivityMatrix
@@ -27,6 +31,7 @@ DEFAULT_STEP1_RESULT = config.STEP1_OUTPUT_DIR / "org_resource_roles"
 DEFAULT_GRAPHS = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "instance_graphs.pkl"
 DEFAULT_NET = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "petri_net.pnml"
 FIGURES_DIR = config.OUTPUT_DIR / "figures"
+DEFAULT_STEP3_RESULT = config.STEP3_OUTPUT_DIR / "org_resource_roles"
 
 
 def build_parser():
@@ -59,6 +64,40 @@ def build_parser():
                         help="Only use the first N traces, for a quick trial run")
     graphs.add_argument("--output-dir", default=config.display_path(config.STEP2_OUTPUT_DIR),
                         help="Where the step 2 outputs are written (default: %(default)s)")
+
+    mine = steps.add_parser(
+        "mine-patterns", help="Step 3: SUBDUE patterns, support and trace x pattern matrix")
+    mine.add_argument("--graphs", default=config.display_path(DEFAULT_GRAPHS),
+                      help="instance_graphs.pkl of step 2 (default: %(default)s)")
+    mine.add_argument("--step1-dir", default=config.display_path(DEFAULT_STEP1_RESULT),
+                      help="Step 1 folder, for the activity and role of each label "
+                           "(default: %(default)s)")
+    mine.add_argument("--beam", type=int, default=DEFAULT_BEAM_WIDTH,
+                      help="SUBDUE beam width (default: %(default)s, as in the paper)")
+    mine.add_argument("--limit", type=int, default=DEFAULT_LIMIT,
+                      help="Patterns SUBDUE extends; 0 = auto (default: %(default)s)")
+    mine.add_argument("--min-size", type=int, default=DEFAULT_MIN_SIZE,
+                      help="Minimum pattern size in edges (default: %(default)s)")
+    mine.add_argument("--max-size", type=int, default=DEFAULT_MAX_SIZE,
+                      help="Maximum pattern size in edges (default: %(default)s)")
+    mine.add_argument("--num-best", type=int, default=DEFAULT_NUM_BEST,
+                      help="Patterns reported per iteration (default: %(default)s)")
+    mine.add_argument("--iterations", type=int, default=DEFAULT_ITERATIONS,
+                      help="SUBDUE iterations; >1 builds a hierarchy (default: %(default)s)")
+    mine.add_argument("--max-graphs", type=int, default=None,
+                      help="Only use the first N instance graphs, for a quick trial run")
+    mine.add_argument("--original-subdue", action="store_true",
+                      help="Run SUBDUE without the speed-ups (same result, much slower)")
+    mine.add_argument("--output-dir", default=config.display_path(config.STEP3_OUTPUT_DIR),
+                      help="Where the step 3 outputs are written (default: %(default)s)")
+
+    report = steps.add_parser(
+        "pattern-report", help="Figures for the report: patterns, support, overlap, handovers")
+    report.add_argument("--step3-dir", default=config.display_path(DEFAULT_STEP3_RESULT),
+                        help="Step 3 output folder (default: %(default)s)")
+    report.add_argument("--graphs", default=config.display_path(DEFAULT_GRAPHS),
+                        help="instance_graphs.pkl of step 2 (default: %(default)s)")
+    report.add_argument("--top", type=int, default=20, help="Patterns to include (default: %(default)s)")
 
     show = steps.add_parser(
         "show-graph", help="Print an instance graph as text and save a plot of it")
@@ -177,6 +216,14 @@ def main():
     elif args.step == "instance-graphs":
         InstanceGraphBuilder(args.step1_dir, args.output_dir, args.noise_threshold,
                              args.workers, args.max_traces).run()
+    elif args.step == "mine-patterns":
+        settings = SubdueSettings(args.beam, args.limit, args.min_size, args.max_size,
+                                  args.num_best, args.iterations)
+        PatternMiner(args.graphs, Path(args.step1_dir) / "label_counts.csv", args.output_dir,
+                     settings, args.max_graphs, fast=not args.original_subdue).run()
+    elif args.step == "pattern-report":
+        paths = PatternReport(args.step3_dir, args.graphs).build(args.top)
+        print(f"{len(paths)} figures saved to {config.display_path(paths[0].parent)}")
     elif args.step == "show-graph":
         show_graph(args)
     elif args.step == "show-net":

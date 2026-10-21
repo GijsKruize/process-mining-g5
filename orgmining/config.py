@@ -15,6 +15,7 @@ DEFAULT_LOG_PATH = DATASET_DIR / "BPI2017Denied(3).xes"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 STEP1_OUTPUT_DIR = OUTPUT_DIR / "step1_preprocessing"
 STEP2_OUTPUT_DIR = OUTPUT_DIR / "step2_instance_graphs"
+STEP3_OUTPUT_DIR = OUTPUT_DIR / "step3_patterns"
 
 
 def display_path(path):

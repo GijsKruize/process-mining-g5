@@ -71,10 +71,14 @@ class InstanceGraphViewer:
         viewer.plot(graph, "graph.png")
     """
 
-    def __init__(self, graphs):
+    def __init__(self, graphs, values=None):
+        """``values``: all roles (or other values) that can occur. Pass them when
+        plotting a subset, e.g. patterns, so every role keeps the same colour
+        in every figure; by default they are taken from ``graphs``."""
         self.graphs = graphs
         self._by_case = {g.graph.get("case_id"): g for g in graphs}
-        values = {data.get("value") for g in graphs for _, data in g.nodes(data=True)}
+        if values is None:
+            values = {data.get("value") for g in graphs for _, data in g.nodes(data=True)}
         ordered = sorted((v for v in values if v is not None), key=natural_sort_key)
         self.colours = {value: CATEGORICAL_COLOURS[i] if i < len(CATEGORICAL_COLOURS)
                         else OTHER_COLOUR for i, value in enumerate(ordered)}
