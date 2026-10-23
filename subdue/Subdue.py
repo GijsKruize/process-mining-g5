@@ -66,8 +66,8 @@ def DiscoverPatterns(parameters, graph):
             Pattern.PatternListInsert(parentPattern, discoveredPatternList, parameters.numBest, False) # valueBased = False
     return discoveredPatternList
 
-def _GetInitialPatternsQuadratic(parameters, graph):
-    """Original (all-pairs) implementation; kept for the --temporal case, see GetInitialPatterns."""
+def GetInitialPatterns(parameters, graph):
+    """Returns list of single-edge, evaluated patterns in given graph with more than one instance."""
     initialPatternList = []
     # Create a graph and an instance for each edge
     edgeGraphInstancePairs = []
@@ -96,67 +96,6 @@ def _GetInitialPatternsQuadratic(parameters, graph):
             pattern.evaluate(graph)
             initialPatternList.append(pattern)
         edgeGraphInstancePairs = nonmatchingEdgePairs
-    return initialPatternList
-
-def _edgeSignature(edge):
-    """A hashable key such that two single-edge graphs are GraphMatch-isomorphic
-    (non-temporal case) if and only if their edges have equal signatures.
-    See GetInitialPatterns for why this is safe to use as a matching shortcut."""
-    srcKey = tuple(sorted(edge.source.attributes.items()))
-    tgtKey = tuple(sorted(edge.target.attributes.items()))
-    edgeKey = tuple(sorted(edge.attributes.items()))
-    if edge.directed:
-        return (True, srcKey, edgeKey, tgtKey)
-    return (False, frozenset((srcKey, tgtKey)), edgeKey)
-
-def GetInitialPatterns(parameters, graph):
-    """Returns list of single-edge, evaluated patterns in given graph with more than one instance.
-
-    Performance note (added when vendoring, see subdue/Graph.py for the other fixes):
-    the original implementation (kept as _GetInitialPatternsQuadratic, still used for
-    --temporal) compares every pair of single-edge graphs with GraphMatch, which is
-    O(E^2) -- prohibitive once E reaches the tens/hundreds of thousands, as it does
-    when mining across many merged instance graphs at once. For a length-1,
-    non-temporal pattern, two single-edge graphs are isomorphic (per GraphMatch's own
-    MatchEdge/MatchVertex rules) if and only if their (source attributes, edge
-    attributes, target attributes, directedness) match -- every vertex in a
-    CreateGraphFromEdge graph has exactly one edge by construction, so MatchVertex's
-    edge-count check is always trivially satisfied and doesn't affect this. Grouping
-    edges into buckets by that signature first turns the all-pairs comparison into a
-    per-bucket one, with identical results.
-    """
-    if parameters.temporal:
-        return _GetInitialPatternsQuadratic(parameters, graph)
-
-    initialPatternList = []
-    buckets = {}
-    bucketOrder = []
-    for edge in graph.edges.values():
-        key = _edgeSignature(edge)
-        if key not in buckets:
-            buckets[key] = []
-            bucketOrder.append(key)
-        graph1 = Graph.CreateGraphFromEdge(edge)
-        instance1 = Pattern.CreateInstanceFromEdge(edge)
-        buckets[key].append((graph1, instance1))
-
-    for key in bucketOrder:
-        remaining = buckets[key]
-        while remaining:
-            graph1, instance1 = remaining.pop(0)
-            pattern = Pattern.Pattern()
-            pattern.definition = graph1
-            pattern.instances.append(instance1)
-            nonmatching = []
-            for graph2, instance2 in remaining:
-                if not Pattern.InstancesOverlap(parameters.overlap, pattern.instances, instance2):
-                    pattern.instances.append(instance2)
-                else:
-                    nonmatching.append((graph2, instance2))
-            if len(pattern.instances) > 1:
-                pattern.evaluate(graph)
-                initialPatternList.append(pattern)
-            remaining = nonmatching
     return initialPatternList
 
 def Subdue(parameters, graph):

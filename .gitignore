@@ -1,7 +1,15 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
-output/*
-!output/.gitkeep
+
+# Generated results (re-create with main.py)
+outputs/
+
+# Editors
 .idea/
 .vscode/
+
+# Assignment material: not in git, every team member downloads it (see README)
+datasets_group5_mining_organizational_patterns/
+BIG.py

@@ -3,15 +3,6 @@
 # Written by Larry Holder (holder@wsu.edu).
 #
 # Copyright (c) 2017-2021. Washington State University.
-#
-# Vendored from https://github.com/holderlb/Subdue (MIT License, see
-# subdue/LICENSE) for step 3 of the JM0211 assignment, per its instruction
-# to leverage the SUBDUE algorithm. One bug fix applied below (see comment
-# at load_from_networkx): upstream reads `networkx_graph.is_directed`
-# without calling it, so every edge from any networkx graph was silently
-# treated as undirected regardless of the graph's actual directedness --
-# significant for us, since edge direction encodes causal order in our
-# instance graphs.
 
 import json
         
@@ -125,22 +116,12 @@ class Graph:
             else:
                 return {attr: dict_[attr] for attr in attributes}
 
-        directed = networkx_graph.is_directed()  # bug fix: was missing "()" upstream
-        # bug fix: load_from_json's `edgeDict['directed'] == 'true'` check expects a
-        # string, but this used to pass the raw (and, before the fix above, always
-        # truthy) value straight through -- so even a correctly-computed `directed`
-        # bool would never have matched 'true' here.
-        directed_str = 'true' if directed else 'false'
-        # bug fix: Vertex/Edge ids are used in string concatenation elsewhere
-        # (e.g. print_vertex, write_to_file), so non-string networkx node ids
-        # (our instance graphs use plain ints) would crash there. Stringify
-        # consistently on the way in; nx_subdue's caller-facing ids are cast
-        # back by our own wrapper (see pattern_mining.py) if needed.
+        directed = networkx_graph.is_directed
         subdue_format = list()
         for node_id in networkx_graph.nodes:
             subdue_format.append({
                 'vertex': {
-                    'id': str(node_id),
+                    'id': node_id,
                     'attributes': select_attributes_from_dict(networkx_graph.nodes[node_id], node_attributes).copy(),
                 }
             })
@@ -148,9 +129,9 @@ class Graph:
             subdue_format.append({
                 'edge': {
                     'id': f'{u}-{v}',
-                    'source': str(u),
-                    'target': str(v),
-                    'directed': directed_str,
+                    'source': u,
+                    'target': v,
+                    'directed': directed,
                     'attributes': select_attributes_from_dict(networkx_graph.edges[(u, v)], edge_attributes).copy(),
                 }
             })
