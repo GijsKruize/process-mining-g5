@@ -6,21 +6,44 @@ mining every trace separately, just in one pass) and mines recurring
 behavioral patterns from it with SUBDUE (vendored under subdue/, from
 https://github.com/holderlb/Subdue).
 
-For each discovered pattern this module reports support, a trace-pattern
-occurrence matrix, and a rendered example instance. SUBDUE's iterative mode
-compresses the best pattern from one iteration into synthetic nodes named
-``PATTERN-i-j``; those hierarchical patterns are preserved in
-``pattern_hierarchy.pkl`` and expanded back to original event nodes for
-statistics, evaluation, and visualization.
+For each discovered pattern this module reports its support, a trace-pattern
+matrix and a rendered example. SUBDUE's iterative mode compresses the best
+pattern of an iteration into nodes named ``PATTERN-i-j``; those hierarchical
+patterns are kept in ``pattern_hierarchy.pkl`` and expanded back to the
+original events for statistics, evaluation and visualization.
+
+Decisions that affect the results (and why)
+-------------------------------------------
+* **Search budget.** SUBDUE's ``limit`` is the number of patterns it may
+  extend, and the first level already contains every single-edge pattern
+  that occurs at least twice. With a limit below that number the search
+  stops before any pattern can grow beyond two edges, and which patterns get
+  extended depends on the order of the traces. The default is therefore 0,
+  SUBDUE's own default of half the number of edges, which always covers the
+  first level; later levels only extend ``beamWidth`` patterns each.
+* **Patterns must repeat.** SUBDUE fills its result list up to ``numBest``
+  even with patterns that have a single instance. Those are not frequent
+  behaviour, so patterns with fewer than ``--min-instances`` (default 2)
+  instances are dropped.
+* **Support is counted by matching, not by SUBDUE's instance list.** A
+  pattern "occurs in a trace" if the pattern graph is a subgraph of that
+  trace's instance graph with the same labels and edge directions. SUBDUE
+  only keeps non-overlapping instances while it searches, so its own list
+  can miss traces; the matrix required by the assignment should not depend
+  on that. SUBDUE's number of instances is still reported.
+* **Support is relative to all traces** and the matrix is indexed by case id.
 """
 import argparse
+import json
 import pickle
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 import networkx as nx
 import pandas as pd
+from networkx.algorithms import isomorphism
 
 sys.path.insert(0, str(Path(__file__).parent / "subdue"))
 from Subdue import nx_subdue  # noqa: E402  (needs the path set up above)
@@ -31,13 +54,14 @@ DEFAULT_SUBDUE_KWARGS = {
     "minSize": 1,
     "maxSize": 8,
     "beamWidth": 4,
-    "limit": 500,
+    "limit": 0,  # 0 = SUBDUE's default (|E|/2); see module docstring
     "overlap": "none",
     "prune": False,
     "valueBased": False,
     "iterations": 1,
     "temporal": False,
 }
+DEFAULT_MIN_INSTANCES = 2
 
 COMPRESSED_NODE_RE = re.compile(r"^PATTERN-(\d+)-(\d+)$")
 
@@ -52,7 +76,7 @@ def default_subdue_kwargs(**overrides):
 
 
 def add_subdue_arguments(parser):
-    """Attach the SUBDUE options used by this project to an argparse parser."""
+    """Attach the step 3 options to an argparse parser."""
     parser.add_argument("--num-best", type=int, default=DEFAULT_SUBDUE_KWARGS["numBest"],
                         help="number of best patterns SUBDUE reports")
     parser.add_argument("--min-size", type=int, default=DEFAULT_SUBDUE_KWARGS["minSize"],
@@ -61,7 +85,8 @@ def add_subdue_arguments(parser):
                         help="maximum pattern size (#edges)")
     parser.add_argument("--beam-width", type=int, default=DEFAULT_SUBDUE_KWARGS["beamWidth"])
     parser.add_argument("--limit", type=int, default=DEFAULT_SUBDUE_KWARGS["limit"],
-                        help="max patterns considered per iteration")
+                        help="max patterns SUBDUE extends; 0 (default) = half the number of edges, "
+                             "enough to extend every single-edge pattern")
     parser.add_argument("--iterations", type=int, default=DEFAULT_SUBDUE_KWARGS["iterations"],
                         help="SUBDUE compression iterations; >1 enables hierarchical patterns")
     parser.add_argument("--overlap", choices=["none", "vertex", "edge"],
@@ -70,6 +95,11 @@ def add_subdue_arguments(parser):
     parser.add_argument("--value-based", action="store_true",
                         default=DEFAULT_SUBDUE_KWARGS["valueBased"])
     parser.add_argument("--temporal", action="store_true", default=DEFAULT_SUBDUE_KWARGS["temporal"])
+    parser.add_argument("--min-instances", type=int, default=DEFAULT_MIN_INSTANCES,
+                        help="drop patterns with fewer instances than this (default 2)")
+    parser.add_argument("--exclude-activities", default="",
+                        help="Comma-separated activity names to remove before SUBDUE, e.g. start,end. "
+                             "Neighbours of a removed event are connected to each other")
 
 
 def subdue_kwargs_from_args(args):
@@ -88,10 +118,27 @@ def subdue_kwargs_from_args(args):
     )
 
 
+def excluded_activities_from_args(args):
+    return [
+        activity.strip()
+        for activity in getattr(args, "exclude_activities", "").split(",")
+        if activity.strip()
+    ]
+
+
 class PatternMiner:
     def __init__(self, output_dir="output"):
         self.output_dir = Path(output_dir)
         (self.output_dir / "patterns").mkdir(parents=True, exist_ok=True)
+
+    # ----------------------------------------------------------------------
+    # Input graphs
+    # ----------------------------------------------------------------------
+
+    @staticmethod
+    def case_ids(graphs):
+        """Case id per graph (set by step 2); falls back to the position in the list."""
+        return [str(graph.graph.get("case_id", index)) for index, graph in enumerate(graphs)]
 
     @staticmethod
     def build_union_graph(graphs):
@@ -104,6 +151,62 @@ class PatternMiner:
             for node in graph.nodes:
                 node_to_trace[node] = trace_id
         return union, node_to_trace
+
+    @staticmethod
+    def label_matches_activity(label, activity):
+        """Match raw activity labels and fused labels like Activity_Role_1."""
+        return label == activity or label.startswith(f"{activity}_")
+
+    @classmethod
+    def filter_graphs_by_activity(cls, graphs, excluded_activities):
+        """Remove the events of the given activities from every instance graph.
+
+        When an event is removed, each of its predecessors is connected to
+        each of its successors, the same rule BIG uses for a deleted event.
+        Without this, removing an event in the middle of a trace would cut
+        the graph in two and no pattern could span the gap. For source and
+        sink events such as ``start`` and ``end`` nothing is added.
+        """
+        stats = {
+            "enabled": bool(excluded_activities),
+            "excluded_activities": list(excluded_activities),
+            "removed_nodes": 0,
+            "bridging_edges_added": 0,
+            "input_graphs": len(graphs),
+            "empty_graphs_after_filter": 0,
+        }
+        if not excluded_activities:
+            stats["empty_graphs_after_filter"] = sum(1 for graph in graphs if graph.number_of_nodes() == 0)
+            return graphs, stats
+
+        filtered_graphs = []
+        for graph in graphs:
+            filtered = graph.copy()
+            to_remove = [
+                node for node, data in graph.nodes(data=True)
+                if any(cls.label_matches_activity(data.get("label", ""), activity)
+                       for activity in excluded_activities)
+            ]
+            for node in to_remove:
+                predecessors = list(filtered.predecessors(node))
+                successors = list(filtered.successors(node))
+                filtered.remove_node(node)
+                for predecessor in predecessors:
+                    for successor in successors:
+                        if not filtered.has_edge(predecessor, successor):
+                            label = (f"{filtered.nodes[predecessor].get('label', '')}__"
+                                     f"{filtered.nodes[successor].get('label', '')}")
+                            filtered.add_edge(predecessor, successor, label=label)
+                            stats["bridging_edges_added"] += 1
+            stats["removed_nodes"] += len(to_remove)
+            if filtered.number_of_nodes() == 0:
+                stats["empty_graphs_after_filter"] += 1
+            filtered_graphs.append(filtered)
+        return filtered_graphs, stats
+
+    # ----------------------------------------------------------------------
+    # SUBDUE
+    # ----------------------------------------------------------------------
 
     @staticmethod
     def _coerce_node_id(node_id):
@@ -159,6 +262,10 @@ class PatternMiner:
             **kwargs,
         )
         return cls._normalise_subdue_output(result)
+
+    # ----------------------------------------------------------------------
+    # Hierarchical patterns (iterations > 1)
+    # ----------------------------------------------------------------------
 
     @staticmethod
     def _sort_ids(ids):
@@ -257,11 +364,21 @@ class PatternMiner:
         ]
 
     @classmethod
-    def flatten_pattern_records(cls, iteration_patterns, union_graph):
-        """Return core patterns first, then hierarchy-expanded patterns."""
+    def flatten_pattern_records(cls, iteration_patterns, union_graph, min_instances=DEFAULT_MIN_INSTANCES):
+        """Return core patterns first, then hierarchy-expanded patterns.
+
+        Patterns with fewer than ``min_instances`` instances are left out
+        (see module docstring). Compressed nodes always refer to the best
+        pattern of an iteration, which SUBDUE only compresses when it has
+        instances, so dropping others cannot break an expansion.
+        """
         records = []
+        dropped = 0
         for iteration_index, patterns in enumerate(iteration_patterns, start=1):
             for subdue_rank, pattern in enumerate(patterns):
+                if len(pattern) < min_instances:
+                    dropped += 1
+                    continue
                 contains_inner = cls._contains_compressed_node(pattern)
                 records.append({
                     "iteration": iteration_index,
@@ -279,22 +396,71 @@ class PatternMiner:
         ))
         for pattern_id, record in enumerate(records):
             record["pattern_id"] = pattern_id
-        return records
+        return records, dropped
+
+    # ----------------------------------------------------------------------
+    # Support and trace-pattern matrix
+    # ----------------------------------------------------------------------
 
     @staticmethod
-    def pattern_stats(patterns, node_to_trace, n_traces, records=None):
-        matrix = pd.DataFrame(0, index=range(n_traces),
+    def pattern_graph(pattern, union_graph):
+        """The pattern as a small labelled DiGraph, taken from its first instance."""
+        representative = pattern[0] if pattern else {"nodes": [], "edges": []}
+        graph = nx.DiGraph()
+        for node in representative["nodes"]:
+            if node in union_graph:
+                graph.add_node(node, label=union_graph.nodes[node].get("label", str(node)))
+        for source, target in representative["edges"]:
+            if source in graph and target in graph:
+                graph.add_edge(source, target)
+        return graph
+
+    @staticmethod
+    def traces_containing(pattern_graph, graphs, label_counters):
+        """Indices of the instance graphs that contain ``pattern_graph``.
+
+        Containment = there is a mapping of pattern nodes to distinct trace
+        nodes with equal labels such that every pattern edge is an edge of
+        the trace graph (a subgraph monomorphism, i.e. extra edges between
+        the matched trace nodes are allowed, exactly as in a SUBDUE
+        instance). A cheap label-count test first rules out most traces.
+        """
+        needed = Counter(data["label"] for _, data in pattern_graph.nodes(data=True))
+        node_match = isomorphism.categorical_node_match("label", None)
+        matches = []
+        for index, graph in enumerate(graphs):
+            available = label_counters[index]
+            if any(available[label] < count for label, count in needed.items()):
+                continue
+            matcher = isomorphism.DiGraphMatcher(graph, pattern_graph, node_match=node_match)
+            if matcher.subgraph_is_monomorphic():
+                matches.append(index)
+        return matches
+
+    @classmethod
+    def pattern_stats(cls, patterns, graphs, node_to_trace, union_graph, records=None, total_traces=None):
+        """Support table and trace-pattern matrix (rows = cases, columns = patterns)."""
+        case_ids = cls.case_ids(graphs)
+        total_traces = total_traces or len(graphs)
+        matrix = pd.DataFrame(0, index=pd.Index(case_ids, name="case_id"),
                               columns=[f"pattern_{i}" for i in range(len(patterns))])
+        label_counters = [
+            Counter(data.get("label") for _, data in graph.nodes(data=True)) for graph in graphs
+        ]
         rows = []
         for i, pattern in enumerate(patterns):
-            traces = sorted({
+            definition = cls.pattern_graph(pattern, union_graph)
+            traces = cls.traces_containing(definition, graphs, label_counters)
+            matrix.iloc[traces, i] = 1
+
+            # Traces in which SUBDUE itself recorded an instance. Every one of
+            # them must also be found by the matcher; the opposite need not hold.
+            subdue_traces = {
                 node_to_trace[node]
                 for instance in pattern
                 for node in instance["nodes"]
                 if node in node_to_trace
-            })
-            matrix.loc[traces, f"pattern_{i}"] = 1
-            representative = pattern[0] if pattern else {"nodes": [], "edges": []}
+            }
             record = records[i] if records else {}
             rows.append({
                 "pattern_id": i,
@@ -302,16 +468,22 @@ class PatternMiner:
                 "iteration": record.get("iteration", 1),
                 "subdue_rank": record.get("subdue_rank", i),
                 "contains_inner_patterns": record.get("contains_inner_patterns", False),
-                "num_nodes": len(representative["nodes"]),
-                "num_edges": len(representative["edges"]),
+                "num_nodes": definition.number_of_nodes(),
+                "num_edges": definition.number_of_edges(),
                 "num_instances": len(pattern),
                 "support_count": len(traces),
-                "support_fraction": len(traces) / n_traces if n_traces else 0.0,
+                "support_fraction": len(traces) / total_traces if total_traces else 0.0,
+                "traces_with_subdue_instance": len(subdue_traces),
+                "subdue_traces_confirmed": subdue_traces.issubset(traces),
             })
         return pd.DataFrame(rows), matrix
 
+    # ----------------------------------------------------------------------
+    # Output for people
+    # ----------------------------------------------------------------------
+
     @staticmethod
-    def describe(pattern_id, pattern, union_graph, record=None):
+    def describe(pattern_id, pattern, union_graph, record=None, support=None):
         representative = pattern[0] if pattern else {"nodes": [], "edges": []}
         labels = {
             node: union_graph.nodes[node].get("label", str(node))
@@ -324,26 +496,18 @@ class PatternMiner:
         ]
         category = record.get("category", "core") if record else "core"
         iteration = record.get("iteration", 1) if record else 1
-        rank = record.get("subdue_rank", pattern_id) if record else pattern_id
-        print(f"Pattern {pattern_id} [{category}, iteration={iteration}, subdue_rank={rank}]: "
-              f"{len(pattern)} instance(s), activities: {sorted(set(labels.values()))}")
-        print(f"  edges: {edges}")
+        support_text = f", support {support}" if support is not None else ""
+        print(f"Pattern {pattern_id} [{category}, iteration={iteration}]: "
+              f"{len(pattern)} instance(s){support_text}")
+        for edge in edges:
+            print(f"    {edge}")
 
     def render(self, pattern_id, pattern, union_graph, support_count):
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
-        representative = pattern[0] if pattern else {"nodes": [], "edges": []}
-        subgraph = nx.DiGraph()
-        for node in representative["nodes"]:
-            if node in union_graph:
-                subgraph.add_node(node, **dict(union_graph.nodes[node]))
-        for source, target in representative["edges"]:
-            if source in union_graph and target in union_graph:
-                edge_attrs = union_graph.get_edge_data(source, target, default={}) or {}
-                subgraph.add_edge(source, target, **edge_attrs)
-
+        subgraph = self.pattern_graph(pattern, union_graph)
         labels = {node: subgraph.nodes[node].get("label", str(node)) for node in subgraph.nodes}
 
         plt.figure(figsize=(6, 6))
@@ -354,24 +518,50 @@ class PatternMiner:
         plt.savefig(self.output_dir / "patterns" / f"pattern_{pattern_id}.png", bbox_inches="tight")
         plt.close()
 
-    def run(self, graphs_path, **subdue_kwargs):
+    # ----------------------------------------------------------------------
+    # Whole step
+    # ----------------------------------------------------------------------
+
+    def run(self, graphs_path, exclude_activities=None, min_instances=DEFAULT_MIN_INSTANCES,
+            **subdue_kwargs):
         kwargs = default_subdue_kwargs(**subdue_kwargs)
         with open(graphs_path, "rb") as f:
             graphs = pickle.load(f)
         print(f"Loaded {len(graphs)} instance graphs from '{graphs_path}'")
 
+        graphs, mining_filter_stats = self.filter_graphs_by_activity(
+            graphs,
+            exclude_activities or [],
+        )
+        if mining_filter_stats["enabled"]:
+            print("Mining activity filter: removed "
+                  f"{mining_filter_stats['removed_nodes']} nodes, added "
+                  f"{mining_filter_stats['bridging_edges_added']} bridging edges, using "
+                  f"{mining_filter_stats['excluded_activities']}")
+        with open(self.output_dir / "mining_filter_stats.json", "w", encoding="utf-8") as f:
+            json.dump(mining_filter_stats, f, indent=2)
+
         union_graph, node_to_trace = self.build_union_graph(graphs)
+        edge_type_counts = Counter(data.get("label") for _, _, data in union_graph.edges(data=True))
+        repeated_edge_types = sum(1 for count in edge_type_counts.values() if count >= 2)
         print(f"Union graph: {union_graph.number_of_nodes()} nodes, "
-              f"{union_graph.number_of_edges()} edges")
+              f"{union_graph.number_of_edges()} edges, {repeated_edge_types} edge types that occur "
+              "at least twice (SUBDUE's single-edge starting patterns)")
+        effective_limit = kwargs["limit"] or union_graph.number_of_edges() // 2
+        if effective_limit < repeated_edge_types:
+            print(f"Warning: --limit {effective_limit} is below the number of starting patterns "
+                  f"({repeated_edge_types}); the search will stop before patterns can grow. "
+                  "Use --limit 0.")
         print("SUBDUE parameters: "
-              + ", ".join(f"{key}={value}" for key, value in sorted(kwargs.items())))
+              + ", ".join(f"{key}={value}" for key, value in sorted(kwargs.items())), flush=True)
 
         iteration_patterns = self.mine(union_graph, **kwargs)
-        records = self.flatten_pattern_records(iteration_patterns, union_graph)
+        records, dropped = self.flatten_pattern_records(iteration_patterns, union_graph, min_instances)
         patterns = [record["expanded_pattern"] for record in records]
-        print(f"Discovered {len(patterns)} pattern(s)")
+        print(f"Discovered {len(patterns)} pattern(s)"
+              + (f" ({dropped} with fewer than {min_instances} instances dropped)" if dropped else ""))
 
-        stats, matrix = self.pattern_stats(patterns, node_to_trace, len(graphs), records)
+        stats, matrix = self.pattern_stats(patterns, graphs, node_to_trace, union_graph, records)
         with open(self.output_dir / "patterns.pkl", "wb") as f:
             pickle.dump(patterns, f)
         with open(self.output_dir / "pattern_hierarchy.pkl", "wb") as f:
@@ -389,12 +579,16 @@ class PatternMiner:
             }
             for record in records
         ]
-        pd.DataFrame(hierarchy_rows).to_csv(self.output_dir / "pattern_hierarchy.csv", index=False)
+        pd.DataFrame(hierarchy_rows, columns=["pattern_id", "category", "iteration", "subdue_rank",
+                                              "contains_inner_patterns"]).to_csv(
+            self.output_dir / "pattern_hierarchy.csv", index=False)
         print(f"Saved patterns, hierarchy, stats, and trace-pattern matrix to '{self.output_dir}/'")
 
         for i, pattern in enumerate(patterns):
-            self.describe(i, pattern, union_graph, records[i])
-            self.render(i, pattern, union_graph, int(stats.loc[i, "support_count"]))
+            support = int(stats.loc[i, "support_count"])
+            self.describe(i, pattern, union_graph, records[i],
+                          support=f"{support}/{len(graphs)} traces")
+            self.render(i, pattern, union_graph, support)
         if patterns:
             print(f"Pattern visualizations saved to '{self.output_dir}/patterns/'")
 
@@ -407,7 +601,12 @@ def main():
     parser.add_argument("--output-dir", default="output")
     add_subdue_arguments(parser)
     args = parser.parse_args()
-    PatternMiner(args.output_dir).run(args.graphs_path, **subdue_kwargs_from_args(args))
+    PatternMiner(args.output_dir).run(
+        args.graphs_path,
+        exclude_activities=excluded_activities_from_args(args),
+        min_instances=args.min_instances,
+        **subdue_kwargs_from_args(args),
+    )
 
 
 if __name__ == "__main__":

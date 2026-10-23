@@ -1,0 +1,7 @@
+# Gold standard for data/synthetic_validation.xes with --attribute org:group.
+# One row = one deliberately encoded organizational behavior.
+# Edge syntax: SourceLabel->TargetLabel.
+Register_FrontOffice->Check_BackOffice
+Check_BackOffice->Approve_Management
+Check_BackOffice->Archive_BackOffice
+Register_FrontOffice->Check_BackOffice,Check_BackOffice->Approve_Management

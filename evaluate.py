@@ -66,23 +66,31 @@ def mined_pattern_signatures(patterns, union_graph):
     return signatures
 
 
-def _signature_matches_gold(signature, gold_pattern):
+def _signature_matches_gold(signature, gold_pattern, mode="exact"):
     if gold_pattern["kind"] == "edges":
+        if mode == "contains":
+            return gold_pattern["items"].issubset(signature["edges"])
         return signature["edges"] == gold_pattern["items"]
+    if mode == "contains":
+        return gold_pattern["items"].issubset(signature["labels"])
     return signature["labels"] == gold_pattern["items"]
 
 
-def evaluate(mined_signatures, gold_standard):
-    """Precision/recall on exact matches between mined and gold patterns."""
+def evaluate(mined_signatures, gold_standard, mode="exact"):
+    """Precision/recall between mined patterns and gold patterns.
+
+    ``exact`` requires identical edge/label sets. ``contains`` also counts a
+    mined super-pattern as a hit when it contains the gold pattern.
+    """
     matched_mined = sum(
         1
         for signature in mined_signatures
-        if any(_signature_matches_gold(signature, gold) for gold in gold_standard)
+        if any(_signature_matches_gold(signature, gold, mode=mode) for gold in gold_standard)
     )
     matched_gold = sum(
         1
         for gold in gold_standard
-        if any(_signature_matches_gold(signature, gold) for signature in mined_signatures)
+        if any(_signature_matches_gold(signature, gold, mode=mode) for signature in mined_signatures)
     )
     precision = matched_mined / len(mined_signatures) if mined_signatures else 0.0
     recall = matched_gold / len(gold_standard) if gold_standard else 0.0
@@ -109,13 +117,16 @@ def main():
     mined_signatures = mined_pattern_signatures(patterns, union_graph)
 
     precision, recall = evaluate(mined_signatures, gold_standard)
+    contains_precision, contains_recall = evaluate(mined_signatures, gold_standard, mode="contains")
     n_edge_gold = sum(1 for pattern in gold_standard if pattern["kind"] == "edges")
     n_label_gold = len(gold_standard) - n_edge_gold
     print(f"Gold standard patterns: {len(gold_standard)} "
           f"({n_edge_gold} edge-based, {n_label_gold} label-set)")
     print(f"Mined patterns:         {len(mined_signatures)}")
-    print(f"Precision: {precision:.2f}")
-    print(f"Recall:    {recall:.2f}")
+    print(f"Exact precision:    {precision:.2f}")
+    print(f"Exact recall:       {recall:.2f}")
+    print(f"Contains precision: {contains_precision:.2f}")
+    print(f"Contains recall:    {contains_recall:.2f}")
 
 
 if __name__ == "__main__":
