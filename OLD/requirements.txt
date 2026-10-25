@@ -1,6 +1,7 @@
 # Python 3.9 (pm4py 2.2.16 does not support newer Python versions).
 # The assignment requires exactly pm4py 2.2.16, because BIG needs it.
 pm4py==2.2.16
+pyspark==3.5.6
 
 # Everything below is pm4py's dependency tree, frozen from a clean install
 # on Python 3.9.13 so every team member gets the same environment.

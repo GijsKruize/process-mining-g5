@@ -36,7 +36,7 @@ source .venv/bin/activate          # Windows Git Bash: source .venv/Scripts/acti
 pip install -r requirements.txt
 ```
 
-`requirements.txt` pins pm4py 2.2.16 and its complete dependency tree, so
+`OLD/requirements.txt` pins pm4py 2.2.16 and its complete dependency tree, so
 everyone gets exactly the same environment.
 
 ### Add the assignment material
@@ -118,7 +118,7 @@ commands above).
 `winget install --id Graphviz.Graphviz -e`, then open a new terminal.
 
 **Reproducibility.** pm4py's Inductive Miner iterates over Python sets, whose
-order changes between runs unless the hash seed is fixed. `main.py` therefore
+order changes between runs unless the hash seed is fixed. `OLD/main.py` therefore
 restarts itself once with `PYTHONHASHSEED=0`, so that two runs give identical
 instance graphs. (The `.pnml` files still differ in the random ids pm4py gives
 to invisible transitions; the net itself is the same.)
@@ -158,7 +158,7 @@ outputs/                    generated results (not in git)
 
 ## Step 1 – preprocessing
 
-`EventLogPreprocessor` (in `orgmining/preprocessing.py`) does the following:
+`EventLogPreprocessor` (in `OLD/orgmining`) does the following:
 
 1. **Load** the XES log as a DataFrame (one row per event). Trace attributes
    are copied to every event with the prefix `case:` (e.g. `case:LoanGoal`).
@@ -195,7 +195,7 @@ outputs/                    generated results (not in git)
 
 With `org:resource` the log has 134 users and 3,338 distinct `activity_user`
 labels: too slow for step 2 and too fragmented to find frequent patterns.
-`ResourceRoleGrouper` (in `orgmining/roles.py`) replaces each user by a role,
+`ResourceRoleGrouper` (in `OLD/orgmining`) replaces each user by a role,
 using pm4py's role discovery (Burattin, Sperduti & Veluscek, 2013):
 
 1. Every activity starts as a role, described by how often each resource
@@ -227,7 +227,7 @@ information.
 
 ## Step 2 – instance graphs
 
-`InstanceGraphBuilder` (in `orgmining/instance_graphs.py`) does the following
+`InstanceGraphBuilder` (in `OLD/orgmining`) does the following
 on the step 1 output:
 
 1. **Petri net** (`PetriNetDiscoverer`): the Inductive Miner on the
@@ -271,7 +271,7 @@ returns the list of graphs.
 `python main.py show-graph --index N` (or `--case <case id>`) prints a graph
 as text (every node with its activity, role and successors) and saves a plot
 to `outputs/figures/`. The plot (`InstanceGraphViewer` in
-`orgmining/visualization.py`) needs no Graphviz: nodes are placed in layers by
+`OLD/orgmining`) needs no Graphviz: nodes are placed in layers by
 their longest path from the start, so parallel branches are drawn above each
 other, and long graphs wrap like a snake (left to right, then right to left).
 The role is shown by the colour of the node border *and* a tag such as `R2`,
@@ -300,7 +300,7 @@ too (12.5% parallel).
 
 ## Step 3 – behavioral patterns
 
-`PatternMiner` (in `orgmining/pattern_mining.py`) does the following on the
+`PatternMiner` (in `OLD/orgmining`) does the following on the
 step 2 output:
 
 1. **SUBDUE input**: all instance graphs become one disconnected graph for
@@ -309,7 +309,7 @@ step 2 output:
    loader, `nx_subdue`, silently makes every edge undirected because of a bug,
    so it is not used.) Every vertex keeps its unique id from step 2, so every
    pattern instance can be traced back to its trace.
-2. **SUBDUE** (`subdue/`, the unmodified Python version from
+2. **SUBDUE** (`subdue`, the unmodified Python version from
    https://github.com/holderlb/Subdue) finds the subgraphs that best compress
    the graph: value = (instances − 1) × edges / edges of the graph, with
    non-overlapping instances. Settings (all on the command line):
@@ -332,7 +332,7 @@ step 2 output:
    readable description. `trace_pattern_matrix.csv` has one row per trace and
    one column per pattern, with 1 if the pattern occurs in the trace.
 4. **Report figures** (`python main.py pattern-report`, `PatternReport` in
-   `orgmining/pattern_report.py`), in `outputs/step3_patterns/<run>/figures/`:
+   `OLD/orgmining`), in `outputs/step3_patterns/<run>/figures/`:
    every pattern drawn like the instance graphs, the support per pattern, the
    overlap between patterns (share of traces in common) and the handover of
    work between roles over all instance graphs.
@@ -356,7 +356,7 @@ by versions that give **exactly the same result**:
 
 Groups are processed in the original order, so the patterns, their values
 and their instances are identical. This is checked by
-`tests/test_pattern_mining.py` (random graphs, several settings, including
+`OLD/tests` (random graphs, several settings, including
 iterations) and on the real data (table below). `--original-subdue` runs
 SUBDUE without the speed-ups.
 
@@ -408,10 +408,10 @@ Role_2 → Role_3 (9%) and Role_1 → Role_2 (7%).
 
 ### 1. Synthetic logs with a known gold standard (main evaluation)
 
-A real log has no ground truth, so `orgmining/synthetic.py` generates a
+A real log has no ground truth, so `OLD/orgmining` generates a
 simplified loan process with four departments (Intake 3, Offer 6, Validation 4,
 Decision 3 employees) and 500 cases, in which five work practices are
-*injected* (`synthetic/gold_standard.csv`):
+*injected* (`OLD/synthetic`):
 
 | ID | Injected work practice |
 |---|---|
@@ -426,7 +426,7 @@ by an employee of another department, an extra event, a missing event, or two
 events swapped). `python main.py synthetic` runs the whole pipeline on every
 log (roles, Inductive Miner, BIG, SUBDUE with 5 iterations), maps the discovered
 roles to the departments via the employees, and compares the patterns with the
-injected ones. The logs are seeded and stored in `synthetic/`.
+injected ones. The logs are seeded and stored in `OLD/synthetic`.
 
 | Noise | Roles correct | Parallel graphs | Precision | Recall | F1 | Baseline F1 |
 |---|---|---|---|---|---|---|
@@ -451,7 +451,7 @@ small graphs and only costs time; top-k roles 2, 3 or all give the same scores
   Application_1691306052 the graph has the same 33 events and labels as the
   trace, the right role for every event, and all 32 edges link consecutive
   events (`outputs/validation/`).
-- **Expected work practices**: `gold_standard/bpi2017_org_resource_roles.csv`
+- **Expected work practices**: `OLD/gold_standard`
   lists 9 practices derived from the log description, the lifecycle order of
   the activities and the step 1 role table (written after seeing first
   results, so it is a secondary check). Matching as above; baseline: the most
@@ -478,6 +478,6 @@ On this large graph the beam width does matter: beam 20 finds all 9 practices.
 
 ## Short paper
 
-`paper/short_paper.tex` (course template, 5 pages including references),
-`paper/literature.bib` and `paper/figures/`. In Overleaf: replace `main.tex` and
+`OLD/paper` (course template, 5 pages including references),
+`OLD/paper` and `OLD/paper`. In Overleaf: replace `main.tex` and
 `literature.bib` and upload the `figures/` folder.

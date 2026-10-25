@@ -6,8 +6,8 @@ import unittest
 
 import networkx as nx
 
-from orgmining.evaluation import (FrequentPathBaseline, GoldStandard, GoldPattern, contains,
-                                  evaluate, parse_edges)
+from OLD.orgmining.evaluation import (FrequentPathBaseline, GoldStandard, GoldPattern, contains,
+                                      evaluate, parse_edges)
 
 
 def labelled_chain(*labels):

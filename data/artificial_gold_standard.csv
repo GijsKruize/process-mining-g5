@@ -1,0 +1,3 @@
+id,name,edges
+G1,denied workflow,"start_User_1 -> A-Submitted_User_1; A-Submitted_User_1 -> W-Handle-leads_User_2; W-Handle-leads_User_2 -> A-Denied_User_2; A-Denied_User_2 -> end_User_2"
+G2,approved workflow,"start_User_1 -> A-Submitted_User_1; A-Submitted_User_1 -> W-Handle-leads_User_2; W-Handle-leads_User_2 -> A-Approved_User_2; A-Approved_User_2 -> end_User_2"

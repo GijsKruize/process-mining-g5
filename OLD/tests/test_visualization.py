@@ -8,7 +8,7 @@ from pathlib import Path
 
 import networkx as nx
 
-from orgmining.visualization import InstanceGraphViewer, short_tag, wrap_label
+from OLD.orgmining.visualization import InstanceGraphViewer, short_tag, wrap_label
 
 
 def parallel_graph():

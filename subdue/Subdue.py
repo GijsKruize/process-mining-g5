@@ -88,7 +88,7 @@ def GetInitialPatterns(parameters, graph):
         for edgePair2 in edgeGraphInstancePairs:
             graph2 = edgePair2[0]
             instance2 = edgePair2[1]
-            if Graph.GraphMatch(graph1,graph2) and (not Pattern.InstancesOverlap(parameters.overlap, pattern.instances, instance2)):
+            if Graph.GraphMatch(graph1, graph2) and (not Pattern.InstancesOverlap(parameters.overlap, pattern.instances, instance2)):
                 pattern.instances.append(instance2)
             else:
                 nonmatchingEdgePairs.append(edgePair2)

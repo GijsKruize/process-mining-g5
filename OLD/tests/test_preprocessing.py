@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from orgmining import config
-from orgmining.log_io import read_xes_as_dataframe, write_dataframe_as_xes
-from orgmining.preprocessing import EventLogPreprocessor
-from orgmining.roles import ResourceRoleGrouper
+from OLD.orgmining import config
+from OLD.orgmining.log_io import read_xes_as_dataframe, write_dataframe_as_xes
+from OLD.orgmining.preprocessing import EventLogPreprocessor
+from OLD.orgmining.roles import ResourceRoleGrouper
 
 
 def tiny_log():

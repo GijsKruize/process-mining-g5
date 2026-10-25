@@ -9,9 +9,9 @@ import unittest
 
 import networkx as nx
 
-from orgmining.pattern_mining import (PatternMiner, SubdueAccelerator, SubdueSettings,
-                                      build_subdue_graph, describe_pattern, subdue,
-                                      subdue_pattern)
+from OLD.orgmining.pattern_mining import (PatternMiner, SubdueAccelerator, SubdueSettings,
+                                          build_subdue_graph, describe_pattern, subdue,
+                                          subdue_pattern)
 
 
 def chain(case_id, labels, first_node):

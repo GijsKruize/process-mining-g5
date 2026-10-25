@@ -118,7 +118,7 @@ def ExtendPattern (parameters, pattern):
             extendedInstanceGraph = Graph.CreateGraphFromInstance(extendedInstance)
             if parameters.temporal:
                 extendedInstanceGraph.TemporalOrder()
-            if Graph.GraphMatch(newInstanceGraph,extendedInstanceGraph) and (not InstancesOverlap(parameters.overlap, matchingInstances, extendedInstance)):
+            if Graph.GraphMatch(newInstanceGraph, extendedInstanceGraph) and (not InstancesOverlap(parameters.overlap, matchingInstances, extendedInstance)):
                 matchingInstances.append(extendedInstance)
             else:
                 nonmatchingInstances.append(extendedInstance)
@@ -194,7 +194,7 @@ def PatternListInsert(newPattern, patternList, maxLength, valueBased):
        Assumes given patternList already conforms to maximums."""
     # Check if newPattern unique (i.e., non-isomorphic or isomorphic but better-valued)
     for pattern in patternList:
-        if (Graph.GraphMatch(pattern.definition,newPattern.definition)):
+        if (Graph.GraphMatch(pattern.definition, newPattern.definition)):
             if (pattern.value >= newPattern.value):
                 return # newPattern already on list with same or better value
             else:
