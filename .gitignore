@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 
 # Generated results (re-create with main.py)
+output/
 outputs/
 
 # Editors
@@ -13,3 +14,4 @@ outputs/
 # Assignment material: not in git, every team member downloads it (see README)
 datasets_group5_mining_organizational_patterns/
 BIG.py
+data/BPI2017Denied(3).xes
