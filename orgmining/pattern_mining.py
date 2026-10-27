@@ -67,8 +67,8 @@ DEFAULT_BEAM_WIDTH = 4     # as in the paper (it tried 4, 10 and 20)
 DEFAULT_LIMIT = 0
 DEFAULT_MIN_SIZE = 2       # edges; one-edge patterns are just "A follows B"
 DEFAULT_MAX_SIZE = 10      # edges
-DEFAULT_NUM_BEST = 20      # patterns reported per iteration
-DEFAULT_ITERATIONS = 1     # >1 compresses the graph with the best pattern and repeats
+DEFAULT_NUM_BEST = 3       # patterns reported per iteration
+DEFAULT_ITERATIONS = 10    # >1 compresses the graph with the best pattern and repeats (hierarchy)
 
 
 # ---------------------------------------------------------------------------

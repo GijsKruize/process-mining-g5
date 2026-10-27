@@ -36,7 +36,6 @@ DEFAULT_GRAPHS = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "instance_grap
 DEFAULT_NET = config.STEP2_OUTPUT_DIR / "org_resource_roles" / "petri_net.pnml"
 FIGURES_DIR = config.OUTPUT_DIR / "figures"
 DEFAULT_STEP3_RESULT = config.STEP3_OUTPUT_DIR / "org_resource_roles"
-DEFAULT_HIERARCHY_RESULT = config.OUTPUT_DIR / "step3_patterns_hierarchy" / "org_resource_roles"
 DEFAULT_GOLD = config.PROJECT_ROOT / "gold_standard" / "bpi2017_org_resource_roles.csv"
 
 
@@ -58,6 +57,9 @@ def build_parser():
     preprocess.add_argument("--top-roles", type=int, default=None,
                             help="Keep only the k largest roles; the others become 'Other' "
                                  "(default: keep all)")
+    preprocess.add_argument("--keep-lifecycle", action="store_true",
+                            help="Keep the lifecycle steps in the work item names; by default "
+                                 "they are removed and directly repeated equal labels merged")
     preprocess.add_argument("--output-dir", default=config.display_path(config.STEP1_OUTPUT_DIR),
                             help="Where the step 1 outputs are written (default: %(default)s)")
 
@@ -112,8 +114,8 @@ def build_parser():
         "evaluate", help="Precision/recall of step 3 runs and a baseline against the gold standard")
     evaluation.add_argument("--run", action="append", metavar="NAME=FOLDER",
                             help="A step 3 output folder to evaluate, e.g. "
-                                 "'SUBDUE beam 4=outputs/step3_patterns_hierarchy/org_resource_roles'"
-                                 "; repeat for several runs (default: the hierarchical run)")
+                                 "'SUBDUE beam 4=outputs/step3_patterns/org_resource_roles'"
+                                 "; repeat for several runs (default: the step 3 run)")
     evaluation.add_argument("--gold", default=config.display_path(DEFAULT_GOLD),
                             help="Gold standard CSV (default: %(default)s)")
     evaluation.add_argument("--graphs", default=config.display_path(DEFAULT_GRAPHS),
@@ -266,7 +268,8 @@ def main():
     args = build_parser().parse_args()
     if args.step == "preprocess":
         preprocessor = EventLogPreprocessor.from_xes(args.log, args.output_dir)
-        preprocessor.run(args.attribute, args.grouping, args.roles_threshold, args.top_roles)
+        preprocessor.run(args.attribute, args.grouping, args.roles_threshold, args.top_roles,
+                         collapse_lifecycle=not args.keep_lifecycle)
     elif args.step == "instance-graphs":
         InstanceGraphBuilder(args.step1_dir, args.output_dir, args.noise_threshold,
                              args.workers, args.max_traces).run()
@@ -280,7 +283,7 @@ def main():
         print(f"{len(paths)} figures saved to {config.display_path(paths[0].parent)}")
     elif args.step == "evaluate":
         runs = dict(run.split("=", 1) for run in args.run) if args.run else {
-            "SUBDUE (10 iterations, beam 4)": DEFAULT_HIERARCHY_RESULT}
+            "SUBDUE (10 iterations, beam 4)": DEFAULT_STEP3_RESULT}
         table = run_evaluation(runs, args.gold, GFileConverter.load(args.graphs), args.output_dir)
         print(table.to_string(index=False))
         print(f"\nEvaluation written to {args.output_dir}")

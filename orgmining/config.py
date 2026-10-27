@@ -7,10 +7,9 @@ from pathlib import Path
 
 # --- Locations -------------------------------------------------------------
 # All paths are derived from the location of this file, never hard-coded, so
-# the project runs unchanged on any machine. The dataset folder is not in git;
-# see README.md for where to put it.
+# the project runs unchanged on any machine.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DATASET_DIR = PROJECT_ROOT / "datasets_group5_mining_organizational_patterns"
+DATASET_DIR = PROJECT_ROOT / "data"
 DEFAULT_LOG_PATH = DATASET_DIR / "BPI2017Denied(3).xes"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 STEP1_OUTPUT_DIR = OUTPUT_DIR / "step1_preprocessing"
@@ -40,7 +39,7 @@ TRACE_ATTRIBUTE_PREFIX = "case:"     # pm4py prefixes trace-level attributes wit
 # The new label "<activity>_<value>" cannot be split back reliably, because
 # attribute values may contain "_" themselves (e.g. "User_1"). So both parts
 # are also kept as separate columns for the later steps and the evaluation.
-ORIGINAL_ACTIVITY_KEY = "original_activity"
+ORIGINAL_ACTIVITY_KEY = "original_activity"         # activity as used in the label
 ATTRIBUTE_VALUE_KEY = "selected_attribute_value"   # value used in the label (e.g. the role)
 ORIGINAL_VALUE_KEY = "original_attribute_value"    # value in the log (e.g. the user)
 

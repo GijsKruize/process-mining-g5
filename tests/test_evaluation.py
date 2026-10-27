@@ -6,7 +6,7 @@ import unittest
 
 import networkx as nx
 
-from OLD.orgmining.evaluation import (FrequentPathBaseline, GoldStandard, GoldPattern, contains,
+from orgmining.evaluation import (FrequentPathBaseline, GoldStandard, GoldPattern, contains,
                                       evaluate, parse_edges)
 
 

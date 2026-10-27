@@ -9,7 +9,7 @@ import unittest
 
 import networkx as nx
 
-from OLD.orgmining.pattern_mining import (PatternMiner, SubdueAccelerator, SubdueSettings,
+from orgmining.pattern_mining import (PatternMiner, SubdueAccelerator, SubdueSettings,
                                           build_subdue_graph, describe_pattern, subdue,
                                           subdue_pattern)
 
@@ -77,9 +77,11 @@ class AcceleratorTest(unittest.TestCase):
     def test_same_result_as_original_subdue(self):
         for seed in range(3):
             graphs = random_graphs(seed)
-            for settings in ({"beam_width": 4, "num_best": 5},
+            # Overlapping instances only with 1 iteration: SUBDUE's compression
+            # assumes non-overlapping instances and fails otherwise.
+            for settings in ({"beam_width": 4, "num_best": 5, "iterations": 1},
                              {"beam_width": 2, "num_best": 3, "iterations": 3},
-                             {"beam_width": 4, "num_best": 5, "overlap": "vertex"}):
+                             {"beam_width": 4, "num_best": 5, "overlap": "vertex", "iterations": 1}):
                 with self.subTest(seed=seed, **settings):
                     self.assertEqual(run(graphs, False, **settings),
                                      run(graphs, True, **settings))

@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from OLD.orgmining import config
-from OLD.orgmining.log_io import read_xes_as_dataframe, write_dataframe_as_xes
-from OLD.orgmining.preprocessing import EventLogPreprocessor
-from OLD.orgmining.roles import ResourceRoleGrouper
+from orgmining import config
+from orgmining.log_io import read_xes_as_dataframe, write_dataframe_as_xes
+from orgmining.preprocessing import EventLogPreprocessor
+from orgmining.roles import ResourceRoleGrouper
 
 
 def tiny_log():
@@ -72,7 +72,7 @@ class RelabelEventsTest(unittest.TestCase):
             "A-Submitted_User_1",
             "A-Denied_User_2",
         ])
-        self.assertEqual(relabeled[config.ORIGINAL_ACTIVITY_KEY].iloc[1], "W-Validate application")
+        self.assertEqual(relabeled[config.ORIGINAL_ACTIVITY_KEY].iloc[1], "W-Validate-application")
         self.assertEqual(relabeled[config.ATTRIBUTE_VALUE_KEY].iloc[0], "User_1")
 
     def test_original_log_is_not_modified(self):
@@ -89,6 +89,36 @@ class RelabelEventsTest(unittest.TestCase):
         self.assertEqual(len(counts), 4)
         self.assertEqual(counts.iloc[0]["label"], "A-Submitted_User_1")
         self.assertEqual(counts.iloc[0]["events"], 2)
+
+
+class LifecycleTest(unittest.TestCase):
+    def lifecycle_log(self):
+        """One case: a work item suspended and resumed by R1, then taken over by R2."""
+        return pd.DataFrame({
+            "case:concept:name": ["c1"] * 5,
+            "concept:name": ["A-Submitted", "W-Call-start", "W-Call-suspend", "W-Call-resume",
+                             "W-Call-ate-abort"],
+            "org:resource": ["U1", "U2", "U2", "U3", "U9"],
+        })
+
+    def test_strip_lifecycle_only_from_work_items(self):
+        strip = EventLogPreprocessor.strip_lifecycle
+        self.assertEqual(strip("W-Validate-application-start"), "W-Validate-application")
+        self.assertEqual(strip("W-Call-after-offers-ate-abort"), "W-Call-after-offers")
+        self.assertEqual(strip("A-Complete"), "A-Complete")       # not a work item
+
+    def test_repeats_with_same_label_merge_but_handovers_stay(self):
+        roles = {"U1": "R1", "U2": "R1", "U3": "R1", "U9": "R2"}
+        relabeled = EventLogPreprocessor(self.lifecycle_log()).relabel_events(
+            "org:resource", roles, collapse_lifecycle=True)
+        self.assertEqual(list(relabeled[config.ACTIVITY_KEY]),
+                         ["A-Submitted_R1", "W-Call_R1", "W-Call_R2"])
+        self.assertEqual(list(relabeled[config.ORIGINAL_ACTIVITY_KEY]),
+                         ["A-Submitted", "W-Call", "W-Call"])
+
+    def test_lifecycle_kept_by_default_in_relabel(self):
+        relabeled = EventLogPreprocessor(self.lifecycle_log()).relabel_events("org:resource")
+        self.assertEqual(len(relabeled), 5)
 
 
 class RoleGroupingTest(unittest.TestCase):

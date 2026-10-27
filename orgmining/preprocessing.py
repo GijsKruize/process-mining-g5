@@ -40,6 +40,10 @@ GROUPING_NONE = "none"    # the value itself, e.g. A-Submitted_User_1
 GROUPING_ROLES = "roles"  # the discovered role of the value, e.g. A-Submitted_Role_2
 GROUPING_CHOICES = (GROUPING_NONE, GROUPING_ROLES)
 
+# Lifecycle steps that the BPI 2017 log puts at the end of work item names.
+WORK_ITEM_PREFIX = "W-"
+LIFECYCLE_SUFFIX = re.compile(r"-(schedule|start|suspend|resume|complete|ate-abort|withdraw)$")
+
 
 @dataclass
 class PreprocessingResult:
@@ -184,25 +188,48 @@ class EventLogPreprocessor:
         """
         return re.sub(r"\s+", "-", str(value).strip())
 
-    def relabel_events(self, attribute, value_mapping=None):
+    @staticmethod
+    def strip_lifecycle(activity):
+        """'W-Validate-application-start' -> 'W-Validate-application'; other activities unchanged.
+
+        In the BPI 2017 log only the work items (W-) carry their lifecycle step
+        (schedule, start, suspend, resume, complete, ate-abort, withdraw) in the name.
+        """
+        if not activity.startswith(WORK_ITEM_PREFIX):
+            return activity
+        return LIFECYCLE_SUFFIX.sub("", activity)
+
+    def relabel_events(self, attribute, value_mapping=None, collapse_lifecycle=False):
         """Return a copy of the log in which every activity is ``<activity>_<value>``.
 
         Events without a value for ``attribute`` get ``UNKNOWN`` as value, so no
         event is dropped. With ``value_mapping`` (e.g. user -> role) the mapped
-        value is used in the label. The original activity, the original value
-        and the value used in the label are kept in their own columns (see
+        value is used in the label. The activity used in the label, the original
+        value and the value used in the label are kept in their own columns (see
         config.py for why). The log itself is not modified.
+
+        With ``collapse_lifecycle`` the lifecycle step is removed from the work
+        items, and directly repeated events with the *same* label (same activity
+        and same value) in a case are merged into one, the first. A change of
+        value (e.g. of role) inside a work item is a handover and is kept.
         """
         relabeled = self.event_log.copy()
         original_value = relabeled[attribute].fillna(config.MISSING_VALUE).astype(str)
         label_value = original_value.map(value_mapping) if value_mapping else original_value
         label_value = label_value.map(self.clean_label_part)
         activity = relabeled[config.ACTIVITY_KEY].map(self.clean_label_part)
+        if collapse_lifecycle:
+            activity = activity.map(self.strip_lifecycle)
 
-        relabeled[config.ORIGINAL_ACTIVITY_KEY] = relabeled[config.ACTIVITY_KEY]
+        relabeled[config.ORIGINAL_ACTIVITY_KEY] = activity
         relabeled[config.ORIGINAL_VALUE_KEY] = original_value
         relabeled[config.ATTRIBUTE_VALUE_KEY] = label_value
         relabeled[config.ACTIVITY_KEY] = activity + config.LABEL_SEPARATOR + label_value
+        if collapse_lifecycle:
+            case = relabeled[config.CASE_ID_KEY]
+            label = relabeled[config.ACTIVITY_KEY]
+            repeated = (label == label.shift()) & (case == case.shift())
+            relabeled = relabeled[~repeated].reset_index(drop=True)
         return relabeled
 
     @staticmethod
@@ -220,22 +247,27 @@ class EventLogPreprocessor:
     # -- 4. Put it together -------------------------------------------------
 
     @staticmethod
-    def output_folder_name(attribute, grouping=GROUPING_NONE, top_k=None):
-        """Folder-safe name, e.g. ('org:resource', 'roles', 4) -> 'org_resource_roles_top4'."""
+    def output_folder_name(attribute, grouping=GROUPING_NONE, top_k=None, collapse_lifecycle=True):
+        """Folder-safe name, e.g. ('org:resource', 'roles', 4) -> 'org_resource_roles_top4'.
+
+        The suffix '_lifecycle' marks a run that keeps the lifecycle steps.
+        """
         name = re.sub(r"[^A-Za-z0-9]+", "_", attribute).strip("_")
-        if grouping == GROUPING_NONE:
-            return name
-        return f"{name}_{grouping}" + (f"_top{top_k}" if top_k else "")
+        if grouping != GROUPING_NONE:
+            name += f"_{grouping}" + (f"_top{top_k}" if top_k else "")
+        return name if collapse_lifecycle else f"{name}_lifecycle"
 
     def run(self, attribute=None, grouping=None, roles_threshold=DEFAULT_ROLES_THRESHOLD,
-            top_k=None):
+            top_k=None, collapse_lifecycle=True):
         """Run step 1 end to end and write its outputs.
 
         ``attribute`` and ``grouping`` are asked interactively when they are
         None; passing them (via ``--attribute`` and ``--grouping`` on the
         command line) skips the questions, which is handy for repeated runs.
+        Roles are discovered on the original activities; the lifecycle is
+        collapsed afterwards (see ``relabel_events``).
 
-        Outputs in ``<output_root>/<attribute>[_roles]/``:
+        Outputs in ``<output_root>/<attribute>[_roles][_lifecycle]/``:
             attributes_overview.csv   the table shown to the user
             label_counts.csv          every new label with its frequency
             roles.csv, resource_roles.csv   only with grouping 'roles'
@@ -253,7 +285,8 @@ class EventLogPreprocessor:
         if grouping not in GROUPING_CHOICES:
             raise ValueError(f"Unknown grouping '{grouping}', choose from {GROUPING_CHOICES}.")
 
-        output_dir = self.output_root / self.output_folder_name(attribute, grouping, top_k)
+        output_dir = self.output_root / self.output_folder_name(attribute, grouping, top_k,
+                                                               collapse_lifecycle)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         value_mapping = None
@@ -265,7 +298,10 @@ class EventLogPreprocessor:
             print(f"  Role discovery (threshold {roles_threshold}, top-k {top_k or 'all'}): "
                   f"{len(value_mapping)} values of '{attribute}' -> {grouper.n_roles} roles")
 
-        relabeled = self.relabel_events(attribute, value_mapping)
+        relabeled = self.relabel_events(attribute, value_mapping, collapse_lifecycle)
+        if collapse_lifecycle:
+            print(f"  Lifecycle collapsed: {len(self.event_log) - len(relabeled):,} repeated "
+                  f"events merged, {len(relabeled):,} events left")
         label_counts = self.summarise_labels(relabeled)
         n_activities = int(self.event_log[config.ACTIVITY_KEY].nunique())
         n_values = int(relabeled[config.ATTRIBUTE_VALUE_KEY].nunique())
@@ -290,8 +326,10 @@ class EventLogPreprocessor:
             "label_format": (f"<activity>{config.LABEL_SEPARATOR}<role of {attribute}>"
                              if grouping == GROUPING_ROLES
                              else f"<activity>{config.LABEL_SEPARATOR}<{attribute}>"),
+            "lifecycle_collapsed": collapse_lifecycle,
             "traces": self.n_traces,
             "events": len(self.event_log),
+            "events_after_relabelling": len(relabeled),
             "distinct_activities": n_activities,
             "distinct_attribute_values": n_values,
             "distinct_labels": n_labels,

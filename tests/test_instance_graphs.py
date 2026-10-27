@@ -9,7 +9,7 @@ from pathlib import Path
 from pm4py.objects.log.importer.xes import importer as xes_importer
 from pm4py.objects.log.obj import Event, EventLog, Trace
 
-from OLD.orgmining.instance_graphs import BigRunner, GFileConverter
+from orgmining.instance_graphs import BigRunner, GFileConverter
 
 # Two graphs in BIG's format. Graph 1 has a parallel split (A -> B, A -> C)
 # and a duplicated edge line, as BIG sometimes writes.

@@ -6,8 +6,8 @@ import unittest
 
 import pandas as pd
 
-from OLD.orgmining.roles import OTHER_ROLE, ResourceRoleGrouper
-from OLD.orgmining.synthetic import (ACTIVITY_DEPARTMENT, SyntheticLogGenerator, employees,
+from orgmining.roles import OTHER_ROLE, ResourceRoleGrouper
+from orgmining.synthetic import (ACTIVITY_DEPARTMENT, SyntheticLogGenerator, employees,
                                      gold_standard_table, match_roles_to_departments,
                                      translate_gold)
 
