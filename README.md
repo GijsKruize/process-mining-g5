@@ -134,7 +134,7 @@ instance graphs, pattern mining, evaluation) as standalone scripts instead of
 | File | What it does |
 |------|---------------|
 | `BIG.py` | The course's BIG library (alignment-based instance graph construction and repair). Not in git (assignment material), but present locally. See "BIG.py performance work" below for the changes made to it. |
-| `Instance Graph Mining.py` | Step 1+2 combined: relabels the event log as `<activity>_<org:resource>`, mines a Petri net with the Inductive Miner, runs BIG in parallel over the log with Spark, and pickles the resulting instance graphs. Each of its four stages (relabeled log, Petri net, BIG `.g` output, graphs pickle) asks in the terminal whether to reuse the file from a previous run instead of recomputing it — handy for skipping the slow Inductive Miner or Spark/BIG run when you already have a good checkpoint on disk. |
+| `Instance Graph Mining.py` | Step 1+2 combined: relabels the event log as `<activity>_<role of org:resource>` (see *Roles and lifecycle collapse* below), mines a Petri net with the Inductive Miner, runs BIG in parallel over the log with Spark, and pickles the resulting instance graphs. Each of its four stages (relabeled log, Petri net, BIG `.g` output, graphs pickle) asks in the terminal whether to reuse the file from a previous run instead of recomputing it — handy for skipping the slow Inductive Miner or Spark/BIG run when you already have a good checkpoint on disk. |
 | `Pattern Mining.py` | Step 3: loads the pickled instance graphs, combines them into one disconnected graph, runs the reference SUBDUE implementation (`subdue/`) to find frequent patterns, and saves `patterns.csv`, `trace_pattern_matrix.csv` and a PNG per pattern. |
 | `Alignment Evaluation.py` | Evaluation: checks how well both the Petri net (via PM4Py alignments) and the saved instance graphs (via an edit-distance comparison against the trace) fit a 10%-sample log, and writes fitness summaries/CSVs. |
 | `Final Try.py`, `Final Try PM4Py.py` | Earlier, self-contained experiments that run the whole discovery + BIG pipeline in a single script against the 10% sample log. Superseded by `Instance Graph Mining.py` / `Pattern Mining.py` / `Alignment Evaluation.py`, kept for reference. `Final Try PM4Py.py` is the version that mines the model from plain activity names while still running BIG on activity-resource names. |
@@ -142,6 +142,27 @@ instance graphs, pattern mining, evaluation) as standalone scripts instead of
 | `instance graphs/` | Output of `Instance Graph Mining.py`'s predecessor runs: the relabeled log, mined Petri net, raw BIG `.g` output and the pickled graphs. |
 | `output/` | Generated results from the current scripts (`instance graphs/`, `patterns/`, `alignment_evaluation/`), not in git — re-create with the scripts above. |
 | `subdue/` | SUBDUE v1.4 (Python), unmodified, used by `Pattern Mining.py`. |
+
+### Roles and lifecycle collapse
+
+`Instance Graph Mining.py` builds its labels in two steps, in this order
+(switch them off with `GROUP_ROLES` / `COLLAPSE_LIFECYCLE` at the top):
+
+1. **Roles.** pm4py's role discovery (Burattin, Sperduti & Veluscek, 2013;
+   threshold 0.65) groups activities by the resources that perform them. Every
+   resource gets its *dominant role*, the role in which it performs most of its
+   events; `Role_1` has the most events. The mapping is saved to
+   `output/instance graphs/resource_roles.csv`.
+2. **Lifecycle collapse.** The work items carry their lifecycle step in the
+   name (`W-Validate-application-start`, `-suspend`, `-resume`, ...). The step
+   is removed, and directly repeated events with the same label (same activity
+   and same role) within a case are merged into one. A role change inside a
+   work item is a handover and is kept.
+
+On the full log this gives 106 labels instead of 3,338 (134 resources in 8
+roles, 88,638 of 124,866 events kept, all 3,093 cases), so the Petri net is much
+smaller and BIG's alignments much faster. `Alignment Evaluation.py` applies the
+same relabeling (with the saved roles) to its log.
 
 ### BIG.py performance work
 

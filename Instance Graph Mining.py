@@ -1,10 +1,14 @@
 """Create and save the BIG instance graphs."""
 import os
 import pickle
+from collections import Counter
 from pathlib import Path
 
 import networkx as nx
+import pandas as pd
 import pm4py
+from pm4py.algo.organizational_mining.roles import algorithm as role_discovery
+from pm4py.algo.organizational_mining.roles.variants.pandas import Parameters as RoleParameters
 from pm4py.objects.conversion.log import converter as log_converter
 from pm4py.objects.log.exporter.xes import exporter as xes_exporter
 from pm4py.objects.log.importer.xes import importer as xes_importer
@@ -20,9 +24,17 @@ BIG_LOG_PATH = INSTANCE_GRAPH_DIR / "BPI2017Denied_pm4py.xes"
 BIG_OUTPUT_PATH = INSTANCE_GRAPH_DIR / "graph_pm4py.g"
 GRAPHS_PATH = INSTANCE_GRAPH_DIR / "instance_graphs_pm4py.pkl"
 PETRI_NET_PATH = INSTANCE_GRAPH_DIR / "petri_net_pm4py.pnml"
+RESOURCE_ROLES_PATH = INSTANCE_GRAPH_DIR / "resource_roles.csv"
 SELECTED_ATTRIBUTE = "org:resource"
 NOISE_THRESHOLD = 0.4
 CPU_COUNT = 10
+
+# Replace every resource by its role (pm4py role discovery, Burattin et al. 2013)
+GROUP_ROLES = True
+ROLES_THRESHOLD = 0.65
+# Drop the lifecycle step of the W- work items and merge directly repeated labels
+COLLAPSE_LIFECYCLE = True
+LIFECYCLE_SUFFIX = r"-(schedule|start|suspend|resume|complete|ate-abort|withdraw)$"
 
 
 def ask_yes_no(question):
@@ -58,6 +70,54 @@ def read_big_graphs(path):
     return graphs
 
 
+def discover_roles(event_log):
+    """Map every resource to its dominant role: the discovered role in which it
+    performs most of its events. Role_1 is the role with the most events."""
+    frame = pd.DataFrame({
+        "resource": event_log[SELECTED_ATTRIBUTE].fillna("UNKNOWN").astype(str),
+        "activity": event_log["concept:name"].astype(str),
+    })
+    roles = role_discovery.apply(frame, parameters={
+        RoleParameters.RESOURCE_KEY: "resource",
+        RoleParameters.ACTIVITY_KEY: "activity",
+        RoleParameters.ROLES_THRESHOLD_PARAMETER: ROLES_THRESHOLD,
+    })
+    dominant = {}  # resource -> (role index, events in that role); first role wins a tie
+    for role_index, (_, resource_counts) in enumerate(roles):
+        for resource, events in resource_counts.items():
+            if resource not in dominant or events > dominant[resource][1]:
+                dominant[resource] = (role_index, events)
+
+    events_per_resource = Counter(frame["resource"])
+    events_per_role = Counter()
+    for resource, (role_index, _) in dominant.items():
+        events_per_role[role_index] += events_per_resource[resource]
+    ranked = sorted(events_per_role, key=lambda index: (-events_per_role[index], index))
+    role_names = {index: f"Role_{rank}" for rank, index in enumerate(ranked, start=1)}
+    return {resource: role_names[role_index] for resource, (role_index, _) in dominant.items()}
+
+
+def relabel_events(event_log, role_mapping=None):
+    """Add the `activity_selectedAttribute` label: roles first, then the lifecycle collapse.
+
+    A role change inside a work item is a handover and stays two events."""
+    event_log = event_log.copy()
+    activity = event_log["concept:name"].fillna("UNKNOWN").astype(str)
+    value = event_log[SELECTED_ATTRIBUTE].fillna("UNKNOWN").astype(str)
+    if role_mapping is not None:
+        value = value.map(role_mapping).fillna("UNKNOWN")
+    if COLLAPSE_LIFECYCLE:
+        is_work_item = activity.str.startswith("W-")
+        activity = activity.where(~is_work_item, activity.str.replace(LIFECYCLE_SUFFIX, "", regex=True))
+    event_log["activity_selectedAttribute"] = activity + "_" + value
+
+    if COLLAPSE_LIFECYCLE:
+        case = event_log["case:concept:name"]
+        repeated = (event_log["activity_selectedAttribute"] == event_log["activity_selectedAttribute"].shift()) & (case == case.shift())
+        event_log = event_log[~repeated].reset_index(drop=True)
+    return event_log
+
+
 def load_big_event_log():
     """(Re)build the attribute-relabeled event log needed for discovery/BIG, from the raw dataset."""
     print("Loading event log...", flush=True)
@@ -70,11 +130,19 @@ def load_big_event_log():
     if SELECTED_ATTRIBUTE not in event_log.columns:
         raise ValueError(f"Unknown attribute: {SELECTED_ATTRIBUTE}")
 
-    event_log["activity_selectedAttribute"] = (
-        event_log["concept:name"].fillna("UNKNOWN").astype(str)
-        + "_"
-        + event_log[SELECTED_ATTRIBUTE].fillna("UNKNOWN").astype(str)
-    )
+    role_mapping = None
+    if GROUP_ROLES:
+        role_mapping = discover_roles(event_log)
+        pd.DataFrame(sorted(role_mapping.items()), columns=["resource", "role"]).to_csv(
+            RESOURCE_ROLES_PATH, index=False
+        )
+        print(f"Grouped {len(role_mapping)} resources into {len(set(role_mapping.values()))} roles "
+              f"(saved to {RESOURCE_ROLES_PATH})", flush=True)
+
+    events_before = len(event_log)
+    event_log = relabel_events(event_log, role_mapping)
+    print(f"{event_log['activity_selectedAttribute'].nunique()} distinct labels, "
+          f"{len(event_log)} of {events_before} events kept", flush=True)
 
     big_log = event_log.copy()
     big_log["concept:name"] = big_log["activity_selectedAttribute"]

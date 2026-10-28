@@ -6,13 +6,16 @@ with the graph's topological event order using the same edit-distance idea.
 """
 import csv
 import copy
+import importlib.util
 import json
 import pickle
 from pathlib import Path
 
 import networkx as nx
+import pandas as pd
 import pm4py
 from pm4py.algo.conformance.alignments.petri_net import algorithm as alignments
+from pm4py.objects.conversion.log import converter as log_converter
 from pm4py.objects.log.importer.xes import importer as xes_importer
 from pm4py.objects.petri_net.importer import importer as pnml_importer
 
@@ -27,14 +30,29 @@ INSTANCE_GRAPHS_PATH = (
 )
 OUTPUT_DIR = PROJECT_ROOT / "output" / "alignment_evaluation"
 
+# Reuse the relabeling of Instance Graph Mining.py (roles + lifecycle collapse)
+_spec = importlib.util.spec_from_file_location(
+    "instance_graph_mining", PROJECT_ROOT / "Instance Graph Mining.py"
+)
+instance_graph_mining = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(instance_graph_mining)
+
+
+def relabeled_log(log):
+    """Give the log the same labels as the saved Petri net and instance graphs."""
+    role_mapping = None
+    if instance_graph_mining.GROUP_ROLES:
+        roles = pd.read_csv(instance_graph_mining.RESOURCE_ROLES_PATH, dtype=str)
+        role_mapping = dict(zip(roles["resource"], roles["role"]))
+    frame = log_converter.apply(log, variant=log_converter.Variants.TO_DATA_FRAME)
+    frame = instance_graph_mining.relabel_events(frame, role_mapping)
+    frame["concept:name"] = frame["activity_selectedAttribute"]
+    return log_converter.apply(frame, variant=log_converter.Variants.TO_EVENT_LOG)
+
 
 def enriched_trace(trace):
-    """Use the same activity-resource labels as the saved instance graphs."""
-    return [
-        f"{event.get('concept:name', 'UNKNOWN')}_"
-        f"{event.get('org:resource', 'UNKNOWN')}"
-        for event in trace
-    ]
+    """Use the same labels as the saved instance graphs."""
+    return [event.get("concept:name", "UNKNOWN") for event in trace]
 
 
 def edit_distance(left, right):
@@ -128,7 +146,7 @@ def summary(results, name):
 
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    log = xes_importer.apply(str(LOG_PATH))
+    log = relabeled_log(xes_importer.apply(str(LOG_PATH)))
     print(f"Loaded {len(log)} traces from {LOG_PATH}")
 
     print("Calculating Petri-net alignments...", flush=True)
