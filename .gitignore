@@ -4,8 +4,10 @@ __pycache__/
 *.pyc
 
 # Generated results (re-create with main.py)
-output/
 outputs/
+
+# Too large for GitHub (100MB hard limit); re-create with Instance Graph Mining.py
+output/instance graphs/BPI2017Denied_pm4py.xes
 
 # Editors
 .idea/

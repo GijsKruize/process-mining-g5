@@ -123,6 +123,66 @@ restarts itself once with `PYTHONHASHSEED=0`, so that two runs give identical
 instance graphs. (The `.pnml` files still differ in the random ids pm4py gives
 to invisible transitions; the net itself is the same.)
 
+## Current pipeline (root scripts)
+
+The rest of this README documents the original `main.py` / `orgmining/`
+pipeline, which now lives under `OLD/`. The repository root holds a newer,
+simpler pipeline that reruns the same three steps (model discovery + BIG
+instance graphs, pattern mining, evaluation) as standalone scripts instead of
+`main.py` sub-commands. These are the files you'll actually run day to day:
+
+| File | What it does |
+|------|---------------|
+| `BIG.py` | The course's BIG library (alignment-based instance graph construction and repair). Not in git (assignment material), but present locally. See "BIG.py performance work" below for the changes made to it. |
+| `Instance Graph Mining.py` | Step 1+2 combined: relabels the event log as `<activity>_<org:resource>`, mines a Petri net with the Inductive Miner, runs BIG in parallel over the log with Spark, and pickles the resulting instance graphs. Each of its four stages (relabeled log, Petri net, BIG `.g` output, graphs pickle) asks in the terminal whether to reuse the file from a previous run instead of recomputing it — handy for skipping the slow Inductive Miner or Spark/BIG run when you already have a good checkpoint on disk. |
+| `Pattern Mining.py` | Step 3: loads the pickled instance graphs, combines them into one disconnected graph, runs the reference SUBDUE implementation (`subdue/`) to find frequent patterns, and saves `patterns.csv`, `trace_pattern_matrix.csv` and a PNG per pattern. |
+| `Alignment Evaluation.py` | Evaluation: checks how well both the Petri net (via PM4Py alignments) and the saved instance graphs (via an edit-distance comparison against the trace) fit a 10%-sample log, and writes fitness summaries/CSVs. |
+| `Final Try.py`, `Final Try PM4Py.py` | Earlier, self-contained experiments that run the whole discovery + BIG pipeline in a single script against the 10% sample log. Superseded by `Instance Graph Mining.py` / `Pattern Mining.py` / `Alignment Evaluation.py`, kept for reference. `Final Try PM4Py.py` is the version that mines the model from plain activity names while still running BIG on activity-resource names. |
+| `data/` | Input logs used by the scripts above, e.g. `BPI2017Denied(3).xes` (full log) and `BPI2017Denied_10pct.xes` (10% sample used for evaluation). |
+| `instance graphs/` | Output of `Instance Graph Mining.py`'s predecessor runs: the relabeled log, mined Petri net, raw BIG `.g` output and the pickled graphs. |
+| `output/` | Generated results from the current scripts (`instance graphs/`, `patterns/`, `alignment_evaluation/`), not in git — re-create with the scripts above. |
+| `subdue/` | SUBDUE v1.4 (Python), unmodified, used by `Pattern Mining.py`. |
+
+### BIG.py performance work
+
+`BIG.py` processes every trace of a log (alignment + instance-graph
+construction + repair), which is slow on the full BPI 2017 log — some traces
+took 45+ minutes. The algorithm itself was not changed; the following
+functions were rewritten to compute the exact same result faster:
+
+- **`extract_instance_graph`**: the original re-scanned the whole window
+  between every pair of events to decide if an edge should exist, which is
+  O(n³) in the trace length. The two conditions it checks only ever depend on
+  the *nearest* causal successor of the source event and *nearest* causal
+  predecessor of the target event, so both can be found with a single linear
+  pass per trace (tracking, per activity label, the most recently seen
+  position) instead of rescanning — O(n) instead of O(n³). Verified
+  byte-identical output against the original on 2000 randomized trace/causal-
+  relation combinations.
+- **`build_causal_maps`** (new): precomputes label → successor/predecessor
+  label lookup sets once per log, instead of the original's `(a, b) in cr`
+  linear scan of a flat list on every single pair check.
+- **`is_path`**: used during insertion repair, this recursed without
+  memoization and did `(a, b) in W` as an O(|W|) linear scan of the edge list
+  on every recursive step. For traces with several insertions through
+  parallel/diamond-shaped parts of the graph, the same sub-paths were
+  re-explored repeatedly. Now builds an adjacency map once (O(1) lookups) and
+  memoizes `is_path(a, b)` results, plus a visiting-set guard against infinite
+  recursion if `W` were ever cyclic (the original had no such guard, but never
+  hit a cycle in practice since edges always run from an earlier to a later
+  trace position). Verified identical output (including the original's
+  quirky "last successful branch wins" behavior) against 3000 randomized DAG
+  structures.
+- **Variant cache** (new, in `big()`): the alignment + repair pipeline for a
+  trace depends only on its sequence of activity labels, not on case id,
+  timestamp or resource — so two traces with the same activity sequence
+  ("variant") always produce the identical instance graph. `big()` now caches
+  the computed graph per variant and skips the expensive alignment + repair
+  work entirely on repeats, which matters a lot on logs like BPI 2017 where
+  many cases share the same path. The end-of-run log line reports
+  `cache_hits/total_traces` so you can see how much this helped on a given
+  log.
+
 ## Project structure
 
 ```

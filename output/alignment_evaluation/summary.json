@@ -1,0 +1,18 @@
+[
+  {
+    "model": "Petri net",
+    "traces": 309,
+    "mean_fitness": 0.0,
+    "perfect_fitness": 0,
+    "min_fitness": 0.0,
+    "max_fitness": 0.0
+  },
+  {
+    "model": "Instance graphs",
+    "traces": 309,
+    "mean_fitness": 0.98612,
+    "perfect_fitness": 249,
+    "min_fitness": 0.777778,
+    "max_fitness": 1.0
+  }
+]
