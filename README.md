@@ -4,23 +4,27 @@ Implementation of the behavioral pattern mining approach of Diamantini, Genga &
 Potena (2016), *Behavioral process mining for unstructured processes*, on the
 BPI Challenge 2017 (denied applications) log.
 
-| Step | What | Status |
-|------|------|--------|
-| 1 | Preprocessing: relabel every event as `activity_selectedAttribute`, optionally grouping resources into roles | done |
-| 2 | Inductive Miner Petri net + BIG instance graphs → networkx | done |
-| 3 | SUBDUE patterns, support, trace × pattern matrix, visualisation | done |
-| 4 | Evaluation: synthetic logs with injected patterns and noise (gold standard), BPI checks, parameter study | done |
+| Step | What |
+|------|------|
+| 1 | Instance graph generation: relabel the log (resources grouped into roles, lifecycle collapsed), discover a Petri net (Inductive Miner), run BIG, save the instance graphs |
+| 2 | Pattern mining: SUBDUE on the saved instance graphs; support, trace × pattern matrix, pattern figures |
+| 3 | Evaluation: alignment fitness of the Petri net and the instance graphs against a sample of the log |
 
 ## Requirements
 
 - **Python 3.9.** The assignment requires **pm4py 2.2.16** (needed for BIG),
-  and that version does not run on newer Python versions.
-- The assignment material from Canvas (see *Add the assignment material*
-  below). It is too large for git, so it is not in this repository.
+  which does not run on newer Python versions.
+- **`BIG.py`** from Canvas (course material, not ours to redistribute), placed
+  unchanged in the project root, next to `main.py`. See *BIG.py performance
+  work* below for the speed-ups applied to it without changing its algorithm.
+- The event logs from Canvas: `data/BPI2017Denied(3).xes` (full log) and
+  `data/BPI2017Denied_10pct.xes` (10% sample, used for evaluation). Too large
+  for git, so not in this repository.
 
 ## Installation
 
-Run these commands in order, from a terminal (Git Bash, macOS or Linux):
+Run these commands in order, from a terminal (Git Bash, macOS or Linux), from
+the project root:
 
 ```bash
 # 1. Get the code
@@ -30,139 +34,108 @@ cd process-mining-g5
 # 2. Create and activate a virtual environment with Python 3.9
 python3.9 -m venv .venv            # Windows: py -3.9 -m venv .venv
 source .venv/bin/activate          # Windows Git Bash: source .venv/Scripts/activate
-                                   # Windows PowerShell: .\.venv\Scripts\activate
+                                    # Windows PowerShell: .\.venv\Scripts\activate
 
 # 3. Install the pinned dependencies
 pip install -r requirements.txt
+
+# 4. Place BIG.py (from Canvas, unchanged) in the project root, and the event
+#    logs under data/ (see Requirements above)
 ```
 
-`OLD/requirements.txt` pins pm4py 2.2.16 and its complete dependency tree, so
+`requirements.txt` pins pm4py 2.2.16 and its complete dependency tree, so
 everyone gets exactly the same environment.
-
-### Add the assignment material
-
-Download the assignment folder from Canvas and place it in the project root
-under exactly this name, together with `BIG.py`:
-
-```
-process-mining-g5/
-├── BIG.py                                          BIG library (Canvas)
-└── datasets_group5_mining_organizational_patterns/
-    ├── BPI2017Denied(3).xes                        the event log (input of step 1)
-    ├── BPI2017Denied.g                             example BIG output
-    ├── BPI2017Denied_petriNet.pnml                 example Petri net
-    └── *.pdf                                       assignment, log description, paper
-```
 
 ## Running
 
-Always run from the project root with the virtual environment active. These
-commands reproduce all results, in this order:
+Everything runs through one entry point, from the project root with the
+virtual environment active:
 
 ```bash
-# Step 1: relabel events as <activity>_<role of org:resource>   (about 2 minutes)
-python main.py preprocess --attribute org:resource --grouping roles
-
-# Step 2: Petri net + BIG instance graphs on the step 1 output   (about 1 hour)
-python main.py instance-graphs
-
-# Step 3: SUBDUE patterns, support, trace x pattern matrix        (about 2.5 minutes)
-python main.py mine-patterns
-python main.py pattern-report                                   # figures for the report
-
-# Step 3, hierarchical (10 SUBDUE iterations, as in the paper)  (about 20 minutes)
-python main.py mine-patterns --iterations 10 --num-best 3 --output-dir outputs/step3_patterns_hierarchy
-
-# Evaluation 1: synthetic logs with injected patterns, noise 0/10/20/30%     (about 2 minutes)
-python main.py synthetic
-# Evaluation 2: parameter study (top-k roles x beam x iterations), 10% noise  (about 5 minutes)
-python main.py synthetic --noise 0.1 --sweep
-
-# Evaluation 3 (BPI): validate one instance graph against its trace
-python main.py validate-trace --case Application_1691306052
-# Evaluation 4 (BPI): runs with beam 10 and 20 (about 15 minutes each), then the
-# comparison with the expected work practices and the frequent-path baseline
-python main.py mine-patterns --beam 10 --iterations 10 --num-best 3 --output-dir outputs/step3_beam10
-python main.py mine-patterns --beam 20 --iterations 10 --num-best 3 --output-dir outputs/step3_beam20
-python main.py evaluate --run "SUBDUE 1 iteration (beam 4)=outputs/step3_patterns/org_resource_roles" --run "SUBDUE 10 iterations (beam 4)=outputs/step3_patterns_hierarchy/org_resource_roles" --run "SUBDUE 10 iterations (beam 10)=outputs/step3_beam10/org_resource_roles" --run "SUBDUE 10 iterations (beam 20)=outputs/step3_beam20/org_resource_roles"
-
-# Unit tests (tiny logs, a few seconds)
-python -m unittest discover tests -v
+python main.py
 ```
 
-Useful variations:
+This opens a numbered menu:
 
-```bash
-python main.py preprocess                          # asks for the attribute and the grouping
-python main.py instance-graphs --max-traces 50     # quick trial on the first 50 traces
-python main.py instance-graphs --workers 4         # use fewer CPU cores
-python main.py mine-patterns --max-graphs 300      # quick trial on the first 300 graphs
-python main.py mine-patterns --original-subdue     # SUBDUE without speed-ups (same result, slow)
-python main.py show-graph --index 0                # print the first instance graph and plot it
-python main.py show-roles                          # heatmap: which role does which activity
-python main.py preprocess --attribute org:resource --grouping roles --top-roles 4
-                                                   # keep only the 4 largest roles, rest 'Other'
-python main.py show-net --describe-only            # size and parallel constructs of the net
-python main.py show-net                            # draw the net (needs Graphviz, see below)
-python main.py show-graph --case Application_1691306052 --output graph.svg
-python main.py convert-g datasets_group5_mining_organizational_patterns/BPI2017Denied.g
-                                                   # only convert an existing BIG .g file
-python main.py preprocess --help                   # all options of a step
+```
+============================================================
+BPI 2017 organizational pattern mining pipeline
+============================================================
+  1. Instance graph generation  [not run yet]
+  2. Pattern mining  [not run yet]
+  3. Evaluation  [not run yet]
+  0. Exit
+
+Select a step to run:
 ```
 
-Results are written to `outputs/` (not in git; re-create them with the
-commands above).
+Pick a step by number. It first asks for its own parameters one at a time -
+each with a one-line explanation and a suggested default (press Enter to
+accept it) - then, for anything a previous run already produced (the
+relabeled log, the Petri net, BIG's output, the instance graphs pickle, a
+`patterns.csv`, an evaluation summary), asks whether to reuse that file or
+recompute it. This matters because step 1's Petri net discovery and BIG run,
+and step 2's SUBDUE run, are the slow parts: once you have a Petri net or a
+set of instance graphs you are happy with, you do not need to wait for them
+again while trying out a later step.
 
-`show-net` draws Petri nets with pm4py, which needs the Graphviz *program*
-(`pip install graphviz` only installs the Python wrapper). On Windows:
-`winget install --id Graphviz.Graphviz -e`, then open a new terminal.
+Run step 1, then step 2, then step 3, in that order (each needs the previous
+step's output); rerun any one of them individually afterwards to try
+different parameters, without redoing the others.
 
 **Reproducibility.** pm4py's Inductive Miner iterates over Python sets, whose
-order changes between runs unless the hash seed is fixed. `OLD/main.py` therefore
-restarts itself once with `PYTHONHASHSEED=0`, so that two runs give identical
-instance graphs. (The `.pnml` files still differ in the random ids pm4py gives
-to invisible transitions; the net itself is the same.)
+iteration order is randomized per process unless the hash seed is fixed. Set
+`PYTHONHASHSEED=0` before running `python main.py` if you need two runs of
+step 1 to discover byte-identical Petri nets (the `.pnml` files will still
+differ in the random ids pm4py gives to invisible transitions; the net
+itself is the same).
 
-## Current pipeline (root scripts)
+## Current pipeline (`main.py`)
 
-The rest of this README documents the original `main.py` / `orgmining/`
-pipeline, which now lives under `OLD/`. The repository root holds a newer,
-simpler pipeline that reruns the same three steps (model discovery + BIG
-instance graphs, pattern mining, evaluation) as standalone scripts instead of
-`main.py` sub-commands. These are the files you'll actually run day to day:
+This is the pipeline described under *Running* above: the same three things
+(model discovery + BIG instance graphs, pattern mining, evaluation) as an
+earlier, more elaborate pipeline this project started from, now consolidated
+into a single `main.py` with an interactive menu. That earlier pipeline is
+kept, archived, under `OLD/` - see *Archived implementation* further down.
 
-| File | What it does |
+`main.py` is organized as one small class per pipeline step
+(`InstanceGraphStep`, `PatternMiningStep`, `EvaluationStep`), all implementing
+the same `PipelineStep` interface (`output_exists`, `ask_parameters`, `run`),
+driven by a `Pipeline` class that prints the menu and dispatches to whichever
+step the user picks. A step's adjustable values are declared as a list of
+`Parameter` objects (question, explanation, suggested default, type), so
+adding or changing a parameter does not touch the menu/prompting code.
+
+| File / folder | What it does |
 |------|---------------|
-| `BIG.py` | The course's BIG library (alignment-based instance graph construction and repair). Not in git (assignment material), but present locally. See "BIG.py performance work" below for the changes made to it. |
-| `Instance Graph Mining.py` | Step 1+2 combined: relabels the event log as `<activity>_<role of org:resource>` (see *Roles and lifecycle collapse* below), mines a Petri net with the Inductive Miner, runs BIG in parallel over the log with Spark, and pickles the resulting instance graphs. Each of its four stages (relabeled log, Petri net, BIG `.g` output, graphs pickle) asks in the terminal whether to reuse the file from a previous run instead of recomputing it — handy for skipping the slow Inductive Miner or Spark/BIG run when you already have a good checkpoint on disk. |
-| `Pattern Mining.py` | Step 3: loads the pickled instance graphs, combines them into one disconnected graph, runs the reference SUBDUE implementation (`subdue/`) to find frequent patterns, and saves `patterns.csv`, `trace_pattern_matrix.csv` and a PNG per pattern. |
-| `Alignment Evaluation.py` | Evaluation: checks how well both the Petri net (via PM4Py alignments) and the saved instance graphs (via an edit-distance comparison against the trace) fit a 10%-sample log, and writes fitness summaries/CSVs. |
-| `Final Try.py`, `Final Try PM4Py.py` | Earlier, self-contained experiments that run the whole discovery + BIG pipeline in a single script against the 10% sample log. Superseded by `Instance Graph Mining.py` / `Pattern Mining.py` / `Alignment Evaluation.py`, kept for reference. `Final Try PM4Py.py` is the version that mines the model from plain activity names while still running BIG on activity-resource names. |
-| `data/` | Input logs used by the scripts above, e.g. `BPI2017Denied(3).xes` (full log) and `BPI2017Denied_10pct.xes` (10% sample used for evaluation). |
-| `instance graphs/` | Output of `Instance Graph Mining.py`'s predecessor runs: the relabeled log, mined Petri net, raw BIG `.g` output and the pickled graphs. |
-| `output/` | Generated results from the current scripts (`instance graphs/`, `patterns/`, `alignment_evaluation/`), not in git — re-create with the scripts above. |
-| `subdue/` | SUBDUE v1.4 (Python), unmodified, used by `Pattern Mining.py`. |
+| `main.py` | The single entry point described above: `InstanceGraphStep`, `PatternMiningStep`, `EvaluationStep`, and the `Pipeline` menu that runs them. |
+| `BIG.py` | The course's BIG library (alignment-based instance graph construction and repair). Not in git (assignment material), but present locally. See *BIG.py performance work* below for the changes made to it. |
+| `data/` | Input logs, e.g. `BPI2017Denied(3).xes` (full log) and `BPI2017Denied_10pct.xes` (10% sample used for evaluation). |
+| `output/` | Generated results: `instance graphs/` (relabeled log, Petri net, BIG's raw `.g` output, the pickled graphs, the resource→role mapping, the generation settings), `patterns/` (SUBDUE's patterns, trace × pattern matrix, pattern figures), `alignment_evaluation/` (fitness summaries and per-trace CSVs). |
+| `subdue/` | SUBDUE v1.4 (Python), unmodified, used by `PatternMiningStep`. |
 
 ### Roles and lifecycle collapse
 
-`Instance Graph Mining.py` builds its labels in two steps, in this order
-(switch them off with `GROUP_ROLES` / `COLLAPSE_LIFECYCLE` at the top):
+`InstanceGraphStep` builds its labels in two steps, in this order (each
+switched on/off by its own parameter when you run step 1, both suggested on):
 
 1. **Roles.** pm4py's role discovery (Burattin, Sperduti & Veluscek, 2013;
-   threshold 0.65) groups activities by the resources that perform them. Every
-   resource gets its *dominant role*, the role in which it performs most of its
-   events; `Role_1` has the most events. The mapping is saved to
-   `output/instance graphs/resource_roles.csv`.
+   threshold adjustable, suggested 0.65) groups activities by the resources
+   that perform them. Every resource gets its *dominant role*, the role in
+   which it performs most of its events; `Role_1` has the most events. The
+   mapping is saved to `output/instance graphs/resource_roles.csv`.
 2. **Lifecycle collapse.** The work items carry their lifecycle step in the
    name (`W-Validate-application-start`, `-suspend`, `-resume`, ...). The step
    is removed, and directly repeated events with the same label (same activity
    and same role) within a case are merged into one. A role change inside a
    work item is a handover and is kept.
 
-On the full log this gives 106 labels instead of 3,338 (134 resources in 8
-roles, 88,638 of 124,866 events kept, all 3,093 cases), so the Petri net is much
-smaller and BIG's alignments much faster. `Alignment Evaluation.py` applies the
-same relabeling (with the saved roles) to its log.
+On the full log, with both on, this gives 106 labels instead of 3,338 (134
+resources in 8 roles, 88,638 of 124,866 events kept, all 3,093 cases), so the
+Petri net is much smaller and BIG's alignments much faster. The choices made
+for a given run are saved to `output/instance graphs/generation_settings.json`
+so `EvaluationStep` can relabel its own log the exact same way for a fair
+comparison.
 
 ### BIG.py performance work
 
@@ -203,6 +176,36 @@ functions were rewritten to compute the exact same result faster:
   many cases share the same path. The end-of-run log line reports
   `cache_hits/total_traces` so you can see how much this helped on a given
   log.
+
+## Decisions and adaptations from the original approach
+
+Why the implementation looks like it does, where that differs from a literal
+reading of the assignment/paper or from an earlier version of this project:
+
+| Decision / adaptation | Why |
+|---|---|
+| Resources grouped into roles (pm4py role discovery) instead of using raw `org:resource` values | `org:resource` alone has 134 distinct values, producing thousands of distinct activity-resource labels; that makes both the Inductive Miner and BIG slow and fragments SUBDUE's pattern search. Grouping into roles is also what the assignment itself suggests. |
+| Lifecycle steps of work items (`W-...-start/suspend/resume/complete/...`) collapsed into one event | BPI 2017 records every lifecycle transition as its own event; BIG's per-trace cost scales with trace length, so this is the single biggest lever on how long BIG takes, independent of any algorithmic speed-up. |
+| `BIG.py`'s `extract_instance_graph` rewritten from O(n³) to O(n) in trace length | The original re-scanned the whole window between every pair of events; some traces on the full log took 45+ minutes. The algorithm's result is unchanged (verified on 2000 randomized cases) - only how it is computed. |
+| `BIG.py`'s `is_path` made memoized and adjacency-map based | Unmemoized, it re-explored the same sub-paths exponentially on parallel/diamond-shaped sections during insertion repair. Verified identical output on 3000 randomized graphs. |
+| `BIG.py` caches the computed instance graph per trace *variant* (sequence of activity labels) | The alignment + repair pipeline for a trace depends only on its activity sequence, not its case id/timestamp/resource. Many BPI 2017 traces share the same sequence, so repeats skip the expensive work entirely. |
+| BIG parallelized with the standard library (`concurrent.futures.ProcessPoolExecutor`) instead of PySpark | Spark needed a JVM and a machine-specific, hard-coded `JAVA_HOME` path - exactly what the assignment explicitly forbids ("never use absolute paths ... no adjustments must be made when executed on another system"). `ProcessPoolExecutor` does the same chunked, independent-per-trace parallelization with only the standard library, so the project runs on any machine with just `pip install -r requirements.txt`. |
+| Three separate scripts (`Instance Graph Mining.py`, `Pattern Mining.py`, `Alignment Evaluation.py`) merged into one `main.py` | The assignment requires "one main method to execute your code". A single entry point is also simpler to grade and to run. |
+| Interactive, numbered/y-n terminal menu instead of `argparse` sub-commands | This project is run by a small team trying different parameters on slow steps, not deployed as a tool for strangers; a menu that explains each parameter inline (with a suggested default) is more discoverable than reading `--help` for every flag, at the cost of not being scriptable. The assignment allows "command line parameters **or** a YAML configuration file" for adjustable parameters; the interactive menu is this project's equivalent of that mechanism. |
+| Two superseded experiment scripts (`Final Try.py`, `Final Try PM4Py.py`) removed | They were single-script prototypes that `Instance Graph Mining.py` / `Pattern Mining.py` / `Alignment Evaluation.py` (now `main.py`) fully replaced; keeping dead prototypes around only adds confusion about which code is actually run. |
+| `requirements.txt` added at the project root | It was missing; the assignment explicitly requires it, and without it the exact dependency versions this project was built and evaluated against were not reproducible by someone else. |
+| Every path derived from `Path(__file__).resolve().parent`, none hard-coded | The assignment explicitly forbids absolute paths and requires the code to run unmodified on another system. |
+| The earlier, more elaborate `orgmining/` + `OLD/main.py` pipeline (CLI with 10 sub-commands, a gold-standard evaluator, a synthetic-log experiment harness, a plotting layer) kept archived under `OLD/` rather than deleted or merged in | That pipeline's extra machinery (evaluation against a gold standard, synthetic data with injected ground truth, report figures) answers "does the method work," which is valuable for the short paper, but is not needed to run the pipeline and was far larger than this project needs going forward (roughly 4,200 lines vs. `main.py`'s few hundred). Its results and reasoning are kept for the paper rather than thrown away. |
+
+## Archived implementation (`OLD/`)
+
+Everything from here on documents the earlier, more elaborate `orgmining/` +
+`OLD/main.py` pipeline that this project started from (see the table above
+for why it was simplified into the current `main.py`). It is kept for
+reference and because its evaluation results (gold standard matching,
+synthetic logs) are still valid background for the short paper; it is not
+part of what `main.py` runs. Run it, if at all, as `python OLD/main.py ...`
+from the project root with the same virtual environment.
 
 ## Project structure
 
@@ -349,7 +352,7 @@ returns the list of graphs.
 
 ### Looking at instance graphs
 
-`python main.py show-graph --index N` (or `--case <case id>`) prints a graph
+`python OLD/main.py show-graph --index N` (or `--case <case id>`) prints a graph
 as text (every node with its activity, role and successors) and saves a plot
 to `outputs/figures/`. The plot (`InstanceGraphViewer` in
 `OLD/orgmining`) needs no Graphviz: nodes are placed in layers by
@@ -371,7 +374,7 @@ so the plot can also be read without colour.
 Almost every instance graph is a sequence, because the discovered net has only
 one AND-split. This is **not caused by the roles**: pm4py's Inductive Miner
 also finds only one AND-split on the original activities (no roles), at every
-noise threshold from 0.0 to 1.0 (`python main.py show-net --log <log>
+noise threshold from 0.0 to 1.0 (`python OLD/main.py show-net --log <log>
 --describe-only`). The example net of the assignment
 (`BPI2017Denied_petriNet.pnml`, activities only) has five AND-splits, and its
 instance graphs (`BPI2017Denied.g`) have parallel branches in 99.3% of the
@@ -412,7 +415,7 @@ step 2 output:
    that contain it (transaction-based support), size, roles involved and a
    readable description. `trace_pattern_matrix.csv` has one row per trace and
    one column per pattern, with 1 if the pattern occurs in the trace.
-4. **Report figures** (`python main.py pattern-report`, `PatternReport` in
+4. **Report figures** (`python OLD/main.py pattern-report`, `PatternReport` in
    `OLD/orgmining`), in `outputs/step3_patterns/<run>/figures/`:
    every pattern drawn like the instance graphs, the support per pattern, the
    overlap between patterns (share of traces in common) and the handover of
@@ -504,7 +507,7 @@ Decision 3 employees) and 500 cases, in which five work practices are
 
 Noise: in 0, 10, 20 or 30% of the cases one random disturbance (an event done
 by an employee of another department, an extra event, a missing event, or two
-events swapped). `python main.py synthetic` runs the whole pipeline on every
+events swapped). `python OLD/main.py synthetic` runs the whole pipeline on every
 log (roles, Inductive Miner, BIG, SUBDUE with 5 iterations), maps the discovered
 roles to the departments via the employees, and compares the patterns with the
 injected ones. The logs are seeded and stored in `OLD/synthetic`.
