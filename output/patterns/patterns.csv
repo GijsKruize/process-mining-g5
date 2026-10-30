@@ -1,4 +1,4 @@
-pattern,edges,instances,traces,support_pct,subdue_value
+pattern,edges,FREQ,traces,REP,subdue_value
 P1,11,2080,2080,67.25,0.2673329826407154
 P2,12,1822,1822,58.91,0.2554445028932141
 P3,10,2088,2088,67.51,0.24396516453328657

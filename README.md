@@ -64,24 +64,21 @@ BPI 2017 organizational pattern mining pipeline
   1. Instance graph generation  [not run yet]
   2. Pattern mining  [not run yet]
   3. Evaluation  [not run yet]
+  A. Run all steps, in order (1, 2, then 3)
   0. Exit
 
 Select a step to run:
 ```
 
-Pick a step by number. It first asks for its own parameters one at a time -
-each with a one-line explanation and a suggested default (press Enter to
-accept it) - then, for anything a previous run already produced (the
-relabeled log, the Petri net, BIG's output, the instance graphs pickle, a
-`patterns.csv`, an evaluation summary), asks whether to reuse that file or
-recompute it. This matters because step 1's Petri net discovery and BIG run,
-and step 2's SUBDUE run, are the slow parts: once you have a Petri net or a
-set of instance graphs you are happy with, you do not need to wait for them
-again while trying out a later step.
+Pick a step by number (or `A` for all three in order). It asks for that
+step's own parameters one at a time - each with a one-line explanation and a
+suggested default (press Enter to accept it) - then runs straight through;
+there are no further questions once the parameters are set.
 
 Run step 1, then step 2, then step 3, in that order (each needs the previous
-step's output); rerun any one of them individually afterwards to try
-different parameters, without redoing the others.
+step's output, and reruns it fresh every time - there is no reuse-the-last-
+run checkpoint); rerun any one of them individually afterwards to try
+different parameters.
 
 **Reproducibility.** pm4py's Inductive Miner iterates over Python sets, whose
 iteration order is randomized per process unless the hash seed is fixed. Set
@@ -111,8 +108,49 @@ adding or changing a parameter does not touch the menu/prompting code.
 | `main.py` | The single entry point described above: `InstanceGraphStep`, `PatternMiningStep`, `EvaluationStep`, and the `Pipeline` menu that runs them. |
 | `BIG.py` | The course's BIG library (alignment-based instance graph construction and repair). Not in git (assignment material), but present locally. See *BIG.py performance work* below for the changes made to it. |
 | `data/` | Input logs, e.g. `BPI2017Denied(3).xes` (full log) and `BPI2017Denied_10pct.xes` (10% sample used for evaluation). |
-| `output/` | Generated results: `instance graphs/` (relabeled log, Petri net, BIG's raw `.g` output, the pickled graphs, the resource→role mapping, the generation settings), `patterns/` (SUBDUE's patterns, trace × pattern matrix, pattern figures), `alignment_evaluation/` (fitness summaries and per-trace CSVs). |
+| `output/` | Generated results: `instance graphs/` (relabeled log, Petri net, BIG's raw `.g` output, the pickled graphs, the resource→role mapping, the generation settings), `patterns/` (SUBDUE's patterns as CSV *and* as a pickle of the native SUBDUE objects, trace × pattern matrix, pattern figures), `evaluation/` (alignment fitness summaries and per-trace CSVs, plus `pattern_evaluation/` - see *Evaluation* below). |
 | `subdue/` | SUBDUE v1.4 (Python), unmodified, used by `PatternMiningStep`. |
+
+### Evaluation (`EvaluationStep`)
+
+Step 3 runs two independent checks, both written under `output/evaluation/`:
+
+1. **Alignment of the role-based log against the Petri net and the instance
+   graphs** (`run_alignment_evaluation`): the chosen log is relabeled the
+   same way step 1 relabeled the training log (roles + lifecycle collapse,
+   read back from `output/instance graphs/generation_settings.json` and
+   `resource_roles.csv`), then compared against the saved Petri net (PM4Py
+   alignments: cost, fitness, visited states) and against the saved instance
+   graphs (edit distance between the trace's labels and the graph's
+   topological event order, since instance graphs have no standard PM4Py
+   alignment implementation). Written to `summary.json`,
+   `petri_net_alignments.csv`, `instance_graph_alignments.csv`.
+
+   The saved instance graphs carry no case id of their own, only their
+   position in the *full* log they were built from; matching them against a
+   log that only *samples* some cases (like the 10% evaluation log) is done
+   by looking each trace's case id up in that full log first
+   (`graph_index_by_case_id`), not by assuming the two line up index-for-index.
+
+2. **Pattern evaluation** (`run_pattern_evaluation`): FREQ/REP/COV/DIV, a
+   trace-pattern matrix and visualizations, computed on the *real* instance
+   graphs (step 1's pickle) and the *real* discovered patterns (step 2's
+   `patterns.pkl` - the native SUBDUE pattern objects, not just the CSV
+   summary, so coverage/diversity can be computed from their actual
+   instances). Petri-net alignment/fitness of these same traces is already
+   covered by the alignment check above, so it is not repeated here. Written
+   to `output/evaluation/pattern_evaluation/`:
+   - `patterns.csv` / `trace_pattern_matrix.csv`: **FREQ** (instances per
+     pattern) and **REP** (% of traces containing it), and the trace ×
+     pattern matrix, from `PatternMiningStep.pattern_statistics` (the same
+     method step 2 itself uses for its own `output/patterns/`).
+   - `summary.json`: **COV** (share of all edges, across every instance
+     graph, covered by at least one pattern instance) and **DIV** (average
+     pairwise dissimilarity - 1 minus Jaccard similarity of activity sets -
+     between the discovered patterns), from `EvaluationStep.pattern_metrics`.
+   - `P*.png` / `instance_graph_*.png`: every discovered pattern and a few
+     individual instance graphs, drawn with `PatternMiningStep.draw_graph`
+     (activity/role labels, directed edges, FREQ/REP/value in the title).
 
 ### Roles and lifecycle collapse
 
@@ -196,6 +234,10 @@ reading of the assignment/paper or from an earlier version of this project:
 | `requirements.txt` added at the project root | It was missing; the assignment explicitly requires it, and without it the exact dependency versions this project was built and evaluated against were not reproducible by someone else. |
 | Every path derived from `Path(__file__).resolve().parent`, none hard-coded | The assignment explicitly forbids absolute paths and requires the code to run unmodified on another system. |
 | The earlier, more elaborate `orgmining/` + `OLD/main.py` pipeline (CLI with 10 sub-commands, a gold-standard evaluator, a synthetic-log experiment harness, a plotting layer) kept archived under `OLD/` rather than deleted or merged in | That pipeline's extra machinery (evaluation against a gold standard, synthetic data with injected ground truth, report figures) answers "does the method work," which is valuable for the short paper, but is not needed to run the pipeline and was far larger than this project needs going forward (roughly 4,200 lines vs. `main.py`'s few hundred). Its results and reasoning are kept for the paper rather than thrown away. |
+| Evaluation's FREQ/REP/COV/DIV/trace-pattern-matrix/visualizations computed on the real step 1/2 output, not a synthetic log | A synthetic-log version of this was tried first, but the point of evaluating "the generated instance graphs and patterns" is to evaluate what steps 1 and 2 actually produced on the real BPI 2017 log - a synthetic log answers a different question (whether the method *can* recover a known pattern at all, which needs labeled ground truth the real log doesn't have) and was dropped rather than mixed in. `PatternMiningStep` now also pickles the native SUBDUE pattern objects (`patterns.pkl`), not just their CSV summary, so the evaluation step can compute coverage/diversity from their actual instances without rerunning SUBDUE. |
+| No reuse-the-last-run checkpoints ("found existing X, reuse it?") | Originally added so a slow step (Petri net discovery, BIG, SUBDUE) didn't have to be redone after every small tweak elsewhere, but it meant picking a step from the menu could still stop and ask further questions beyond its own parameters, including awkwardly in the middle of "run all steps". Removed in favor of a step always running fresh end to end once its parameters are set - simpler to reason about, and `output/` is already git-tracked so a previous run's results are not lost, just overwritten. |
+| `output/evaluation/` renamed from `output/alignment_evaluation/` | Groups both evaluation checks (alignment and pattern recovery) under one clearly-named folder, as requested, instead of a name that only described the first one. |
+| Instance-graph alignment now matches log traces to saved graphs by case id, not by raw index | The saved graphs carry no case id (only their position in the *full* log); comparing a *sample* log (e.g. the 10% evaluation log, 309 of 3,093 cases) against them index-for-index silently compared the wrong trace to the wrong graph whenever the sample wasn't an exact prefix of the full log in the same order. Looking each case up by id in the full log it was built from fixes this without needing to regenerate the saved graphs. |
 
 ## Archived implementation (`OLD/`)
 

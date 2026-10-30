@@ -4,11 +4,9 @@ Run with::
 
     python main.py
 
-A numbered menu lets you pick which step to (re)run. Each step first explains
-and asks for its own parameters (press Enter to accept the suggested
-default), then - where a previous run's output already exists - asks whether
-to reuse it or recompute it, so a rerun does not have to redo slow work
-(Petri net discovery, BIG, SUBDUE) that has not actually changed.
+A numbered menu lets you pick which step to (re)run. Each step asks for its
+own parameters (press Enter to accept the suggested default) and then runs
+straight through - no further questions.
 
 The three steps are:
     1. Instance graph generation  - relabel the log (roles + lifecycle),
@@ -44,22 +42,11 @@ import BIG
 # the project runs unchanged on any machine (as the assignment requires).
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATASET_PATH = PROJECT_ROOT / "data" / "BPI2017Denied(3).xes"
-EVALUATION_LOG_PATH = PROJECT_ROOT / "data" / "BPI2017Denied_10pct.xes"
 INSTANCE_GRAPH_DIR = PROJECT_ROOT / "output" / "instance graphs"
 PATTERN_OUTPUT_DIR = PROJECT_ROOT / "output" / "patterns"
-EVALUATION_OUTPUT_DIR = PROJECT_ROOT / "output" / "alignment_evaluation"
+EVALUATION_OUTPUT_DIR = PROJECT_ROOT / "output" / "evaluation"
+PATTERN_EVALUATION_DIR = EVALUATION_OUTPUT_DIR / "pattern_evaluation"
 SUBDUE_DIR = PROJECT_ROOT / "subdue"
-
-
-def ask_yes_no(question):
-    """Ask a y/n question in the terminal, re-prompting until answered clearly."""
-    while True:
-        answer = input(f"{question} (y/n): ").strip().lower()
-        if answer in ("y", "yes"):
-            return True
-        if answer in ("n", "no"):
-            return False
-        print("Please answer 'y' or 'n'.")
 
 
 class Parameter:
@@ -272,68 +259,42 @@ class InstanceGraphStep(PipelineStep):
                 graph.add_edge(source, target, label=label)
         return graphs
 
+    # -- Petri net discovery ---------------------------------------------
+
+    @staticmethod
+    def discover_petri_net(big_event_log, noise_threshold):
+        """Inductive Miner on an already-relabeled event log."""
+        print("Discovering the PM4Py Inductive Miner model...", flush=True)
+        net, initial_marking, final_marking = pm4py.discover_petri_net_inductive(
+            big_event_log, noise_threshold=noise_threshold
+        )
+        print("Petri-net discovery complete.", flush=True)
+        return net, initial_marking, final_marking
+
     # -- the four checkpointed sub-steps ---------------------------------
 
     def run(self, params):
+        """Relabel the log, discover a Petri net, run BIG, and save the
+        instance graphs - unconditionally, every time this step is run."""
         INSTANCE_GRAPH_DIR.mkdir(parents=True, exist_ok=True)
         with open(self.settings_path, "w") as file:
             json.dump(params, file, indent=2)
 
-        big_event_log = None  # lazily (re)loaded only when a sub-step actually needs it
+        big_event_log = self.load_big_event_log(params)
+        xes_exporter.apply(big_event_log, str(self.log_path))
+        print(f"Saved relabeled log to {self.log_path}", flush=True)
 
-        if self.log_path.exists() and ask_yes_no(
-            f"Found existing relabeled log at {self.log_path}. Use it instead of rebuilding?"
-        ):
-            print(f"Reusing relabeled log at {self.log_path}", flush=True)
-        else:
-            big_event_log = self.load_big_event_log(params)
-            xes_exporter.apply(big_event_log, str(self.log_path))
-            print(f"Saved relabeled log to {self.log_path}", flush=True)
+        net, initial_marking, final_marking = self.discover_petri_net(
+            big_event_log, params["noise_threshold"])
+        pm4py.write_pnml(net, initial_marking, final_marking, str(self.petri_net_path))
 
-        if self.petri_net_path.exists() and ask_yes_no(
-            f"Found existing Petri net at {self.petri_net_path}. "
-            "Use it instead of mining a new one?"
-        ):
-            print(f"Reusing Petri net at {self.petri_net_path}", flush=True)
-            net, initial_marking, final_marking = pm4py.read_pnml(str(self.petri_net_path))
-        else:
-            if big_event_log is None:
-                big_event_log = log_converter.apply(
-                    xes_importer.apply(str(self.log_path)),
-                    variant=log_converter.Variants.TO_EVENT_LOG,
-                )
-            print("Discovering the PM4Py Inductive Miner model...", flush=True)
-            net, initial_marking, final_marking = pm4py.discover_petri_net_inductive(
-                big_event_log, noise_threshold=params["noise_threshold"]
-            )
-            pm4py.write_pnml(net, initial_marking, final_marking, str(self.petri_net_path))
-            print("Petri-net discovery complete.", flush=True)
+        self.run_big(big_event_log, net, initial_marking, final_marking, params["workers"])
 
-        if self.big_output_path.exists() and ask_yes_no(
-            f"Found existing BIG output at {self.big_output_path}. Use it instead of regenerating?"
-        ):
-            print(f"Reusing BIG output at {self.big_output_path}", flush=True)
-        else:
-            if big_event_log is None:
-                big_event_log = log_converter.apply(
-                    xes_importer.apply(str(self.log_path)),
-                    variant=log_converter.Variants.TO_EVENT_LOG,
-                )
-            self.run_big(big_event_log, net, initial_marking, final_marking, params["workers"])
-
-        if self.graphs_path.exists() and ask_yes_no(
-            f"Found existing instance graphs pickle at {self.graphs_path}. "
-            "Use it instead of rebuilding it?"
-        ):
-            print(f"Reusing instance graphs pickle at {self.graphs_path}", flush=True)
-            with open(self.graphs_path, "rb") as file:
-                graphs = pickle.load(file)
-        else:
-            graphs = self.read_big_graphs(self.big_output_path)
-            for index, graph in enumerate(graphs):
-                graph.graph["graph_index"] = index
-            with open(self.graphs_path, "wb") as file:
-                pickle.dump(graphs, file)
+        graphs = self.read_big_graphs(self.big_output_path)
+        for index, graph in enumerate(graphs):
+            graph.graph["graph_index"] = index
+        with open(self.graphs_path, "wb") as file:
+            pickle.dump(graphs, file)
 
         print(f"Saved {len(graphs)} instance graphs in {INSTANCE_GRAPH_DIR}")
 
@@ -345,16 +306,20 @@ class InstanceGraphStep(PipelineStep):
         process; the chunks' outputs are joined back in their original order,
         giving the same result a single BIG run on the whole log would.
         """
+        log_path = self.log_path
+        output_path = self.big_output_path
+        chunk_dir = INSTANCE_GRAPH_DIR
+
         trace_count = len(big_event_log)
         workers = min(max(1, workers), trace_count) or 1
         chunk_size = (trace_count + workers - 1) // workers
         chunks = []
         for start in range(0, trace_count, chunk_size):
-            output = INSTANCE_GRAPH_DIR / f"graph_pm4py_chunk_{start}.g"
-            output.unlink(missing_ok=True)
+            chunk_output = chunk_dir / f"{output_path.stem}_chunk_{start}.g"
+            chunk_output.unlink(missing_ok=True)
             chunks.append((
-                start, min(start + chunk_size, trace_count), str(output),
-                initial_marking, final_marking, net, str(self.log_path)
+                start, min(start + chunk_size, trace_count), str(chunk_output),
+                initial_marking, final_marking, net, str(log_path)
             ))
 
         print(f"Running BIG with {workers} worker process(es)", flush=True)
@@ -363,7 +328,7 @@ class InstanceGraphStep(PipelineStep):
             # immediately, instead of silently discarding it.
             list(pool.map(BIG.run_big_chunk, chunks))
 
-        self.big_output_path.write_text(
+        output_path.write_text(
             "\n".join(Path(chunk[2]).read_text() for chunk in chunks)
         )
         for chunk in chunks:
@@ -411,6 +376,7 @@ class PatternMiningStep(PipelineStep):
     def __init__(self):
         self.graphs_path = INSTANCE_GRAPH_DIR / "instance_graphs_pm4py.pkl"
         self.patterns_csv_path = PATTERN_OUTPUT_DIR / "patterns.csv"
+        self.patterns_pkl_path = PATTERN_OUTPUT_DIR / "patterns.pkl"
 
     def output_exists(self):
         return self.patterns_csv_path.exists()
@@ -451,10 +417,23 @@ class PatternMiningStep(PipelineStep):
             graph.add_edge(edge.source.id, edge.target.id)
         return graph
 
-    def run_subdue(self, graphs, params):
-        """Run the provided paper implementation of SUBDUE."""
+    @staticmethod
+    def ensure_subdue_importable():
+        """subdue/'s modules must be on sys.path both to run SUBDUE and to
+        unpickle a previously-saved ``patterns.pkl`` (whose Pattern/Graph
+        objects are instances of those same modules' classes)."""
         import sys
         sys.path.insert(0, str(SUBDUE_DIR))
+
+    def load_patterns(self):
+        """Load the patterns step 2 already discovered and pickled."""
+        self.ensure_subdue_importable()
+        with open(self.patterns_pkl_path, "rb") as file:
+            return pickle.load(file)
+
+    def run_subdue(self, graphs, params):
+        """Run the provided paper implementation of SUBDUE."""
+        self.ensure_subdue_importable()
         import Graph
         import Parameters
         import Subdue
@@ -473,17 +452,32 @@ class PatternMiningStep(PipelineStep):
         iterations = Subdue.Subdue(parameters, subdue_graph)
         return iterations[0] if iterations else []
 
-    def export_subdue_patterns(self, patterns, graphs):
-        """Save pattern statistics, the trace matrix, and pattern PNGs."""
+    @staticmethod
+    def draw_graph(graph, title, output_path):
+        """Plot a directed graph with its node labels (activity/role), used for
+        both individual instance graphs and discovered SUBDUE patterns."""
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
-        PATTERN_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        plt.figure(figsize=(8, 5))
+        node_labels = nx.get_node_attributes(graph, "label")
+        layout = nx.spring_layout(graph, seed=0)  # fixed seed: same layout on every run
+        nx.draw_networkx(
+            graph, pos=layout, node_size=900, font_size=7,
+            labels=node_labels, arrows=True, with_labels=True,
+        )
+        plt.title(title)
+        plt.savefig(output_path, dpi=150, bbox_inches="tight")
+        plt.close()
+
+    def pattern_statistics(self, patterns, graphs):
+        """FREQ (instance count) and REP (% of traces containing the pattern)
+        for every discovered pattern, plus which traces contain it - the basis
+        of both patterns.csv and the trace-pattern matrix."""
         rows = []
-        matrix = {}
+        trace_sets = []
         for rank, pattern in enumerate(patterns, start=1):
-            pattern_id = f"P{rank}"
             pattern_graph = self.pattern_to_networkx(pattern.definition)
             traces = sorted({
                 int(str(vertex.id).split("_", 1)[0][1:])
@@ -491,31 +485,38 @@ class PatternMiningStep(PipelineStep):
                 for vertex in instance.vertices
                 if str(vertex.id).startswith("g")
             })
+            trace_sets.append(traces)
             rows.append({
-                "pattern": pattern_id,
+                "pattern": f"P{rank}",
                 "edges": pattern_graph.number_of_edges(),
-                "instances": len(pattern.instances),
+                "FREQ": len(pattern.instances),
                 "traces": len(traces),
-                "support_pct": round(100 * len(traces) / len(graphs), 2),
+                "REP": round(100 * len(traces) / len(graphs), 2),
                 "subdue_value": pattern.value,
             })
-            matrix[pattern_id] = {
-                index: int(index in traces) for index in range(len(graphs))
-            }
-            plt.figure(figsize=(8, 5))
-            node_labels = nx.get_node_attributes(pattern_graph, "label")
-            nx.draw_networkx(
-                pattern_graph, node_size=900, font_size=7,
-                labels=node_labels, arrows=True, with_labels=True,
-            )
-            plt.title(f"{pattern_id}: {len(traces)} traces, value={pattern.value:.3f}")
-            plt.savefig(PATTERN_OUTPUT_DIR / f"{pattern_id}.png",
-                        dpi=150, bbox_inches="tight")
-            plt.close()
+        return rows, trace_sets
 
-        pd.DataFrame(rows).to_csv(self.patterns_csv_path, index=False)
+    def export_subdue_patterns(self, patterns, graphs, output_dir=PATTERN_OUTPUT_DIR):
+        """Save pattern statistics (FREQ/REP), the trace-pattern matrix, and a
+        PNG per pattern (activity/role labels, directed edges, support in the
+        title) - into ``output_dir``."""
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        rows, trace_sets = self.pattern_statistics(patterns, graphs)
+
+        matrix = {
+            row["pattern"]: {index: int(index in traces) for index in range(len(graphs))}
+            for row, traces in zip(rows, trace_sets)
+        }
+        for row, pattern in zip(rows, patterns):
+            pattern_graph = self.pattern_to_networkx(pattern.definition)
+            title = (f"{row['pattern']}: FREQ={row['FREQ']} instances, "
+                     f"REP={row['REP']}% of traces, value={pattern.value:.3f}")
+            self.draw_graph(pattern_graph, title, output_dir / f"{row['pattern']}.png")
+
+        pd.DataFrame(rows).to_csv(output_dir / "patterns.csv", index=False)
         pd.DataFrame(matrix).fillna(0).astype(int).to_csv(
-            PATTERN_OUTPUT_DIR / "trace_pattern_matrix.csv", index_label="trace"
+            output_dir / "trace_pattern_matrix.csv", index_label="trace"
         )
         return rows
 
@@ -524,72 +525,43 @@ class PatternMiningStep(PipelineStep):
             raise FileNotFoundError(
                 f"Run step 1 (instance graph generation) first; missing {self.graphs_path}"
             )
-        if self.output_exists() and not ask_yes_no(
-            f"Found existing patterns at {self.patterns_csv_path}. Rerun SUBDUE anyway?"
-        ):
-            print("Keeping the existing patterns, nothing to do.")
-            return
 
         with open(self.graphs_path, "rb") as file:
             graphs = pickle.load(file)
 
         patterns = self.run_subdue(graphs, params)
-        rows = self.export_subdue_patterns(patterns, graphs)
+        rows = self.export_subdue_patterns(patterns, graphs, PATTERN_OUTPUT_DIR)
+        with open(self.patterns_pkl_path, "wb") as file:
+            pickle.dump(patterns, file)
         print(f"Mined {len(rows)} patterns in {PATTERN_OUTPUT_DIR}")
 
 
 class EvaluationStep(PipelineStep):
-    """Step 3: alignment fitness of the Petri net and the instance graphs
-    against a sample of the log.
+    """Step 3: two independent checks, both written under ``output/evaluation``,
+    both evaluating what steps 1 and 2 actually produced (no synthetic data).
 
-    Petri-net conformance uses PM4Py alignments. Instance graphs do not have
-    a standard PM4Py alignment implementation, so their event labels are
-    compared with the graph's topological event order using the same
-    edit-distance idea.
+    1. Alignment evaluation: how well the role-relabeled log fits the saved
+       Petri net (PM4Py alignments) and the saved instance graphs (edit
+       distance against the graph's topological event order, since instance
+       graphs have no standard PM4Py alignment implementation).
+    2. Pattern evaluation: the FREQ/REP/COV/DIV metrics, a trace-pattern
+       matrix, and visualizations (discovered patterns and a few individual
+       instance graphs), computed on the real instance graphs (step 1) and
+       the real discovered patterns (step 2) - not a synthetic log.
     """
 
     key = "3"
     title = "Evaluation"
-    parameters = [
-        Parameter(
-            "log_path", "Which log to evaluate against?",
-            "XES log compared against the saved Petri net and instance "
-            "graphs. The 10% sample keeps alignment fast; use the full "
-            "dataset path for a complete (much slower) check.",
-            default=str(EVALUATION_LOG_PATH), cast=str,
-        ),
-    ]
+    parameters = []
 
     def __init__(self):
         self.petri_net_path = INSTANCE_GRAPH_DIR / "petri_net_pm4py.pnml"
         self.graphs_path = INSTANCE_GRAPH_DIR / "instance_graphs_pm4py.pkl"
-        self.resource_roles_path = INSTANCE_GRAPH_DIR / "resource_roles.csv"
-        self.settings_path = INSTANCE_GRAPH_DIR / "generation_settings.json"
         self.summary_path = EVALUATION_OUTPUT_DIR / "summary.json"
+        self.pattern_evaluation_summary_path = PATTERN_EVALUATION_DIR / "summary.json"
 
     def output_exists(self):
-        return self.summary_path.exists()
-
-    def generation_settings(self):
-        """How step 1 relabeled the log, so this step can relabel the
-        evaluation log the exact same way for a fair comparison."""
-        if self.settings_path.exists():
-            with open(self.settings_path) as file:
-                return json.load(file)
-        return {"group_roles": True, "collapse_lifecycle": True}
-
-    def relabeled_log(self, log, instance_graph_step):
-        """Give the log the same labels as the saved Petri net and instance graphs."""
-        settings = self.generation_settings()
-        role_mapping = None
-        if settings.get("group_roles") and self.resource_roles_path.exists():
-            roles = pd.read_csv(self.resource_roles_path, dtype=str)
-            role_mapping = dict(zip(roles["resource"], roles["role"]))
-        frame = log_converter.apply(log, variant=log_converter.Variants.TO_DATA_FRAME)
-        frame = instance_graph_step.relabel_events(
-            frame, role_mapping, settings.get("collapse_lifecycle", True))
-        frame["concept:name"] = frame["activity_selectedAttribute"]
-        return log_converter.apply(frame, variant=log_converter.Variants.TO_EVENT_LOG)
+        return self.summary_path.exists() and self.pattern_evaluation_summary_path.exists()
 
     @staticmethod
     def enriched_trace(trace):
@@ -621,27 +593,47 @@ class EvaluationStep(PipelineStep):
             raise ValueError("An instance graph is cyclic; cannot define its order.")
         return [graph.nodes[node]["label"] for node in nx.topological_sort(graph)]
 
-    def evaluate_instance_graphs(self, log, graphs):
+    @staticmethod
+    def graph_index_by_case_id(instance_graph_step):
+        """Map case id -> index into the saved instance graphs.
+
+        The saved graphs carry no case id of their own, only their position
+        in the full relabeled log they were built from (``run_big``'s chunks
+        are consecutive slices of that log, in order). Looking the case id up
+        in that same full log, rather than assuming ``log`` lines up with
+        ``graphs`` index-for-index, is what makes this also work for ``log``
+        being a *sample* of the full log (e.g. the 10% evaluation log), not
+        just the full log itself.
+        """
+        full_log = xes_importer.apply(str(instance_graph_step.log_path))
+        return {trace.attributes.get("concept:name"): index for index, trace in enumerate(full_log)}
+
+    def evaluate_instance_graphs(self, log, graphs, instance_graph_step):
         """Compare every log trace with its corresponding saved instance graph."""
-        if len(log) != len(graphs):
-            raise ValueError(
-                f"Expected one graph per trace, got {len(log)} traces and "
-                f"{len(graphs)} graphs."
-            )
+        index_by_case_id = self.graph_index_by_case_id(instance_graph_step)
 
         results = []
-        for index, (trace, graph) in enumerate(zip(log, graphs)):
+        skipped = 0
+        for trace in log:
+            case_id = trace.attributes.get("concept:name")
+            index = index_by_case_id.get(case_id)
+            if index is None or index >= len(graphs):
+                skipped += 1
+                continue
             observed = self.enriched_trace(trace)
-            generated = self.graph_sequence(graph)
+            generated = self.graph_sequence(graphs[index])
             distance, matches = self.edit_distance(observed, generated)
             results.append({
-                "trace": index,
+                "trace": case_id,
                 "events": len(observed),
                 "graph_nodes": len(generated),
                 "edit_distance": distance,
                 "matching_labels": matches,
                 "fitness": round(1 - distance / max(len(observed), len(generated)), 6),
             })
+        if skipped:
+            print(f"Skipped {skipped} trace(s) with no matching saved instance graph "
+                  "(not in the full log the graphs were built from).", flush=True)
         return results
 
     def evaluate_petri_net(self, log):
@@ -674,29 +666,25 @@ class EvaluationStep(PipelineStep):
             "max_fitness": max(fitness),
         }
 
-    def run(self, params):
-        if not self.petri_net_path.exists() or not self.graphs_path.exists():
-            raise FileNotFoundError(
-                "Run step 1 (instance graph generation) first; missing the "
-                f"Petri net or {self.graphs_path}"
-            )
-        if self.output_exists() and not ask_yes_no(
-            f"Found an existing evaluation at {self.summary_path}. Rerun it anyway?"
-        ):
-            print("Keeping the existing evaluation, nothing to do.")
-            return
+    def run_alignment_evaluation(self, params):
+        """Alignment of the role-based log against the Petri net, and
+        against the instance graphs; written to ``output/evaluation``.
 
+        Uses the exact log the Petri net and instance graphs were built from
+        (step 1's relabeled log) - not a separate sample - so there is
+        nothing to ask and no relabeling mismatch to worry about.
+        """
         EVALUATION_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         instance_graph_step = InstanceGraphStep()
-        log = self.relabeled_log(xes_importer.apply(params["log_path"]), instance_graph_step)
-        print(f"Loaded {len(log)} traces from {params['log_path']}")
+        log = xes_importer.apply(str(instance_graph_step.log_path))
+        print(f"Loaded {len(log)} traces from {instance_graph_step.log_path}")
 
         print("Calculating Petri-net alignments...", flush=True)
         petri_results = self.evaluate_petri_net(log)
         print("Calculating instance-graph alignments...", flush=True)
         with open(self.graphs_path, "rb") as file:
             graphs = pickle.load(file)
-        graph_results = self.evaluate_instance_graphs(log, graphs)
+        graph_results = self.evaluate_instance_graphs(log, graphs, instance_graph_step)
 
         summaries = [
             self.summary(petri_results, "Petri net"),
@@ -716,9 +704,87 @@ class EvaluationStep(PipelineStep):
         print(json.dumps(summaries, indent=2))
         print(f"Saved alignment results in {EVALUATION_OUTPUT_DIR}")
 
+    # -- Pattern evaluation: FREQ/REP/COV/DIV on the real step 1/2 output --
+
+    def pattern_metrics(self, patterns, graphs):
+        """COV: share of all edges across every instance graph that are
+        covered by at least one pattern instance. DIV: average pairwise
+        dissimilarity (1 - Jaccard) between patterns' activity sets - 0 if
+        all patterns use the same activities, 1 if none overlap at all.
+        """
+        total_edges = sum(graph.number_of_edges() for graph in graphs)
+        covered_edges = {
+            (edge.source.id, edge.target.id)
+            for pattern in patterns
+            for instance in pattern.instances
+            for edge in instance.edges
+        }
+        coverage = round(len(covered_edges) / total_edges, 4) if total_edges else 0.0
+
+        label_sets = [
+            frozenset(vertex.attributes.get("label") for vertex in pattern.definition.vertices.values())
+            for pattern in patterns
+        ]
+        dissimilarities = []
+        for i in range(len(label_sets)):
+            for j in range(i + 1, len(label_sets)):
+                union = label_sets[i] | label_sets[j]
+                if union:
+                    dissimilarities.append(1 - len(label_sets[i] & label_sets[j]) / len(union))
+        diversity = round(sum(dissimilarities) / len(dissimilarities), 4) if dissimilarities else 0.0
+        return {"COV": coverage, "DIV": diversity}
+
+    def run_pattern_evaluation(self, params):
+        """FREQ/REP/COV/DIV, a trace-pattern matrix, and visualizations
+        (discovered patterns + a few individual instance graphs) - all
+        computed on the real instance graphs (step 1) and the real
+        discovered patterns (step 2), under ``output/evaluation/pattern_evaluation``.
+
+        Petri-net alignment/fitness of these same traces is covered by
+        ``run_alignment_evaluation`` already, so it is not repeated here.
+        """
+        pattern_mining_step = PatternMiningStep()
+        if not pattern_mining_step.patterns_pkl_path.exists():
+            raise FileNotFoundError(
+                "Run step 2 (pattern mining) first; missing "
+                f"{pattern_mining_step.patterns_pkl_path}"
+            )
+
+        PATTERN_EVALUATION_DIR.mkdir(parents=True, exist_ok=True)
+        with open(self.graphs_path, "rb") as file:
+            graphs = pickle.load(file)
+        patterns = pattern_mining_step.load_patterns()
+
+        rows = pattern_mining_step.export_subdue_patterns(patterns, graphs, PATTERN_EVALUATION_DIR)
+        for index in range(min(3, len(graphs))):
+            pattern_mining_step.draw_graph(
+                graphs[index], f"Instance graph {index}",
+                PATTERN_EVALUATION_DIR / f"instance_graph_{index}.png")
+
+        summary = {
+            "instance_graphs": len(graphs),
+            "discovered_patterns": len(patterns),
+            **self.pattern_metrics(patterns, graphs),
+        }
+        with open(self.pattern_evaluation_summary_path, "w") as file:
+            json.dump(summary, file, indent=2)
+        print(json.dumps(summary, indent=2))
+        print(f"Mined-pattern evaluation of {len(rows)} patterns saved in {PATTERN_EVALUATION_DIR}")
+
+    def run(self, params):
+        if not self.petri_net_path.exists() or not self.graphs_path.exists():
+            raise FileNotFoundError(
+                "Run step 1 (instance graph generation) first; missing the "
+                f"Petri net or {self.graphs_path}"
+            )
+        self.run_alignment_evaluation(params)
+        self.run_pattern_evaluation(params)
+
 
 class Pipeline:
     """Terminal menu that lets the user pick which step to (re)run."""
+
+    ALL_STEPS_KEY = "A"
 
     def __init__(self):
         self.steps = [InstanceGraphStep(), PatternMiningStep(), EvaluationStep()]
@@ -730,6 +796,7 @@ class Pipeline:
         for step in self.steps:
             status = "done" if step.output_exists() else "not run yet"
             print(f"  {step.key}. {step.title}  [{status}]")
+        print(f"  {self.ALL_STEPS_KEY}. Run all steps, in order (1, 2, then 3)")
         print("  0. Exit")
 
     def run(self):
@@ -738,12 +805,20 @@ class Pipeline:
             choice = input("\nSelect a step to run: ").strip()
             if choice == "0":
                 return
+            if choice.upper() == self.ALL_STEPS_KEY:
+                for step in self.steps:
+                    self.run_step(step)
+                continue
             step = next((s for s in self.steps if s.key == choice), None)
             if step is None:
                 print(f"'{choice}' is not a valid choice.")
                 continue
-            params = step.ask_parameters()
-            step.run(params)
+            self.run_step(step)
+
+    @staticmethod
+    def run_step(step):
+        params = step.ask_parameters()
+        step.run(params)
 
 
 def main():

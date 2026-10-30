@@ -1,0 +1,7 @@
+{
+  "group_roles": true,
+  "roles_threshold": 0.65,
+  "collapse_lifecycle": true,
+  "noise_threshold": 0.2,
+  "workers": 10
+}
