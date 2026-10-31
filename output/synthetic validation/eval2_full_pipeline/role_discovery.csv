@@ -1,0 +1,10 @@
+employee,role,department,events,role_department,correct
+Hanna,Role_5,BackOffice,34,BackOffice,True
+Carla,Role_1,Credit,32,Credit,True
+Daan,Role_1,Credit,34,Credit,True
+Eva,Role_1,Credit,36,Credit,True
+Anna,Role_2,Intake,35,Intake,True
+Bram,Role_2,Intake,35,Intake,True
+Fleur,Role_4,Offers,20,Offers,True
+Gijs,Role_4,Offers,18,Offers,True
+System,Role_3,System,60,System,True

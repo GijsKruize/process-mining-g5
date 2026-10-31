@@ -6,17 +6,22 @@ BPI Challenge 2017 (denied applications) log.
 
 | Step | What |
 |------|------|
-| 1 | Instance graph generation: relabel the log (resources grouped into roles, lifecycle collapsed), discover a Petri net (Inductive Miner), run BIG, save the instance graphs |
-| 2 | Pattern mining: SUBDUE on the saved instance graphs; support, trace × pattern matrix, pattern figures |
-| 3 | Evaluation: alignment fitness of the Petri net and the instance graphs against a sample of the log |
+| 1 | Instance graph generation: show the log's attributes and let the user pick one, relabel every event as `activity_value` (values optionally grouped into roles, lifecycle collapsed), discover a Petri net (Inductive Miner), run BIG, save the instance graphs |
+| 2 | Pattern mining: SUBDUE on the saved instance graphs; support, trace × pattern matrix (rows: case ids), pattern figures |
+| 3 | Evaluation: alignment fitness of the Petri net and the instance graphs, plus FREQ/REP/COV/DIV of the patterns |
+| 4 | Synthetic validation: steps 1 and 2 on a small hand-made log with a known gold standard, twice (known roles, and roles discovered by pm4py); precision and recall, side by side |
+| `figures.py` | Figures of one chosen case for paper/poster, like Figure 1 of the assignment: trace → instance graph → patterns |
+| `beam_table.py` | Table 6 of the reference paper (Subs, % top subs, COV, DIV, REP) for beam 4, 10 and 20, on BPI 2017 and both synthetic evaluations |
 
 ## Requirements
 
 - **Python 3.9.** The assignment requires **pm4py 2.2.16** (needed for BIG),
   which does not run on newer Python versions.
 - **`BIG.py`** from Canvas (course material, not ours to redistribute), placed
-  unchanged in the project root, next to `main.py`. See *BIG.py performance
-  work* below for the speed-ups applied to it without changing its algorithm.
+  in the project root, next to `main.py`. Both the unchanged Canvas version
+  and the sped-up version (see *BIG.py performance work* below, which adds
+  `run_big_chunk`) work: without `run_big_chunk`, `main.py` runs the Canvas
+  `BIG.big` per chunk itself (`run_canvas_big_chunk`).
 - The event logs from Canvas: `data/BPI2017Denied(3).xes` (full log) and
   `data/BPI2017Denied_10pct.xes` (10% sample, used for evaluation). Too large
   for git, so not in this repository.
@@ -64,13 +69,14 @@ BPI 2017 organizational pattern mining pipeline
   1. Instance graph generation  [not run yet]
   2. Pattern mining  [not run yet]
   3. Evaluation  [not run yet]
-  A. Run all steps, in order (1, 2, then 3)
+  4. Synthetic validation (gold standard)  [not run yet]
+  A. Run all steps, in order (1, 2, 3, then 4)
   0. Exit
 
 Select a step to run:
 ```
 
-Pick a step by number (or `A` for all three in order). It asks for that
+Pick a step by number (or `A` for all of them in order). It asks for that
 step's own parameters one at a time - each with a one-line explanation and a
 suggested default (press Enter to accept it) - then runs straight through;
 there are no further questions once the parameters are set.
@@ -78,7 +84,45 @@ there are no further questions once the parameters are set.
 Run step 1, then step 2, then step 3, in that order (each needs the previous
 step's output, and reruns it fresh every time - there is no reuse-the-last-
 run checkpoint); rerun any one of them individually afterwards to try
-different parameters.
+different parameters. Step 4 is independent of steps 1-3: it runs its own
+copy of steps 1 and 2 on the synthetic log.
+
+**Choosing the attribute (step 1).** Step 1 first loads the log and prints
+every attribute: level (event, or trace for `case:` attributes), number of
+distinct values, % of events that have a value, and examples. Type the number
+or name of the attribute to analyse (Enter = `org:resource`); every event is
+then labeled `<activity>_<value>`, e.g. `A-Submitted_Role_4`. The case id,
+activity and timestamp are listed but cannot be chosen. Grouping into roles
+is suggested only for attributes with more than 20 distinct values.
+
+**Defaults.** Inductive Miner noise threshold 0.2 and SUBDUE beam width 10,
+as chosen by the team for the paper; `beam_table.py` shows what beam 4 and 20
+would give.
+
+**Figures for the paper and poster.** After steps 1 and 2 (or step 4):
+
+```bash
+python figures.py
+```
+
+Choose the BPI results or one of the two synthetic evaluations, then `L`
+lists candidate cases (some parallel work, many patterns, few events first)
+so you can pick a clear example by hand; `C` + a case id writes, to
+`output/figures/<case id>/` (synthetic: `output/synthetic
+validation/<evaluation>/figures/<case id>/`): `trace.png`,
+`instance_graph.png`, one `P<k>.png` and `P<k>_in_case.png` (the pattern
+highlighted in this case) per pattern it contains, and `figure1.png` (trace →
+instance graph → up to 3 patterns, like Figure 1 of the assignment). `P` + a
+pattern draws it in the shortest cases that contain it.
+
+**Beam table for the paper.** After step 1 and step 4:
+
+```bash
+python beam_table.py
+```
+
+reruns only SUBDUE (beam 4, 10, 20) on the saved instance graphs and writes
+`output/beam_table/` - see *Beam table* below.
 
 **Reproducibility.** pm4py's Inductive Miner iterates over Python sets, whose
 iteration order is randomized per process unless the hash seed is fixed. Set
@@ -96,7 +140,8 @@ into a single `main.py` with an interactive menu. That earlier pipeline is
 kept, archived, under `OLD/` - see *Archived implementation* further down.
 
 `main.py` is organized as one small class per pipeline step
-(`InstanceGraphStep`, `PatternMiningStep`, `EvaluationStep`), all implementing
+(`InstanceGraphStep`, `PatternMiningStep`, `EvaluationStep`,
+`SyntheticValidationStep`), all implementing
 the same `PipelineStep` interface (`output_exists`, `ask_parameters`, `run`),
 driven by a `Pipeline` class that prints the menu and dispatches to whichever
 step the user picks. A step's adjustable values are declared as a list of
@@ -105,11 +150,99 @@ adding or changing a parameter does not touch the menu/prompting code.
 
 | File / folder | What it does |
 |------|---------------|
-| `main.py` | The single entry point described above: `InstanceGraphStep`, `PatternMiningStep`, `EvaluationStep`, and the `Pipeline` menu that runs them. |
+| `main.py` | The single entry point described above: `InstanceGraphStep`, `PatternMiningStep`, `EvaluationStep`, `SyntheticValidationStep`, and the `Pipeline` menu that runs them. `InstanceGraphStep` and `PatternMiningStep` take their input log / output folder as constructor arguments (defaults: the BPI paths), which is how step 4 reuses them. |
+| `figures.py` | Figures of one chosen case (trace, instance graph, patterns) and of one pattern, from saved results. |
+| `beam_table.py` | The beam width comparison (Table 6 of the reference paper), from saved instance graphs. |
+| `README_group.md` | For the group: why each choice was made, the results of the final run, which figures/tables to use in the paper, and the limitations. |
 | `BIG.py` | The course's BIG library (alignment-based instance graph construction and repair). Not in git (assignment material), but present locally. See *BIG.py performance work* below for the changes made to it. |
 | `data/` | Input logs, e.g. `BPI2017Denied(3).xes` (full log) and `BPI2017Denied_10pct.xes` (10% sample used for evaluation). |
-| `output/` | Generated results: `instance graphs/` (relabeled log, Petri net, BIG's raw `.g` output, the pickled graphs, the resource→role mapping, the generation settings), `patterns/` (SUBDUE's patterns as CSV *and* as a pickle of the native SUBDUE objects, trace × pattern matrix, pattern figures), `evaluation/` (alignment fitness summaries and per-trace CSVs, plus `pattern_evaluation/` - see *Evaluation* below). |
+| `data/synthetic/` | The hand-made synthetic log (`synthetic_log.csv`) and its gold standard (`synthetic_gold_standard.csv`), explained in `data/synthetic/README.md`. |
+| `output/` | Generated results: `instance graphs/` (relabeled log, Petri net, BIG's raw `.g` output, the pickled graphs, the resource→role mapping, the generation settings), `patterns/` (SUBDUE's patterns as CSV *and* as a pickle of the native SUBDUE objects, trace × pattern matrices, heatmap, pattern figures - see *Pattern statistics* below), `synthetic validation/` (step 4), `figures/` (`figures.py`), `beam_table/` (`beam_table.py`), `evaluation/` (alignment fitness summaries and per-trace CSVs, plus `pattern_evaluation/` - see *Evaluation* below). |
 | `subdue/` | SUBDUE v1.4 (Python), unmodified, used by `PatternMiningStep`. |
+
+### Pattern statistics (`PatternMiningStep`)
+
+`output/patterns/patterns.csv` has one row per SUBDUE pattern: `edges`,
+`FREQ` (SUBDUE's instances), `traces`/`REP` (cases with a SUBDUE instance),
+`support`/`support_pct` (cases in which the pattern occurs, see below),
+`subdue_value`, the `values` (roles) involved and a readable `description`
+(`A -> B; B -> C`).
+
+SUBDUE is asked to report every pattern it finds in its search (it only uses
+its `numBest` setting to trim that report, not in the search itself), and
+step 2 keeps the best `num_best`. `subdue_search.json` records how many it
+found (**Subs**), the share kept (**% top subs** = `num_best` / Subs) and the
+run time, as in Table 6 of the reference paper.
+
+SUBDUE only reports non-overlapping instances, and stops looking once it has
+enough, so "has a SUBDUE instance" can miss cases that do contain the
+pattern. The **trace × pattern matrix** (`trace_pattern_matrix.csv`, one row
+per case id, one column per pattern, 1 = the pattern occurs in that case)
+therefore checks every pattern against every instance graph directly
+(label-preserving subgraph monomorphism, `contains_pattern`); `support` is its
+column sum. The SUBDUE-instance version is kept as
+`trace_pattern_matrix_subdue_instances.csv`. `trace_pattern_heatmap.png`
+shows the most common pattern combinations and how many cases have each.
+
+Graphs and patterns are drawn left to right in layers (parallel branches
+above each other), each node showing activity and role, coloured by role
+(the same colour for a role in every figure).
+
+### Synthetic validation (`SyntheticValidationStep`, step 4)
+
+The real log has no ground truth, so step 4 runs steps 1 and 2 on a small
+hand-made log (30 loan applications, 4 departments) in which we put 5
+organizational patterns ourselves; the gold standard comes from that design,
+not from SUBDUE. Both files, and why each case contains which pattern, are
+explained in [`data/synthetic/README.md`](data/synthetic/README.md).
+
+On BPI 2017 the true roles are unknown, so a missing pattern there could be
+caused by the role discovery or by BIG/SUBDUE. Step 4 therefore runs twice,
+each in its own folder under `output/synthetic validation/`:
+
+| Folder | Events labeled with | Tests |
+|---|---|---|
+| `eval1_known_roles/` | the known `department` (the roles are given) | Petri net, BIG and SUBDUE |
+| `eval2_full_pipeline/` | the employee (`org:resource`), grouped into roles by pm4py role discovery, as on BPI 2017 | role discovery + Petri net, BIG and SUBDUE |
+| `comparison/` | both side by side | where a gold pattern got lost |
+
+In evaluation 2 each discovered role is mapped to the department most of its
+events come from, and the labels are translated (`Decide_Role_1` →
+`Decide_Credit`) before scoring; `role_discovery.csv` shows every employee
+with their department, discovered role and that role's department. Each
+evaluation is scored at three levels:
+
+| Level | Question | Output |
+|---|---|---|
+| a | Are the gold patterns in the instance graphs at all (Petri net + BIG, no SUBDUE)? | `gold_in_graphs.csv` |
+| b | Do SUBDUE's patterns match the gold patterns? Precision, recall, F1, precision@k, with *containment* (headline: the SUBDUE pattern contains the gold pattern, or is contained in it with ≥ 2 edges) and *exact* matching (same labeled graph); plus edge-level precision/recall | `pattern_matching.csv` |
+| c | For each gold pattern, is its best-matching SUBDUE pattern found in the right cases? | `gold_cases.csv` |
+
+Each evaluation's `summary.json` has all scores (plus COV/DIV, Subs and,
+for evaluation 2, the role discovery scores); `gold/G*.png` are the gold
+patterns. `comparison/comparison.csv` has one row per gold pattern with both
+evaluations' scores and a `diagnosis`: *found in both*, *lost by role
+discovery* (found in 1, not in 2), *missed by SUBDUE* (in the instance graphs
+but in no top pattern), or *not (fully) in the instance graphs* (Petri net /
+BIG). `summary_comparison.csv` has the overall scores of both, and
+`comparison.png` the level c F1 per gold pattern.
+
+### Beam table (`beam_table.py`)
+
+Table 6 of the reference paper, for beam 4, 10 and 20, on three settings:
+the synthetic log with known roles, with discovered roles, and BPI 2017. It
+reruns only SUBDUE (1 iteration, top 20 patterns, minimum pattern size as in
+the step the graphs come from) on the saved instance graphs. Columns: `subs`
+(every pattern SUBDUE found), `top_subs_pct` (20 / Subs), `COV_pct`, `DIV`
+(× 100, the paper's scale), `REP_first_10` / `REP_all` (average REP of the
+first 10 and of all 20 top patterns), `seconds`; for the synthetic settings
+also containment precision/recall/F1 against the gold standard and the gold
+patterns missed. Output: `output/beam_table/beam_table.csv` (all),
+`table_<setting>.csv`, and `beam_table.tex` for the paper.
+
+Our top list is always the best 20 patterns, so *% top subs* is 20 / Subs;
+in the paper the number of top patterns differs per beam width, so that
+column is comparable in spirit, not in exact definition.
 
 ### Evaluation (`EvaluationStep`)
 
@@ -238,6 +371,16 @@ reading of the assignment/paper or from an earlier version of this project:
 | No reuse-the-last-run checkpoints ("found existing X, reuse it?") | Originally added so a slow step (Petri net discovery, BIG, SUBDUE) didn't have to be redone after every small tweak elsewhere, but it meant picking a step from the menu could still stop and ask further questions beyond its own parameters, including awkwardly in the middle of "run all steps". Removed in favor of a step always running fresh end to end once its parameters are set - simpler to reason about, and `output/` is already git-tracked so a previous run's results are not lost, just overwritten. |
 | `output/evaluation/` renamed from `output/alignment_evaluation/` | Groups both evaluation checks (alignment and pattern recovery) under one clearly-named folder, as requested, instead of a name that only described the first one. |
 | Instance-graph alignment now matches log traces to saved graphs by case id, not by raw index | The saved graphs carry no case id (only their position in the *full* log); comparing a *sample* log (e.g. the 10% evaluation log, 309 of 3,093 cases) against them index-for-index silently compared the wrong trace to the wrong graph whenever the sample wasn't an exact prefix of the full log in the same order. Looking each case up by id in the full log it was built from fixes this without needing to regenerate the saved graphs. |
+| Step 1 shows every log attribute and asks which one to analyse, instead of always using `org:resource` | Assignment step 1 explicitly requires it ("show the user all the attributes ... allow them to select"). Grouping into roles stays available, but is suggested only for attributes with many values. |
+| `_` and whitespace in activity names become `-` in the labels | So the first `_` of a label always separates activity and value (values such as `Role_4` contain `_` themselves), which the figures and the gold-standard matching rely on. BPI 2017's activities already use `-`, so its labels do not change. |
+| BIG runs once per trace *variant* inside `main.py` (`InstanceGraphStep.run_big`), and `main.py` can drive the unchanged Canvas `BIG.py` (`run_canvas_big_chunk`) | BIG's result depends only on the label sequence, so this is exact; it halves the BIG work on BPI 2017 (1,423 variants for 3,093 traces) and keeps the pipeline runnable with the Canvas `BIG.py`, without relying on a locally modified copy. |
+| Trace × pattern matrix by case id, filled by a subgraph check of each pattern in each instance graph (SUBDUE-instance version kept next to it) | The assignment's matrix is "1 if the pattern occurs in the trace"; SUBDUE's own instances are non-overlapping and incomplete, and graph indices are not application ids. |
+| A separate synthetic validation step (4) with a hand-made log and gold standard, instead of synthetic data inside step 3 | Precision and recall need patterns whose presence is known independently of SUBDUE, which only a log we designed ourselves gives; kept separate so step 3 still evaluates the real BPI output only. The log is small (30 cases) so every case can be checked by hand. |
+| Precision/recall reported with both *exact* and *containment* matching, containment as the headline | SUBDUE prefers large, well-compressing patterns that glue neighbouring work practices together; these are correct but never an exact match. Exact matching is reported too, to show that effect. |
+| Defaults: Inductive Miner noise threshold 0.2 (was 0.4), SUBDUE beam width 10 (was 4) | Chosen by the team for the paper; `beam_table.py` reports beam 4 and 20 next to it, so the effect of the choice is visible. |
+| Step 4 runs twice: known roles (`department`) and roles discovered by pm4py from `org:resource` | Separates errors of the role discovery from errors of BIG/SUBDUE, which cannot be told apart on BPI 2017 (true roles unknown). BPI 2017 stays the real-world application, without a gold standard. |
+| SUBDUE reports every pattern it found; the top `num_best` are kept | Gives *Subs* and *% top subs* for the beam table without changing SUBDUE: `numBest` only trims its report. |
+| Figures of chosen cases in a separate `figures.py` | Picking a good example case is an editorial choice; `figures.py` lists candidates and draws Figure-1-style panels from saved results without rerunning anything. |
 
 ## Archived implementation (`OLD/`)
 

@@ -1,0 +1,6 @@
+gold,name,expected_cases,eval1_a_recall,eval1_b_found,eval1_c_best_pattern,eval1_c_f1,eval2_a_recall,eval2_b_found,eval2_c_best_pattern,eval2_c_f1,diagnosis
+G1,Intake handles the application,30,1.0,True,P1,0.9655,1.0,True,P1,0.9655,found in both
+G2,Parallel credit assessment,28,1.0,True,P1,1.0,1.0,True,P1,1.0,found in both
+G3,Offer handling,18,1.0,True,P8,0.9412,1.0,True,P8,0.9412,found in both
+G4,Closing by the back office,16,1.0,True,P8,1.0,1.0,True,P8,1.0,found in both
+G5,Denial handed back to Intake,10,1.0,False,,0.0,1.0,False,,0.0,missed by SUBDUE

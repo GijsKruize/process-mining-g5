@@ -8,6 +8,8 @@ outputs/
 
 # Too large for GitHub (100MB hard limit); re-create with Instance Graph Mining.py
 output/instance graphs/BPI2017Denied_pm4py.xes
+# BIG input (one trace per variant), re-created by step 1
+big_input_variants.xes
 
 # Editors
 .idea/

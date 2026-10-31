@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pnml>
+  <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <page id="n0">
+      <place id="p_4">
+        <name>
+          <text>p_4</text>
+        </name>
+      </place>
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <place id="p_7">
+        <name>
+          <text>p_7</text>
+        </name>
+      </place>
+      <place id="p_8">
+        <name>
+          <text>p_8</text>
+        </name>
+      </place>
+      <place id="p_9">
+        <name>
+          <text>p_9</text>
+        </name>
+      </place>
+      <place id="p_10">
+        <name>
+          <text>p_10</text>
+        </name>
+      </place>
+      <place id="source">
+        <name>
+          <text>source</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <place id="p_3">
+        <name>
+          <text>p_3</text>
+        </name>
+      </place>
+      <place id="p_11">
+        <name>
+          <text>p_11</text>
+        </name>
+      </place>
+      <place id="p_12">
+        <name>
+          <text>p_12</text>
+        </name>
+      </place>
+      <place id="p_13">
+        <name>
+          <text>p_13</text>
+        </name>
+      </place>
+      <place id="p_14">
+        <name>
+          <text>p_14</text>
+        </name>
+      </place>
+      <place id="p_15">
+        <name>
+          <text>p_15</text>
+        </name>
+      </place>
+      <place id="p_16">
+        <name>
+          <text>p_16</text>
+        </name>
+      </place>
+      <transition id="f4047c43-3d7c-45c3-88cb-be3bd07bcf27">
+        <name>
+          <text>start_Role_3</text>
+        </name>
+      </transition>
+      <transition id="eefd6797-e5f1-4a0b-b7aa-df1967eb5be3">
+        <name>
+          <text>Check-documents_Role_2</text>
+        </name>
+      </transition>
+      <transition id="27784cda-874e-42a8-84d3-50ced5daf199">
+        <name>
+          <text>Verify-income_Role_1</text>
+        </name>
+      </transition>
+      <transition id="c5b29ad7-8de6-45d4-a018-0d8f268d59a5">
+        <name>
+          <text>Check-credit_Role_4</text>
+        </name>
+      </transition>
+      <transition id="b982ef4e-7cc9-417c-8bb3-cbfa2010cf9b">
+        <name>
+          <text>Check-credit_Role_1</text>
+        </name>
+      </transition>
+      <transition id="36e0a25c-142e-4a9c-bcfb-c0e5af4fab05">
+        <name>
+          <text>Create-offer_Role_4</text>
+        </name>
+      </transition>
+      <transition id="6b14d9bc-0a7d-40e4-8dcb-9a7056f3594b">
+        <name>
+          <text>Send-offer_Role_4</text>
+        </name>
+      </transition>
+      <transition id="a7c5436a-c6ca-4c00-ad18-0ff214744b06">
+        <name>
+          <text>Archive_Role_5</text>
+        </name>
+      </transition>
+      <transition id="3c8aa083-837b-44bf-8393-39adcc6e9806">
+        <name>
+          <text>Submit-application_Role_2</text>
+        </name>
+      </transition>
+      <transition id="c180095a-8b07-4882-b5b4-58a4d310340e">
+        <name>
+          <text>Decide_Role_1</text>
+        </name>
+      </transition>
+      <transition id="fab765fe-71ef-4db2-9e05-654827221f94">
+        <name>
+          <text>Deny_Role_1</text>
+        </name>
+      </transition>
+      <transition id="acafc4de-638d-4e5d-8034-4dadb2acb750">
+        <name>
+          <text>Notify-customer_Role_2</text>
+        </name>
+      </transition>
+      <transition id="614ba859-1d6b-4cea-85d6-cc673aee9eda">
+        <name>
+          <text>Notify-customer_Role_1</text>
+        </name>
+      </transition>
+      <transition id="c27d4ad1-24f0-4554-a1df-203fd8210673">
+        <name>
+          <text>Sign-contract_Role_5</text>
+        </name>
+      </transition>
+      <transition id="4f7101ac-daad-41c6-8184-537ed407be45">
+        <name>
+          <text>end_Role_3</text>
+        </name>
+      </transition>
+      <arc id="2014702932992" source="p_3" target="3c8aa083-837b-44bf-8393-39adcc6e9806"/>
+      <arc id="2014702934144" source="3c8aa083-837b-44bf-8393-39adcc6e9806" target="p_4"/>
+      <arc id="2014698865280" source="c180095a-8b07-4882-b5b4-58a4d310340e" target="p_11"/>
+      <arc id="2014698867584" source="fab765fe-71ef-4db2-9e05-654827221f94" target="p_13"/>
+      <arc id="2014711196928" source="p_11" target="36e0a25c-142e-4a9c-bcfb-c0e5af4fab05"/>
+      <arc id="2014711195008" source="36e0a25c-142e-4a9c-bcfb-c0e5af4fab05" target="p_14"/>
+      <arc id="2014713583120" source="acafc4de-638d-4e5d-8034-4dadb2acb750" target="p_12"/>
+      <arc id="2014698394000" source="p_15" target="c27d4ad1-24f0-4554-a1df-203fd8210673"/>
+      <arc id="2014698395920" source="c27d4ad1-24f0-4554-a1df-203fd8210673" target="p_16"/>
+      <arc id="2014698395680" source="p_14" target="6b14d9bc-0a7d-40e4-8dcb-9a7056f3594b"/>
+      <arc id="2014698394912" source="6b14d9bc-0a7d-40e4-8dcb-9a7056f3594b" target="p_15"/>
+      <arc id="2014698394144" source="p_16" target="a7c5436a-c6ca-4c00-ad18-0ff214744b06"/>
+      <arc id="2014698393760" source="a7c5436a-c6ca-4c00-ad18-0ff214744b06" target="p_12"/>
+      <arc id="2014713539888" source="f4047c43-3d7c-45c3-88cb-be3bd07bcf27" target="p_3"/>
+      <arc id="2014700087856" source="p_4" target="eefd6797-e5f1-4a0b-b7aa-df1967eb5be3"/>
+      <arc id="2014698868016" source="p_12" target="4f7101ac-daad-41c6-8184-537ed407be45"/>
+      <arc id="2014713854512" source="4f7101ac-daad-41c6-8184-537ed407be45" target="sink"/>
+      <arc id="2014713539648" source="source" target="f4047c43-3d7c-45c3-88cb-be3bd07bcf27"/>
+      <arc id="2014698868160" source="c5b29ad7-8de6-45d4-a018-0d8f268d59a5" target="p_10"/>
+      <arc id="2014711197120" source="p_13" target="614ba859-1d6b-4cea-85d6-cc673aee9eda"/>
+      <arc id="2014711197504" source="614ba859-1d6b-4cea-85d6-cc673aee9eda" target="p_12"/>
+      <arc id="2014713851968" source="eefd6797-e5f1-4a0b-b7aa-df1967eb5be3" target="p_7"/>
+      <arc id="2014696921552" source="27784cda-874e-42a8-84d3-50ced5daf199" target="p_8"/>
+      <arc id="2014696919776" source="p_7" target="27784cda-874e-42a8-84d3-50ced5daf199"/>
+      <arc id="2014713584992" source="p_13" target="acafc4de-638d-4e5d-8034-4dadb2acb750"/>
+      <arc id="2014698864752" source="p_9" target="c5b29ad7-8de6-45d4-a018-0d8f268d59a5"/>
+      <arc id="2014698866672" source="p_9" target="b982ef4e-7cc9-417c-8bb3-cbfa2010cf9b"/>
+      <arc id="2014698867824" source="b982ef4e-7cc9-417c-8bb3-cbfa2010cf9b" target="p_10"/>
+      <arc id="2014698866288" source="p_11" target="fab765fe-71ef-4db2-9e05-654827221f94"/>
+      <arc id="2014713852784" source="eefd6797-e5f1-4a0b-b7aa-df1967eb5be3" target="p_9"/>
+      <arc id="2014713854704" source="p_8" target="c180095a-8b07-4882-b5b4-58a4d310340e"/>
+      <arc id="2014713854320" source="p_10" target="c180095a-8b07-4882-b5b4-58a4d310340e"/>
+    </page>
+    <finalmarkings>
+      <marking>
+        <place idref="sink">
+          <text>1</text>
+        </place>
+      </marking>
+    </finalmarkings>
+  </net>
+</pnml>

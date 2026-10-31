@@ -1,4 +1,5 @@
 {
+  "attribute": "org:resource",
   "group_roles": true,
   "roles_threshold": 0.65,
   "collapse_lifecycle": true,

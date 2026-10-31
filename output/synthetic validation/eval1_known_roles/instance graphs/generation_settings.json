@@ -1,0 +1,8 @@
+{
+  "attribute": "department",
+  "group_roles": false,
+  "roles_threshold": 0.65,
+  "collapse_lifecycle": false,
+  "noise_threshold": 0.2,
+  "workers": 1
+}

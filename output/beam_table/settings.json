@@ -1,0 +1,14 @@
+{
+  "beams": [
+    4,
+    10,
+    20
+  ],
+  "num_best": 20,
+  "iterations": 1,
+  "min_pattern_edges": {
+    "synthetic_eval1_known_roles": 1,
+    "synthetic_eval2_full_pipeline": 1,
+    "bpi2017": 2
+  }
+}

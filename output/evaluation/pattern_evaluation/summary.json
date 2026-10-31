@@ -1,6 +1,6 @@
 {
   "instance_graphs": 3093,
   "discovered_patterns": 20,
-  "COV": 0.4267,
-  "DIV": 0.2848
+  "COV": 0.4,
+  "DIV": 0.259
 }

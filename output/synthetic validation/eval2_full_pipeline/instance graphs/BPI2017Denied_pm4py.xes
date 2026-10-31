@@ -1,0 +1,2225 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<log xes.version="1849-2016" xes.features="nested-attributes" xmlns="http://www.xes-standard.org/">
+	<extension name="Organizational" prefix="org" uri="http://www.xes-standard.org/org.xesext" />
+	<extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+	<extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext" />
+	<string key="origin" value="csv" />
+	<trace>
+		<string key="concept:name" value="C01" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-01T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-01T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-01T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-01T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-01T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-01T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-01T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-01T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-01T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-01T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-01T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C02" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-02T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-02T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-02T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-02T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-02T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-02T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-02T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-02T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-02T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-02T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-02T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C03" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-03T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-03T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-03T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-03T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-03T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-03T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-03T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-03T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-03T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-03T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-03T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C04" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-04T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-04T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-04T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-04T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-04T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-04T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-04T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-04T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-04T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-04T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-04T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C05" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-05T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-05T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-05T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-05T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-05T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-05T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-05T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-05T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-05T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-05T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-05T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C06" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-06T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-06T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-06T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-06T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-06T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-06T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-06T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-06T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-06T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-06T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-06T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C07" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-07T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-07T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-07T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-07T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-07T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-07T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-07T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-07T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-07T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-07T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-07T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C08" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-08T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-08T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-08T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-08T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-08T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-08T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-08T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-08T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-08T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-08T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-08T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C09" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-09T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-09T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-09T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-09T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-09T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-09T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-09T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-09T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-09T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-09T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-09T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C10" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-10T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-10T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-10T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-10T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-10T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-10T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-10T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-10T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-10T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-10T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-10T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C11" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-11T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-11T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-11T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-11T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-11T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-11T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-11T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-11T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-11T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-11T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-11T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C12" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-12T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-12T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-12T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-12T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-12T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-12T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-12T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-12T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-12T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-12T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-12T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C13" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-13T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-13T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-13T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-13T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-13T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-13T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-13T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-13T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-13T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-13T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-13T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C14" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-14T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-14T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-14T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-14T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-14T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-14T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-14T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-14T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-14T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-14T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-14T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C15" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-15T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-15T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-15T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-15T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-15T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-15T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-15T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-15T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-15T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C16" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-16T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-16T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-16T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-16T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-16T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-16T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-16T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-16T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-16T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C17" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-17T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-17T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-17T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-17T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-17T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-17T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-17T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-17T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-17T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C18" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-18T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-18T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-18T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-18T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-18T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-18T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-18T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-18T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-18T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C19" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-19T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-19T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-19T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-19T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-19T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-19T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-19T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-19T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-19T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C20" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-20T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-20T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-20T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-20T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-20T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-20T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-20T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-20T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-20T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C21" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-21T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-21T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-21T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-21T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-21T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-21T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-21T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-21T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-21T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C22" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-22T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-22T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-22T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-22T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-22T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-22T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-22T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-22T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-22T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C23" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-23T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-23T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-23T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-23T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-23T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-23T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-23T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-23T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-23T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C24" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-24T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-24T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-24T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-24T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-24T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-24T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-24T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-24T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-24T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C25" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-25T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-25T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-25T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-25T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-25T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-25T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-25T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-25T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-25T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-25T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-25T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C26" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-26T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-26T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-26T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-26T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-26T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-26T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-26T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-26T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Sign-contract_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-26T10:20:00" />
+			<string key="activity_selectedAttribute" value="Sign-contract_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-26T10:30:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-26T10:40:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C27" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-27T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-27T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-27T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-27T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-27T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-27T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-27T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Fleur" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-27T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-27T10:20:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-27T10:30:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C28" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-28T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-28T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-28T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-28T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-28T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Carla" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-28T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Create-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-28T10:00:00" />
+			<string key="activity_selectedAttribute" value="Create-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Send-offer_Role_4" />
+			<string key="org:resource" value="Gijs" />
+			<string key="department" value="Offers" />
+			<date key="time:timestamp" value="2026-01-28T10:10:00" />
+			<string key="activity_selectedAttribute" value="Send-offer_Role_4" />
+		</event>
+		<event>
+			<string key="concept:name" value="Archive_Role_5" />
+			<string key="org:resource" value="Hanna" />
+			<string key="department" value="BackOffice" />
+			<date key="time:timestamp" value="2026-01-28T10:20:00" />
+			<string key="activity_selectedAttribute" value="Archive_Role_5" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-28T10:30:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C29" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-29T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-29T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Anna" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-29T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-29T09:30:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-29T09:40:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-29T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-29T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_1" />
+			<string key="org:resource" value="Daan" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-29T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-29T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+	<trace>
+		<string key="concept:name" value="C30" />
+		<event>
+			<string key="concept:name" value="start_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-30T09:00:00" />
+			<string key="activity_selectedAttribute" value="start_Role_3" />
+		</event>
+		<event>
+			<string key="concept:name" value="Submit-application_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-30T09:10:00" />
+			<string key="activity_selectedAttribute" value="Submit-application_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-documents_Role_2" />
+			<string key="org:resource" value="Bram" />
+			<string key="department" value="Intake" />
+			<date key="time:timestamp" value="2026-01-30T09:20:00" />
+			<string key="activity_selectedAttribute" value="Check-documents_Role_2" />
+		</event>
+		<event>
+			<string key="concept:name" value="Verify-income_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-30T09:30:00" />
+			<string key="activity_selectedAttribute" value="Verify-income_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Check-credit_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-30T09:40:00" />
+			<string key="activity_selectedAttribute" value="Check-credit_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Decide_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-30T09:50:00" />
+			<string key="activity_selectedAttribute" value="Decide_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Deny_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-30T10:00:00" />
+			<string key="activity_selectedAttribute" value="Deny_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="Notify-customer_Role_1" />
+			<string key="org:resource" value="Eva" />
+			<string key="department" value="Credit" />
+			<date key="time:timestamp" value="2026-01-30T10:10:00" />
+			<string key="activity_selectedAttribute" value="Notify-customer_Role_1" />
+		</event>
+		<event>
+			<string key="concept:name" value="end_Role_3" />
+			<string key="org:resource" value="System" />
+			<string key="department" value="System" />
+			<date key="time:timestamp" value="2026-01-30T10:20:00" />
+			<string key="activity_selectedAttribute" value="end_Role_3" />
+		</event>
+	</trace>
+</log>

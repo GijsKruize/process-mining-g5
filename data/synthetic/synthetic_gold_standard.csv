@@ -1,0 +1,6 @@
+id,name,description,edges,expected_cases
+G1,Intake handles the application,"An Intake employee submits the application and then checks its documents.",Submit-application_Intake -> Check-documents_Intake,C01-C30
+G2,Parallel credit assessment,"After Intake has checked the documents, Credit checks the credit and verifies the income in parallel, and then decides.",Check-documents_Intake -> Check-credit_Credit; Check-documents_Intake -> Verify-income_Credit; Check-credit_Credit -> Decide_Credit; Verify-income_Credit -> Decide_Credit,C01-C24;C27-C30
+G3,Offer handling,"After a positive decision by Credit, the Offers department creates and sends the offer.",Decide_Credit -> Create-offer_Offers; Create-offer_Offers -> Send-offer_Offers,C01-C14;C25-C28
+G4,Closing by the back office,"After the offer is sent, the BackOffice signs the contract and archives the application.",Send-offer_Offers -> Sign-contract_BackOffice; Sign-contract_BackOffice -> Archive_BackOffice,C01-C14;C25-C26
+G5,Denial handed back to Intake,"Credit denies the application and Intake notifies the customer.",Decide_Credit -> Deny_Credit; Deny_Credit -> Notify-customer_Intake,C15-C24

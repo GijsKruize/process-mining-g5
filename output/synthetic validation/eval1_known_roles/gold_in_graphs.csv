@@ -1,0 +1,6 @@
+gold,name,expected_cases,found_cases,precision,recall,f1,missing,unexpected
+G1,Intake handles the application,30,30,1.0,1.0,1.0,,
+G2,Parallel credit assessment,28,28,1.0,1.0,1.0,,
+G3,Offer handling,18,18,1.0,1.0,1.0,,
+G4,Closing by the back office,16,16,1.0,1.0,1.0,,
+G5,Denial handed back to Intake,10,10,1.0,1.0,1.0,,

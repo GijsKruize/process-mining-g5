@@ -1,0 +1,86 @@
+{
+  "settings": {
+    "noise_threshold": 0.2,
+    "beam_width": 10,
+    "roles_threshold": 0.65,
+    "min_pattern_edges": 1,
+    "max_pattern_edges": 0,
+    "num_best": 20,
+    "attribute": "org:resource",
+    "group_roles": true
+  },
+  "traces": 30,
+  "discovered_patterns": 20,
+  "gold_patterns": 5,
+  "subdue_search": {
+    "beam_width": 10,
+    "subs": 110,
+    "top_subs": 20,
+    "top_subs_pct": 18.18,
+    "seconds": 1.1
+  },
+  "role_discovery": {
+    "employees": 9,
+    "departments": 5,
+    "roles_discovered": 5,
+    "employees_in_role_of_own_department_pct": 100.0,
+    "departments_split_over_roles": [],
+    "roles_mixing_departments": []
+  },
+  "role_to_department": {
+    "Role_5": "BackOffice",
+    "Role_1": "Credit",
+    "Role_2": "Intake",
+    "Role_4": "Offers",
+    "Role_3": "System"
+  },
+  "a_gold_in_instance_graphs": {
+    "mean_precision": 1.0,
+    "mean_recall": 1.0
+  },
+  "b_patterns_containment": {
+    "precision": 1.0,
+    "recall": 0.8,
+    "f1": 0.8889,
+    "gold_found": [
+      "G1",
+      "G2",
+      "G3",
+      "G4"
+    ],
+    "gold_missed": [
+      "G5"
+    ],
+    "precision@5": 1.0,
+    "precision@10": 1.0,
+    "precision@20": 1.0
+  },
+  "b_patterns_exact": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "gold_found": [],
+    "gold_missed": [
+      "G1",
+      "G2",
+      "G3",
+      "G4",
+      "G5"
+    ],
+    "precision@5": 0.0,
+    "precision@10": 0.0,
+    "precision@20": 0.0
+  },
+  "b_edges": {
+    "precision": 0.8182,
+    "recall": 0.8182,
+    "f1": 0.8182
+  },
+  "c_cases_of_best_match": {
+    "mean_precision": 0.8,
+    "mean_recall": 0.7644,
+    "mean_f1": 0.7813
+  },
+  "COV": 0.8553,
+  "DIV": 0.2777
+}
