@@ -1,6 +1,0 @@
-attribute,distinct_values,coverage,examples,reason
-EventOrigin,3,1.0,Application | Workflow | Offer,coarse work stream / department-like grouping
-Action,5,1.0,Created | statechange | Deleted | Obtained | Released,"event action type, useful for work-practice variants"
-lifecycle:transition,7,1.0,complete | schedule | withdraw | start | suspend,schedule/start/complete handoff granularity
-case:ApplicationType,2,1.0,New credit | Limit raise,case-level context for validation slices
-case:LoanGoal,13,1.0,Home improvement | Car | Existing loan takeover | Caravan / Camper | Unknown,case-level context for validation slices
